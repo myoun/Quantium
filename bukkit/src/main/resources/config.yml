@@ -1,0 +1,14 @@
+
+bungeecord: true
+
+#----------# for bungeecord #---------- #
+enable-lobby : true
+enable-minigame : true
+#----------# for bungeecord #----------#
+
+# it's a essential option
+lobby-location:
+  world: world
+  x: 0
+  y: 64
+  z: 0

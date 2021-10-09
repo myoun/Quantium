@@ -1,0 +1,25 @@
+# it's a just default setting
+
+# it can change value automatic
+# for example
+# server's going to report added minigames
+# if server register minigames
+
+# but if server don't have player one
+# server can't report added minigames
+
+# 이건 그냥 기본설정입니다
+
+# 이 값들은 자동으로 바뀔수도 있습니다
+# 서버가 게임을 추가하면
+# 번지코드에 비니게임을 보고합니다
+
+# 하지만 플레이어가 있어야만 가능합니다
+
+# example
+#lobby:
+#  - server1
+#minigame:
+#  BedWars-1:
+#    - server1
+#    - server2

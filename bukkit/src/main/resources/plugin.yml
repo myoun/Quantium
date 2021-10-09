@@ -1,0 +1,6 @@
+name: Quantium
+main: org.netherald.quantium.Quantium
+version: 1.0
+softdepend:
+  - Multiverse-Core
+  - Multiverse-NetherPortals
