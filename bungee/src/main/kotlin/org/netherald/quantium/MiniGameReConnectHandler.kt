@@ -8,8 +8,10 @@ import java.util.*
 import kotlin.collections.HashMap
 
 class MiniGameReConnectHandler : ReconnectHandler {
+
     // last MiniGame server connection
     val lastServer = HashMap<UUID, ServerInfo>()
+
     override fun getServer(player: ProxiedPlayer): ServerInfo? {
         return lastServer[player.uniqueId]
     }

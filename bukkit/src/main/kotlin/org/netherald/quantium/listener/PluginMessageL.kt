@@ -4,8 +4,8 @@ import com.google.common.io.ByteStreams
 import org.bukkit.entity.Player
 import org.bukkit.plugin.messaging.PluginMessageListener
 import org.netherald.quantium.Channels
-import org.netherald.quantium.dataclass.ConnectionType
-import org.netherald.quantium.dataclass.PlayerData
+import org.netherald.quantium.data.ConnectionType
+import org.netherald.quantium.data.PlayerData
 import org.netherald.quantium.util.PluginMessagePlayerUtil
 
 class PluginMessageL : PluginMessageListener {
@@ -19,13 +19,13 @@ class PluginMessageL : PluginMessageListener {
                 PluginMessagePlayerUtil.callbackData[id] = data.readInt()
             }
 
-            Channels.SubChannels.lobbyConnection -> {
+            Channels.SubChannels.Bungee.lobbyConnection -> {
                 PlayerData.connectionType[player] = ConnectionType.LOBBY
             }
 
-            Channels.SubChannels.miniGameConnection -> {
+            Channels.SubChannels.Bungee.miniGameConnection -> {
                 PlayerData.connectionType[player] = ConnectionType.MINIGAME
-
+                TODO()
             }
         }
     }

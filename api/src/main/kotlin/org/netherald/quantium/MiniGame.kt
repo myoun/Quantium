@@ -1,74 +1,104 @@
 package org.netherald.quantium
 
+import org.bukkit.World
+import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
-import org.netherald.quantium.dataclass.TeamSetting
-import org.netherald.quantium.dataclass.WorldSetting
-import org.netherald.quantium.world.WorldEditor
 import java.util.*
 import kotlin.collections.ArrayList
 
-data class MiniGame(
+class MiniGame(
     val owner : JavaPlugin,
     val name : String,
     val minPlayerSize : Int,
     val maxPlayerSize : Int,
-    val enableRejoin : Boolean,
-    val perPlayerList : Boolean,
     var maxInstanceSize : Int,
     var defaultInstanceSize : Int,
-    val teamSetting : TeamSetting,
-    val worldSetting: WorldSetting,
     val instanceSettingValue : MiniGameInstance.() -> Unit,
-    val miniGameInstances : ArrayList<MiniGameInstance> = ArrayList(),
-    val worldInstanceMap: HashMap<String, MiniGameInstance> = HashMap<String, MiniGameInstance>()
+    val instances : List<MiniGameInstance> = ArrayList(),
+    val worldInstanceMap: HashMap<World, MiniGameInstance> = HashMap<World, MiniGameInstance>(),
+    val players : List<Player> = ArrayList()
 ) {
+
     init {
 
-        MiniGameInstance(
-            this,
-            ArrayList()
-        ).apply(instanceSettingValue).unsafe().callMiniGameCreatedListener()
+        MiniGameInstance(this, ArrayList()).apply(instanceSettingValue).UnSafe().callMiniGameCreatedListener()
 
-        for (i in 0 until defaultInstanceSize) {
-            createInstance()
-        }
+        for (i in 0 until defaultInstanceSize) { createInstance() }
 
     }
 
-    val worlds : Collection<String> = worldInstanceMap.keys
+    val worlds : Collection<World>
+        get() = worldInstanceMap.keys
+
+    val recommendMatchingInstance : MiniGameInstance?
+        get() {
+            for (instance in instances) {
+                if (!instance.isStarted && !instance.isFinished) {
+                    return instance
+                }
+            }
+            return null
+        }
+
+    val matchingInstances : List<MiniGameInstance>
+        get() {
+            val out = ArrayList<MiniGameInstance>()
+            for (instance in instances) {
+                if (!instance.isStarted && !instance.isFinished) {
+                    out.add(instance)
+                }
+            }
+            return out
+        }
 
     fun createInstance() {
-        val worldNameId = UUID.randomUUID().toString()
-        val worlds = ArrayList<String>()
-
-        worldSetting.baseWorld?.let { worlds.add(worldNameId+it) }
-        worldSetting.baseWorldNether?.let { worlds.add(worldNameId+it) }
-        worldSetting.baseWorldTheNether?.let { worlds.add(worldNameId+it) }
-        worldSetting.otherWorlds.forEach { worlds.add(worldNameId+it) }
 
         val instance = MiniGameInstance(
             this,
-            worlds
         ).apply(instanceSettingValue)
 
-        miniGameInstances.add(instance)
+        val worldNameId = UUID.randomUUID().toString()
+        val worlds = ArrayList<World>()
+
+        val clone = fun (world : World, name : String) = instance.worldSetting.worldEditor.cloneWorld(world, name)
+
+        instance.worldSetting.baseWorld?.let { worlds.add(clone(it, worldNameId+it)) }
+        instance.worldSetting.baseWorldNether?.let { worlds.add(clone(it, worldNameId+it)) }
+        instance.worldSetting.baseWorldTheNether?.let { worlds.add(clone(it, worldNameId+it)) }
+        instance.worldSetting.otherBaseWorlds.forEach { worlds.add(clone(it, worldNameId+it)) }
+
+        addInstance(instance)
+
         worlds.forEach { worldInstanceMap[it] = instance }
-    }
 
-    fun deleteInstance(instance : MiniGameInstance) {
-        instance.stopGame()
-        removeInstanceInData(instance)
-    }
+        instance.UnSafe().callInstanceCreatedListener()
 
-    fun removeInstanceInData(instance : MiniGameInstance) {
-        miniGameInstances.remove(instance)
-        worlds.forEach { worldInstanceMap.remove(it) }
     }
 
     fun stopAll() {
-        miniGameInstances.forEach {
-            it.stopGame()
+        defaultInstanceSize = 0
+        instances.forEach { instance ->
+            instance.stopGame()
         }
-        worlds.forEach { WorldEditor.worldEditor.deleteWorld(it) }
     }
+
+    private fun addInstance(instance: MiniGameInstance) {
+        instances as ArrayList
+        instances.add(instance)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as MiniGame
+
+        if (name != other.name) return false
+
+        return true
+    }
+
+    override fun toString(): String { return name }
+
+    override fun hashCode(): Int { return name.hashCode() }
 }

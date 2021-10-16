@@ -4,30 +4,27 @@ import org.bukkit.entity.Player
 import org.netherald.quantium.MiniGame
 
 fun Player.connectToLobby() {
-    PlayerUtil.playerUtil.sendToLobby(this)
+    PlayerUtil.default.sendToLobby(this)
 }
 
 fun Player.connectToMiniGameServer(miniGame : String) {
-    PlayerUtil.playerUtil.sendToMiniGame(this, miniGame)
+    PlayerUtil.default.sendToMiniGame(this, miniGame)
 }
 
 fun Player.connectToServer(serverName : String) {
-    PlayerUtil.playerUtil.sendToServer(this, serverName)
+    PlayerUtil.default.sendToServer(this, serverName)
 }
 
-val MiniGame.miniGamePlayerCount : Int
-get() =PlayerUtil.playerUtil.getMiniGamePlayerCount(name)
+interface PlayerUtil {
 
-abstract class PlayerUtil {
     companion object {
-        lateinit var playerUtil : PlayerUtil
+        lateinit var default : PlayerUtil
     }
 
-    abstract fun sendToLobby(player: Player)
+    fun sendToLobby(player: Player)
 
-    abstract fun sendToMiniGame(player: Player, miniGame : String)
+    fun sendToMiniGame(player: Player, miniGame : String)
 
-    abstract fun sendToServer(player: Player, serverName : String)
+    fun sendToServer(player: Player, serverName : String)
 
-    abstract fun getMiniGamePlayerCount(miniGameName: String) : Int
 }

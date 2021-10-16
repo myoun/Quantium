@@ -8,7 +8,9 @@ import net.md_5.bungee.api.plugin.Listener
 import net.md_5.bungee.event.EventHandler
 import org.netherald.quantium.Channels
 import org.netherald.quantium.data.MiniGameData
+import org.netherald.quantium.data.PlayerData
 import org.netherald.quantium.data.ServerData
+import org.netherald.quantium.data.servers
 import org.netherald.quantium.event.MiniGameConnectingEvent
 import org.netherald.quantium.util.PlayerConnectionUtil
 
@@ -16,26 +18,30 @@ class PluginMessageL : Listener {
     @EventHandler
     fun on(event : PluginMessageEvent) {
         if (event.tag == Channels.mainChannel && event.receiver is ProxiedPlayer) {
+            val player = event.receiver as ProxiedPlayer
             @Suppress("UnstableApiUsage")
             val data = ByteStreams.newDataInput(event.data)
             when (data.readUTF()) {
-                Channels.SubChannels.lobby -> {
+                Channels.SubChannels.Bukkit.lobby -> {
                     PlayerConnectionUtil.connect(
-                        event.receiver as ProxiedPlayer,
+                        player,
                         ServerData.lobby,
                         PlayerConnectionUtil.SelectionAlgorithm.PLAYER_COUNT_LOWER
                     )
                 }
 
-                Channels.SubChannels.game -> {
+                Channels.SubChannels.Bukkit.game -> {
                     val miniGame = data.readUTF()
                     MiniGameData.minigames[miniGame]?.let {
                         if (!ProxyServer.getInstance().pluginManager.callEvent(
-                            MiniGameConnectingEvent(
-                                event.receiver as ProxiedPlayer, it
-                            )).isCancelled
+                            MiniGameConnectingEvent(player, it)).isCancelled
                         ) {
-                            MiniGameData.minigames[miniGame]?.queue?.add(event.receiver as ProxiedPlayer)
+                            PlayerData.playerPlayingMap[player.uniqueId] = it
+                            PlayerConnectionUtil.connect(
+                                player,
+                                it.servers,
+                                PlayerConnectionUtil.SelectionAlgorithm.PLAYER_COUNT_LOWER
+                            )
                         }
                     }
                 }

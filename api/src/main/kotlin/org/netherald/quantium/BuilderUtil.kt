@@ -1,13 +1,15 @@
 package org.netherald.quantium
 
 import org.bukkit.Bukkit
-import org.bukkit.entity.Player
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.block.BlockEvent
 import org.bukkit.event.entity.EntityEvent
 import org.bukkit.event.entity.PlayerLeashEntityEvent
+import org.bukkit.event.hanging.HangingEvent
 import org.bukkit.event.player.PlayerEvent
+import org.bukkit.event.vehicle.VehicleEvent
 import org.bukkit.event.weather.WeatherEvent
 import org.bukkit.event.world.WorldEvent
 import org.bukkit.scheduler.BukkitRunnable
@@ -15,9 +17,6 @@ import org.bukkit.scheduler.BukkitTask
 
 @QuantiumMarker
 open class BuilderUtil(private val miniGameInstance: MiniGameInstance) {
-
-    val players : List<Player> = miniGameInstance.players
-    val worlds : List<String> = miniGameInstance.worlds
 
     fun broadCast(message : String) = miniGameInstance.broadcast(message)
 
@@ -84,66 +83,97 @@ open class BuilderUtil(private val miniGameInstance: MiniGameInstance) {
     fun <T : Event> listener(
         clazz : Class<T>,
         allServerEvent : Boolean = false,
+        register: Boolean = true,
         listener: QuantiumEvent<T>.() -> Unit
     ) : Listener {
         if (!allServerEvent) {
             lateinit var listenerData : Listener
             if (PlayerEvent::class.java.isAssignableFrom(clazz)) {
-                listenerData = listener0(clazz) {
+                listenerData = listener0(clazz, register) {
                     val input = event as PlayerEvent
-                    if (players.contains(input.player)) {
+                    if (this@BuilderUtil.miniGameInstance.players.contains(input.player)) {
                         listener(this)
                     }
                 }
             } else if (EntityEvent::class.java.isAssignableFrom(clazz)) {
-                listenerData = listener0(clazz) {
+                listenerData = listener0(clazz, register) {
                     val input = event as EntityEvent
-                    if (worlds.contains(input.entity.world.name)) {
+                    if (this@BuilderUtil.miniGameInstance.worlds.contains(input.entity.world)) {
                         listener(this)
                     }
                 }
             } else if (WorldEvent::class.java.isAssignableFrom(clazz)) {
-                listenerData = listener0(clazz) {
+                listenerData = listener0(clazz, register) {
                     @Suppress("CAST_NEVER_SUCCEEDS")
                     val input = this as WorldEvent
-                    if (worlds.contains(input.world.name)) {
+                    if (this@BuilderUtil.miniGameInstance.worlds.contains(input.world)) {
                         listener(this)
                     }
                 }
             } else if (PlayerLeashEntityEvent::class.java.isAssignableFrom(clazz)) {
-                listenerData = listener0(clazz) {
-                    @Suppress("CAST_NEVER_SUCCEEDS", "CAST_NEVER_SUCCEEDS")
+                listenerData = listener0(clazz, register) {
+                    @Suppress("CAST_NEVER_SUCCEEDS")
                     val input = this as PlayerLeashEntityEvent
-                    if (players.contains(input.player)) {
+                    if (this@BuilderUtil.miniGameInstance.players.contains(input.player)) {
                         listener(this)
                     }
                 }
             } else if (WeatherEvent::class.java.isAssignableFrom(clazz)) {
-                listenerData = listener0(clazz) {
+                listenerData = listener0(clazz,register) {
                     @Suppress("CAST_NEVER_SUCCEEDS")
                     val input = this as WeatherEvent
-                    if (worlds.contains(input.world.name)) {
+                    if (this@BuilderUtil.miniGameInstance.worlds.contains(input.world)) {
+                        listener(this)
+                    }
+                }
+            } else if (VehicleEvent::class.java.isAssignableFrom(clazz)) {
+                listenerData = listener0(clazz, register) {
+                    @Suppress("CAST_NEVER_SUCCEEDS")
+                    val input = this as VehicleEvent
+                    if (this@BuilderUtil.miniGameInstance.worlds.contains(input.vehicle.world)) {
+                        listener(this)
+                    }
+                }
+            } else if (BlockEvent::class.java.isAssignableFrom(clazz)) {
+                listenerData = listener0(clazz, register) {
+                    @Suppress("CAST_NEVER_SUCCEEDS")
+                    val input = this as BlockEvent
+                    if (this@BuilderUtil.miniGameInstance.worlds.contains(input.block.world)) {
+                        listener(this)
+                    }
+                }
+            } else if (HangingEvent::class.java.isAssignableFrom(clazz)) {
+                listenerData = listener0(clazz, register) {
+                    @Suppress("CAST_NEVER_SUCCEEDS")
+                    val input = this as HangingEvent
+                    if (this@BuilderUtil.miniGameInstance.worlds.contains(input.entity.world)) {
                         listener(this)
                     }
                 }
             } else {
-                listenerData = listener0(clazz, listener)
+                listenerData = listener0(clazz, register, listener)
             }
             return listenerData
         } else {
-            return listener0(clazz, listener)
+            return listener0(clazz, register, listener)
         }
     }
 
-    private fun <T : Event> listener0(clazz : Class<T>, listener: QuantiumEvent<T>.() -> Unit) : Listener {
+    private fun <T : Event> listener0(
+        clazz : Class<T>,
+        register : Boolean = true,
+        listener: QuantiumEvent<T>.() -> Unit
+    ) : Listener {
         val listenerData = object : Listener {
             @EventHandler
             fun on(event : T) {
                 listener(QuantiumEvent(event, miniGameInstance))
             }
         }
-        Bukkit.getServer().pluginManager.registerEvents(listenerData, miniGameInstance.miniGame.owner)
-        miniGameInstance.listeners.add(listenerData)
+        if (register) {
+            Bukkit.getServer().pluginManager.registerEvents(listenerData, miniGameInstance.miniGame.owner)
+            miniGameInstance.listeners.add(listenerData)
+        }
         return listenerData
     }
 }

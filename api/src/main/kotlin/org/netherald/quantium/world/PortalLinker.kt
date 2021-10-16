@@ -1,8 +1,8 @@
 package org.netherald.quantium.world
 
-interface WorldLinker {
+interface PortalLinker {
     companion object {
-        lateinit var worldLinker: WorldLinker
+        lateinit var default: PortalLinker
     }
     fun linkNether(world : String, nether : String)
     fun linkEnder(world : String, ender : String)

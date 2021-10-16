@@ -6,7 +6,7 @@ import org.netherald.quantium.MiniGameInfo
 object ServerData {
     val lobby = ArrayList<ServerInfo>()
     val miniGameServerData = HashMap<MiniGameInfo, ArrayList<ServerInfo>>()
-    val serverMiniGameData = HashMap<ServerInfo, ArrayList<MiniGameInfo>>()
+    private val serverMiniGameData = HashMap<ServerInfo, ArrayList<MiniGameInfo>>()
 
     fun minigames(serverInfo: ServerInfo) : List<MiniGameInfo> {
         serverMiniGameData[serverInfo] ?: run {

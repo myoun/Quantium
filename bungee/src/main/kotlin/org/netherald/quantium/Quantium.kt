@@ -7,7 +7,6 @@ import net.md_5.bungee.config.ConfigurationProvider
 import net.md_5.bungee.config.YamlConfiguration
 import org.netherald.quantium.data.addMiniGame
 import org.netherald.quantium.data.setLobby
-import org.netherald.quantium.listener.DisconnectL
 import org.netherald.quantium.listener.PluginMessageL
 import java.io.File
 import java.io.IOException
@@ -27,7 +26,6 @@ class Quantium : Plugin() {
         proxy.reconnectHandler = MiniGameReConnectHandler()
         proxy.registerChannel(Channels.mainChannel)
         proxy.pluginManager.registerListener(this, PluginMessageL())
-        proxy.pluginManager.registerListener(this, DisconnectL())
 
         config.getSection(ConfigPath.lobby)?.let {
             it.keys.forEach { serverName ->

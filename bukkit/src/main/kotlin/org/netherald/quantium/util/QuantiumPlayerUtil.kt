@@ -1,24 +1,30 @@
 package org.netherald.quantium.util
 
 import org.bukkit.entity.Player
-import org.netherald.quantium.dataclass.MiniGameData
-import org.netherald.quantium.dataclass.QuantiumConfig
-import org.netherald.quantium.dataclass.players
+import org.netherald.quantium.data.*
 
-class QuantiumPlayerUtil : PlayerUtil() {
+class QuantiumPlayerUtil : PlayerUtil {
+
     override fun sendToLobby(player: Player) {
+        PlayerData.UnSafe.clearData(player)
+        PlayerData.connectionType[player] = ConnectionType.LOBBY
         player.teleport(QuantiumConfig.lobbyLocation)
     }
 
     override fun sendToMiniGame(player: Player, miniGame: String) {
-
+        MiniGameData.miniGames[miniGame]?.let { minigame ->
+            minigame.instances.filter {
+                if (!it.isStarted) true
+                else if (!it.isFinished) false
+                else false
+            }.random().addPlayer(player)
+            PlayerData.connectionType[player] = ConnectionType.MINIGAME
+        } ?: run {
+            throw IllegalStateException("not found minigame")
+        }
     }
 
     override fun sendToServer(player: Player, serverName: String) {
-
-    }
-
-    override fun getMiniGamePlayerCount(miniGameName: String) : Int {
-        return MiniGameData.miniGames[miniGameName]!!.players.size
+        throw RuntimeException("It is not Bungee")
     }
 }

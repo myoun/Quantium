@@ -11,11 +11,11 @@ subprojects {
 
     if (name == "bukkit" || name == "api") {
         repositories {
-            maven("https://papermc.io/repo/repository/maven-public/")
+            maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
         }
 
         dependencies {
-            compileOnly("com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT")
+            compileOnly("org.spigotmc:spigot-api:1.17-R0.1-SNAPSHOT")
         }
     }
 

@@ -3,7 +3,7 @@ package org.netherald.quantium.world
 import com.onarandombox.MultiverseNetherPortals.MultiverseNetherPortals
 import org.bukkit.PortalType
 
-class MultiverseWorldLinker(private val multiverseNetherPortals: MultiverseNetherPortals) : WorldLinker {
+class MultiversePortalLinker(private val multiverseNetherPortals: MultiverseNetherPortals) : PortalLinker {
     override fun linkNether(world: String, nether: String) {
         multiverseNetherPortals.addWorldLink(world, nether, PortalType.NETHER)
         multiverseNetherPortals.addWorldLink(nether, world, PortalType.NETHER)

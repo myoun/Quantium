@@ -8,10 +8,6 @@ object MiniGameData {
 
     val minigames = HashMap<String, MiniGameInfo>()
 
-    fun getMiniGameInfo(name: String) : MiniGameInfo? {
-        return minigames[name]
-    }
-
     fun addMiniGameInfo(name: String) {
         minigames[name] = MiniGameInfo(name)
         miniGameServerData[minigames[name]!!] = ArrayList()
