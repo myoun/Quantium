@@ -1,0 +1,6 @@
+name: Duel
+main: org.netherald.quantium.uhc.Duel
+version: 1.0.0
+api-version: 1.16.5
+depend:
+  - Quantium

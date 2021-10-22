@@ -12,19 +12,61 @@ import org.bukkit.event.player.*
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scheduler.BukkitTask
 import org.netherald.quantium.data.*
+import org.netherald.quantium.exception.OutOfMaxPlayerSizeException
 import org.netherald.quantium.setting.IsolatedSetting
 import org.netherald.quantium.setting.TeamSetting
 import org.netherald.quantium.setting.WorldSetting
+import org.netherald.quantium.util.SpectatorUtil
 import org.netherald.quantium.world.WorldEditor
 
 @QuantiumMarker
 class MiniGameInstance(
     val miniGame: MiniGame,
-    val worlds : List<World> = ArrayList(),
     val reJoinData : MutableCollection<Player> = HashSet()
 ) {
 
     inner class UnSafe {
+
+        var world : World? = null
+        var worldNether : World? = null
+        var worldEnder : World? = null
+        var otherWorlds = HashSet<World>()
+
+        fun start() {
+
+            finished = false
+
+            if (!worldSetting.enableOtherWorldTeleport) {
+                listener(PlayerTeleportEvent::class.java) {
+                    if (
+                        this@MiniGameInstance.worlds.contains(event.from.world) ||
+                        this@MiniGameInstance.worlds.contains(event.to?.world)
+                    ) {
+                        event.isCancelled = true
+                    }
+                }
+            }
+
+            team as MutableList
+
+            team.addAll(teamSetting.teamMatcher.match(players))
+
+            listeners1.forEach {
+                Bukkit.getServer().pluginManager.registerEvents(it, miniGame.owner)
+                listeners.add(it)
+            }
+            listeners1.clear()
+
+            players.forEach { player ->
+                PlayerData.UnSafe.addAllMiniGameData(player, this@MiniGameInstance)
+            }
+
+            callStartListener()
+
+            started = true
+
+        }
+
         fun callPlayerAdded(player: Player) {
             addedPlayerListener.forEach {
                 it(BuilderUtil(this@MiniGameInstance), player)
@@ -61,9 +103,15 @@ class MiniGameInstance(
             }
         }
 
+        fun callDeleteListener() {
+            deleteListener.forEach {
+                it(BuilderUtil(this@MiniGameInstance))
+            }
+        }
+
         fun deleteAllWorld() {
             worlds.forEach { miniGame.worldInstanceMap.remove(it) }
-            worlds.forEach { WorldEditor.default.deleteWorld(it) }
+            worlds.forEach { worldSetting.worldEditor.deleteWorld(it) }
         }
 
         fun clearPlayersData() {
@@ -73,7 +121,26 @@ class MiniGameInstance(
         }
     }
 
-    var autoDelete : Boolean = false
+    val world : World?
+        get() = UnSafe().world
+    val worldNether : World?
+        get() = UnSafe().worldNether
+    val worldEnder : World?
+        get() = UnSafe().worldEnder
+    val otherWorlds : Collection<World>
+        get() = UnSafe().otherWorlds
+
+    val worlds : Collection<World>
+        get() {
+            val out = HashSet<World>(UnSafe().otherWorlds)
+            UnSafe().world?.let { out.add(it) }
+            UnSafe().worldNether?.let { out.add(it) }
+            UnSafe().worldEnder?.let { out.add(it) }
+            UnSafe().otherWorlds.forEach { out.add(it) }
+            return out
+        }
+
+    var autoDelete : Boolean = true
     var autoStart : Boolean = true
 
     val isStarted : Boolean
@@ -84,11 +151,23 @@ class MiniGameInstance(
     private var started = false
     private var finished = false
 
+    var spectatorUtil: SpectatorUtil = SpectatorUtil.default
 
     var teamSetting : TeamSetting = TeamSetting()
     var worldSetting: WorldSetting = WorldSetting()
     var isolatedSetting: IsolatedSetting = IsolatedSetting()
 
+    fun teamSetting(init : TeamSetting.() -> Unit) {
+        teamSetting.init()
+    }
+
+    fun worldSetting(init : WorldSetting.() -> Unit) {
+        worldSetting.init()
+    }
+
+    fun isolatedSetting(init : IsolatedSetting.() -> Unit) {
+        isolatedSetting.init()
+    }
 
     val listeners = ArrayList<Listener>()
     val tasks = ArrayList<BukkitTask>()
@@ -99,17 +178,14 @@ class MiniGameInstance(
     // it works when this minigame is team game
     val team : List<List<Player>> = ArrayList()
 
-    val enableRejoin : Boolean = false
+    var enableRejoin : Boolean = false
     var defaultGameMode : GameMode = GameMode.ADVENTURE
 
-    var startTask : BukkitTask? = null
-    /*
-        it just for before start
-     */
+    private var startTask : BukkitTask? = null
+
     fun addPlayer(player: Player) {
         PlayerData.UnSafe.addAllMiniGameData(player, this)
         UnSafe().callPlayerAdded(player)
-
 
         if (autoStart) {
             startTask ?: run {
@@ -128,11 +204,11 @@ class MiniGameInstance(
                             }
                             i--
                         } else {
-                            start()
+                            UnSafe().start()
                             taskData.cancel()
                         }
                     }
-                }.runTaskTimer(miniGame.owner, 20, 0)
+                }.runTaskTimer(miniGame.owner, 20, 20)
             }
         }
     }
@@ -155,7 +231,9 @@ class MiniGameInstance(
         }
     }
 
-
+    fun addWorld(world : World) {
+        UnSafe().otherWorlds.add(world)
+    }
 
 
 
@@ -174,9 +252,10 @@ class MiniGameInstance(
     fun stopGame() {
         unregisterListeners()
         unregisterTasks()
+        players.forEach { spectatorUtil.unApplySpectator(it) }
         UnSafe().callStopListener()
-        finished = true
         if (autoDelete) delete()
+        finished = true
     }
 
     fun clearReJoinData() {
@@ -208,42 +287,15 @@ class MiniGameInstance(
 
         miniGame.instances as MutableList
         miniGame.instances.remove(this@MiniGameInstance)
+
         UnSafe().deleteAllWorld()
         UnSafe().clearPlayersData()
+
+        UnSafe().callDeleteListener()
 
         if (miniGame.instances.size < miniGame.defaultInstanceSize) {
             miniGame.createInstance()
         }
-    }
-
-    fun start() {
-        if (started || finished) return
-        if (!worldSetting.enableOtherWorldTeleport) {
-            listener(PlayerTeleportEvent::class.java) {
-                if (
-                    this@MiniGameInstance.worlds.contains(event.from.world) ||
-                    this@MiniGameInstance.worlds.contains(event.to?.world)
-                ) {
-                    event.isCancelled = true
-                }
-            }
-        }
-
-        team as MutableList
-
-        team.addAll(teamSetting.teamMatcher.match(players))
-
-        listeners1.forEach {
-            Bukkit.getServer().pluginManager.registerEvents(it, miniGame.owner)
-            listeners.add(it)
-        }
-
-        players.forEach { player ->
-            PlayerData.UnSafe.addAllMiniGameData(player, this@MiniGameInstance)
-        }
-
-        UnSafe().callStartListener()
-
     }
 
 
@@ -267,6 +319,9 @@ class MiniGameInstance(
 
     private val stopListener = ArrayList<BuilderUtil.() -> Unit>()
     fun onStop(listener : BuilderUtil.() -> Unit) = stopListener.add(listener)
+
+    private val deleteListener = ArrayList<BuilderUtil.() -> Unit>()
+    fun onDelete(listener : BuilderUtil.() -> Unit) = stopListener.add(listener)
 
 
 
@@ -307,7 +362,7 @@ class MiniGameInstance(
         listener: QuantiumEvent<T>.() -> Unit
     ) : Listener {
         val out : Listener
-        if (started) {
+        if (started || finished) {
             out = BuilderUtil(this).listener(clazz, allServerEvent, true, listener)
         } else {
             out = BuilderUtil(this).listener(clazz, allServerEvent, false, listener)

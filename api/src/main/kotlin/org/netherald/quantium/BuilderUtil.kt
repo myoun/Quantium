@@ -1,6 +1,7 @@
 package org.netherald.quantium
 
 import org.bukkit.Bukkit
+import org.bukkit.entity.Player
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -14,11 +15,35 @@ import org.bukkit.event.weather.WeatherEvent
 import org.bukkit.event.world.WorldEvent
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scheduler.BukkitTask
+import org.netherald.quantium.util.SpectatorUtil
 
 @QuantiumMarker
 open class BuilderUtil(private val miniGameInstance: MiniGameInstance) {
 
+    val players : Collection<Player>
+        get() = miniGameInstance.players
+
+    var spectatorUtil : SpectatorUtil
+        get() = miniGameInstance.spectatorUtil
+        set(value) { miniGameInstance.spectatorUtil = value }
+
+    fun stopGame() = miniGameInstance.stopGame()
+    fun delete() = miniGameInstance.delete()
+
+    fun teamMatch() = miniGameInstance.teamSetting.teamMatcher.match(players)
+
+    val team : List<List<Player>>
+        get() = miniGameInstance.team
+
     fun broadCast(message : String) = miniGameInstance.broadcast(message)
+
+    fun Player.applySpectator() {
+        spectatorUtil.applySpectator(this)
+    }
+
+    fun Player.unApplySpectator() {
+        spectatorUtil.unApplySpectator(this)
+    }
 
     fun loopTask(delay : Long = 0, period : Long = 0, task : () -> Unit) : BukkitTask {
         var taskData : BukkitTask? = null
@@ -119,7 +144,7 @@ open class BuilderUtil(private val miniGameInstance: MiniGameInstance) {
                     }
                 }
             } else if (WeatherEvent::class.java.isAssignableFrom(clazz)) {
-                listenerData = listener0(clazz,register) {
+                listenerData = listener0(clazz, register) {
                     @Suppress("CAST_NEVER_SUCCEEDS")
                     val input = this as WeatherEvent
                     if (this@BuilderUtil.miniGameInstance.worlds.contains(input.world)) {

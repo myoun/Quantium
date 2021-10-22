@@ -1,0 +1,6 @@
+name: UHC
+main: org.netherald.quantium.uhc.UHCPlugin
+version: 1.0.0
+depend:
+  - Multiverse-Core
+  - Multiverse-NetherPortals

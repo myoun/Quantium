@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "1.5.10"
+    id("com.github.johnrengelman.shadow") version "7.0.0"
 }
 
 group = "org.netherald"
@@ -8,6 +9,7 @@ version = "1.0-SNAPSHOT"
 subprojects {
     apply(plugin = "java")
     apply(plugin = "org.jetbrains.kotlin.jvm")
+    apply(plugin = "com.github.johnrengelman.shadow")
 
     if (name == "bukkit" || name == "api") {
         repositories {
@@ -18,18 +20,18 @@ subprojects {
             compileOnly("org.spigotmc:spigot-api:1.17-R0.1-SNAPSHOT")
         }
     }
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+    }
 
     dependencies {
-        if (name != "common") {
-            implementation(project(":common"))
-        }
+        compileOnly(kotlin("stdlib"))
     }
-}
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    implementation(kotlin("stdlib"))
+    tasks {
+        shadowJar
+    }
 }

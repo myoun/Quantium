@@ -8,7 +8,10 @@ enable-minigame : true
 
 # it's a essential option
 lobby-location:
+  ==: org.bukkit.Location
   world: world
   x: 0
   y: 64
   z: 0
+  yaw : 0
+  pitch : 0

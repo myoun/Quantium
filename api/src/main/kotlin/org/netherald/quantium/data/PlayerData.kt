@@ -39,8 +39,6 @@ object PlayerData {
     }
 }
 
-
-
 val Player.connectionType : ConnectionType?
     get() = PlayerData.connectionType[this]
 
@@ -66,8 +64,10 @@ private fun Player.clearData() {
 }
 
 private fun Player.clearPlayingGameData() {
-    (playingGame?.miniGame?.players as MutableList<Player>).add(this)
-    playingGame?.players?.remove(player)
+    playingGame?.let {
+        (it.miniGame.players as MutableList<Player>).add(this)
+        it.players.remove(player)
+    }
     PlayerData.playingGame.remove(this)
 }
 

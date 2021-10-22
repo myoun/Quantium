@@ -1,6 +1,13 @@
 name: Quantium
 main: org.netherald.quantium.Quantium
 version: 1.0
+depend:
+  - Kotlin
 softdepend:
   - Multiverse-Core
   - Multiverse-NetherPortals
+commands:
+  quantiumbukkit:
+    aliases:
+      - qb
+    description: Quantium command

@@ -7,7 +7,6 @@ import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerTeleportEvent
 import org.bukkit.plugin.java.JavaPlugin
-import org.netherald.quantium.MiniGame
 import org.netherald.quantium.MiniGameInstance
 import org.netherald.quantium.data.reJoinData
 
@@ -30,6 +29,7 @@ class TabListUtilL(private val plugin: JavaPlugin) : Listener {
 
             ignorePlayers.forEach { player ->
                 event.player.hidePlayer(plugin, player)
+                player.hidePlayer(plugin, event.player)
             }
 
         }

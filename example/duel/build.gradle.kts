@@ -1,6 +1,3 @@
-plugins {
-    java
-}
 
 group = "org.netherald"
 version = "1.0-SNAPSHOT"

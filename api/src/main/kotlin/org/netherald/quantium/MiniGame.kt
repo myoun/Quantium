@@ -13,11 +13,13 @@ class MiniGame(
     val maxPlayerSize : Int,
     var maxInstanceSize : Int,
     var defaultInstanceSize : Int,
-    val instanceSettingValue : MiniGameInstance.() -> Unit,
-    val instances : List<MiniGameInstance> = ArrayList(),
-    val worldInstanceMap: HashMap<World, MiniGameInstance> = HashMap<World, MiniGameInstance>(),
-    val players : List<Player> = ArrayList()
+    private val instanceSettingValue : MiniGameInstance.() -> Unit,
 ) {
+
+    val instances : List<MiniGameInstance> = ArrayList()
+    val worldInstanceMap: HashMap<World, MiniGameInstance> = HashMap<World, MiniGameInstance>()
+    val players : List<Player> = ArrayList()
+    val queue : Queue<Player> = LinkedList()
 
     init {
 
@@ -29,6 +31,20 @@ class MiniGame(
 
     val worlds : Collection<World>
         get() = worldInstanceMap.keys
+
+    fun pollQueuePlayers(count : Int = 1) : Collection<Player> {
+        val out = ArrayList<Player>()
+        for (i in 0 until count) {
+            queue.poll()?.let { player ->
+                out.add(player)
+            } ?: return out
+        }
+        return out
+    }
+
+    fun addPlayer(player: Player) {
+        recommendMatchingInstance?.addPlayer(player) ?: run { queue.add(player) }
+    }
 
     val recommendMatchingInstance : MiniGameInstance?
         get() {
@@ -44,7 +60,7 @@ class MiniGame(
         get() {
             val out = ArrayList<MiniGameInstance>()
             for (instance in instances) {
-                if (!instance.isStarted && !instance.isFinished) {
+                if (!(instance.isStarted && instance.isFinished)) {
                     out.add(instance)
                 }
             }
@@ -62,10 +78,10 @@ class MiniGame(
 
         val clone = fun (world : World, name : String) = instance.worldSetting.worldEditor.cloneWorld(world, name)
 
-        instance.worldSetting.baseWorld?.let { worlds.add(clone(it, worldNameId+it)) }
-        instance.worldSetting.baseWorldNether?.let { worlds.add(clone(it, worldNameId+it)) }
-        instance.worldSetting.baseWorldTheNether?.let { worlds.add(clone(it, worldNameId+it)) }
-        instance.worldSetting.otherBaseWorlds.forEach { worlds.add(clone(it, worldNameId+it)) }
+        instance.worldSetting.baseWorld?.let { worlds.add(clone(it, "${it.name}_${worldNameId}")) }
+        instance.worldSetting.baseWorldNether?.let { worlds.add(clone(it, "${it.name}_${worldNameId}")) }
+        instance.worldSetting.baseWorldTheNether?.let { worlds.add(clone(it, "${it.name}_${worldNameId}")) }
+        instance.worldSetting.otherBaseWorlds.forEach { worlds.add(clone(it, "${it.name}_${worldNameId}")) }
 
         addInstance(instance)
 
@@ -73,6 +89,9 @@ class MiniGame(
 
         instance.UnSafe().callInstanceCreatedListener()
 
+        pollQueuePlayers(maxPlayerSize - instance.players.size).forEach { player ->
+            instance.addPlayer(player)
+        }
     }
 
     fun stopAll() {

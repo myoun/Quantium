@@ -1,3 +1,3 @@
-package org.netherald.quantium
+package org.netherald.quantium.exception
 
 class OutOfMaxPlayerSizeException : Exception()
