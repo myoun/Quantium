@@ -30,6 +30,7 @@ object PlayerData {
 
             miniGameInstance.miniGame.players as MutableList
             miniGameInstance.miniGame.players.add(player)
+            miniGameInstance.players.add(player)
 
         }
 

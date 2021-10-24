@@ -5,10 +5,7 @@ import com.onarandombox.MultiverseNetherPortals.MultiverseNetherPortals
 import org.bukkit.plugin.java.JavaPlugin
 import org.netherald.quantium.data.MiniGameData
 import org.netherald.quantium.data.QuantiumConfig
-import org.netherald.quantium.listener.SpawnTeleportL
-import org.netherald.quantium.listener.MiniGameChatL
-import org.netherald.quantium.listener.PluginMessageL
-import org.netherald.quantium.listener.TabListUtilL
+import org.netherald.quantium.listener.*
 import org.netherald.quantium.util.*
 import org.netherald.quantium.world.*
 
@@ -35,6 +32,7 @@ class Quantium : JavaPlugin() {
 
         server.pluginManager.registerEvents(TabListUtilL(this), this)
         server.pluginManager.registerEvents(MiniGameChatL(), this)
+        server.pluginManager.registerEvents(RespawnL(), this)
 
         loadConfig()
 
@@ -50,7 +48,10 @@ class Quantium : JavaPlugin() {
     override fun onDisable() {
         MiniGameData.miniGames.forEach { (_, minigame) ->
             minigame.defaultInstanceSize = 0
-            minigame.instances.forEach { instance ->
+            val iterator = minigame.instances.iterator() as MutableIterator
+            while (iterator.hasNext()) {
+                val instance = iterator.next()
+                iterator.remove()
                 instance.delete()
             }
         }

@@ -9,7 +9,7 @@ import org.netherald.quantium.data.reJoinData
 import org.spigotmc.event.player.PlayerSpawnLocationEvent
 
 class SpawnTeleportL : Listener {
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOW)
     fun on(event : PlayerSpawnLocationEvent) {
         event.player.reJoinData ?: run {
             event.player.teleport(QuantiumConfig.lobbyLocation)

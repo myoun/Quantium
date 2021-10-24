@@ -1,15 +1,13 @@
 package org.netherald.quantium.uhc
 
 import com.onarandombox.MultiverseCore.MultiverseCore
-import org.bukkit.Location
-import org.bukkit.Material
-import org.bukkit.World
-import org.bukkit.WorldType
+import org.bukkit.*
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerRespawnEvent
 import org.bukkit.plugin.java.JavaPlugin
 import org.netherald.quantium.MiniGameInstance
 import org.netherald.quantium.registerMiniGame
@@ -22,19 +20,8 @@ class UHCPlugin : JavaPlugin() {
     private val netherName = "uhc_playing_world_nether"
     private val enderName = "uhc_playing_world_the_end"
 
-    val mvWorldManager = (server.pluginManager.getPlugin("Multiverse-Core") as MultiverseCore).mvWorldManager
-
-    private fun addWorld(name : String, env : World.Environment) : World {
-        val successful = mvWorldManager
-            .addWorld(
-                name, env, null, WorldType.NORMAL, true, null
-            )
-        if (successful) {
-            return mvWorldManager.getMVWorld(name).cbWorld
-        } else {
-            throw RuntimeException("failed to make world")
-        }
-    }
+    private val mvWorldManager =
+        (server.pluginManager.getPlugin("Multiverse-Core") as MultiverseCore).mvWorldManager!!
 
     override fun onEnable() {
 
@@ -42,6 +29,19 @@ class UHCPlugin : JavaPlugin() {
         val randomTeleportSize = config.getInt(teleportSizePath)
 
         lateinit var miniGameInstance : MiniGameInstance
+
+        val newWorld = fun (name : String, env : World.Environment) : World {
+            val successful = mvWorldManager.addWorld(
+                name, env, null, WorldType.NORMAL, true, null
+            )
+            if (successful) {
+                val world = mvWorldManager.getMVWorld(name)
+                logger.info("world ${world.name} is added")
+                return world.cbWorld!!
+            } else {
+                throw RuntimeException("failed to make world")
+            }
+        }
 
         lateinit var world : World
 
@@ -72,8 +72,24 @@ class UHCPlugin : JavaPlugin() {
             miniGameInstance = this
             enableRejoin = false
 
+            teamSetting {
+                disable()
+            }
+
             listener(PlayerDeathEvent::class.java) {
                 event.entity.applySpectator()
+            }
+
+            listener(PlayerRespawnEvent::class.java) {
+                event.player.killer?.let { event.player.teleport(it) }
+            }
+
+            onPlayerAdded {
+                broadCast("${it.name} 님이 게임에 참여하였습니다")
+            }
+
+            onPlayerRemoved {
+                broadCast("${it.name} 님이 게임에서 나가였습니다")
             }
 
             onPlayerDisconnected {
@@ -85,11 +101,10 @@ class UHCPlugin : JavaPlugin() {
             }
 
             onInstanceCreated {
-                this@registerMiniGame.UnSafe().world = addWorld(worldName, World.Environment.NORMAL).also {
-                    world = it
-                }
-                this@registerMiniGame.UnSafe().worldNether = addWorld(netherName, World.Environment.NETHER)
-                this@registerMiniGame.UnSafe().worldEnder = addWorld(enderName, World.Environment.THE_END)
+                addWorld(newWorld(worldName, World.Environment.NORMAL).also { world = it })
+                addWorld(newWorld(netherName, World.Environment.NETHER), MiniGameInstance.AddWorldType.NETHER)
+                addWorld(newWorld(enderName, World.Environment.THE_END), MiniGameInstance.AddWorldType.ENDER)
+                spawn = Location(world, 0.0, 100.0, 0.0)
             }
 
             onStart {

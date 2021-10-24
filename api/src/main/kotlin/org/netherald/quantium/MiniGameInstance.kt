@@ -1,11 +1,11 @@
 package org.netherald.quantium
 
-import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Sound
 import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.event.Event
+import org.bukkit.event.EventPriority
 import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
 import org.bukkit.event.player.*
@@ -17,7 +17,7 @@ import org.netherald.quantium.setting.IsolatedSetting
 import org.netherald.quantium.setting.TeamSetting
 import org.netherald.quantium.setting.WorldSetting
 import org.netherald.quantium.util.SpectatorUtil
-import org.netherald.quantium.world.WorldEditor
+import org.netherald.quantium.world.PortalLinker
 
 @QuantiumMarker
 class MiniGameInstance(
@@ -30,7 +30,7 @@ class MiniGameInstance(
         var world : World? = null
         var worldNether : World? = null
         var worldEnder : World? = null
-        var otherWorlds = HashSet<World>()
+        val otherWorlds = HashSet<World>()
 
         fun start() {
 
@@ -39,7 +39,7 @@ class MiniGameInstance(
             if (!worldSetting.enableOtherWorldTeleport) {
                 listener(PlayerTeleportEvent::class.java) {
                     if (
-                        this@MiniGameInstance.worlds.contains(event.from.world) ||
+                        this@MiniGameInstance.worlds.contains(event.from.world) xor
                         this@MiniGameInstance.worlds.contains(event.to?.world)
                     ) {
                         event.isCancelled = true
@@ -47,23 +47,43 @@ class MiniGameInstance(
                 }
             }
 
-            team as MutableList
-
-            team.addAll(teamSetting.teamMatcher.match(players))
-
-            listeners1.forEach {
-                Bukkit.getServer().pluginManager.registerEvents(it, miniGame.owner)
-                listeners.add(it)
+            if (teamSetting.enable) {
+                team as MutableList
+                team = teamSetting.teamMatcher.match(players)
             }
-            listeners1.clear()
+
+            if (worldSetting.linkPortal) {
+                val linker : PortalLinker = worldSetting.portalLinker
+                world?.let { world ->
+                    worldNether?.let { linker.linkNether(world, it) }
+                    worldEnder?.let { linker.linkEnder(world, it) }
+                }
+            }
+
+            if (isolatedSetting.perChat) {
+                isolatedSetting.perMiniGameChatUtil.applyPerChat(this@MiniGameInstance)
+            }
+
+            if (isolatedSetting.perPlayerList) {
+                isolatedSetting.perMiniGameTabListUtil.applyPerTabList(this@MiniGameInstance)
+            }
+
+            registerListeners()
 
             players.forEach { player ->
                 PlayerData.UnSafe.addAllMiniGameData(player, this@MiniGameInstance)
+                worldSetting.spawn?.let { player.teleport(it) }
             }
 
-            callStartListener()
-
             started = true
+
+            callStartListener()
+            println("""
+                ${miniGame.name} instance started
+                    world : ${world?.name}
+                    nether : ${worldNether?.name}
+                    ender : ${worldEnder?.name}
+            """.trimIndent())
 
         }
 
@@ -110,8 +130,9 @@ class MiniGameInstance(
         }
 
         fun deleteAllWorld() {
-            worlds.forEach { miniGame.worldInstanceMap.remove(it) }
+            worlds.forEach { miniGame.worldInstanceMap -= it }
             worlds.forEach { worldSetting.worldEditor.deleteWorld(it) }
+            (worlds as MutableCollection<World>).clear()
         }
 
         fun clearPlayersData() {
@@ -176,40 +197,47 @@ class MiniGameInstance(
     val players = HashSet<Player>()
 
     // it works when this minigame is team game
-    val team : List<List<Player>> = ArrayList()
+    var team : List<List<Player>> = ArrayList()
 
     var enableRejoin : Boolean = false
     var defaultGameMode : GameMode = GameMode.ADVENTURE
 
     private var startTask : BukkitTask? = null
 
+    fun runStartTask() {
+        startTask ?: run {
+            var i = 15
+
+            val sound = fun Player.() = playSound(location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f)
+            val soundBroadCast = fun () = players.forEach { it.sound() }
+
+            startTask = object : BukkitRunnable() {
+                override fun run() {
+                    if (0 < i) {
+                        if (i == 15 || i <= 5) {
+                            broadcast("시작까지 ${i}초 전")
+                            soundBroadCast()
+                        }
+                        i--
+                    } else {
+                        cancelStartTask()
+                        UnSafe().start()
+                    }
+                }
+            }.runTaskTimer(miniGame.owner, 20, 20)
+        }
+    }
+
+    fun cancelStartTask() {
+        startTask?.cancel()
+        startTask = null
+    }
+
     fun addPlayer(player: Player) {
         PlayerData.UnSafe.addAllMiniGameData(player, this)
         UnSafe().callPlayerAdded(player)
-
         if (autoStart) {
-            startTask ?: run {
-
-                lateinit var taskData : BukkitTask
-                var i = 15
-
-                val sound = fun Player.() = playSound(location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f)
-
-                startTask = object : BukkitRunnable() {
-                    override fun run() {
-                        if (0 < i) {
-                            if (i == 15 || i <= 5) {
-                                broadcast("시작까지 ${i}초 전")
-                                players.forEach { it.sound() }
-                            }
-                            i--
-                        } else {
-                            UnSafe().start()
-                            taskData.cancel()
-                        }
-                    }
-                }.runTaskTimer(miniGame.owner, 20, 20)
-            }
+            runStartTask()
         }
     }
 
@@ -223,16 +251,23 @@ class MiniGameInstance(
         PlayerData.UnSafe.clearData(player)
         UnSafe().callPlayerRemoved(player)
 
-        startTask?.let {
-            if (players.size < miniGame.minPlayerSize) {
-                it.cancel()
-                startTask = null
-            }
+        if (players.size < miniGame.minPlayerSize) {
+            cancelStartTask()
         }
     }
 
-    fun addWorld(world : World) {
-        UnSafe().otherWorlds.add(world)
+    fun addWorld(world : World, addWorldType: AddWorldType = AddWorldType.OTHER) {
+        when (addWorldType) {
+            AddWorldType.NORMAL -> UnSafe().world = world
+            AddWorldType.NETHER -> UnSafe().worldNether = world
+            AddWorldType.ENDER -> UnSafe().worldEnder = world
+            AddWorldType.OTHER -> UnSafe().otherWorlds += world
+        }
+        miniGame.worldInstanceMap[world] = this
+    }
+
+    enum class AddWorldType {
+        NORMAL, NETHER, ENDER, OTHER
     }
 
 
@@ -256,6 +291,7 @@ class MiniGameInstance(
         UnSafe().callStopListener()
         if (autoDelete) delete()
         finished = true
+        println("${miniGame.name} instance is stopped")
     }
 
     fun clearReJoinData() {
@@ -279,23 +315,18 @@ class MiniGameInstance(
     }
 
     fun delete() {
-        if (enableRejoin) {
-            players.forEach { player ->
-                player.reJoinData = this@MiniGameInstance
-            }
-        }
 
         miniGame.instances as MutableList
         miniGame.instances.remove(this@MiniGameInstance)
 
         UnSafe().deleteAllWorld()
         UnSafe().clearPlayersData()
-
         UnSafe().callDeleteListener()
 
         if (miniGame.instances.size < miniGame.defaultInstanceSize) {
             miniGame.createInstance()
         }
+
     }
 
 
@@ -303,10 +334,10 @@ class MiniGameInstance(
 
 
     private val addedPlayerListener = ArrayList<BuilderUtil.(player : Player) -> Unit>()
-    fun onAddedPlayer(listener : BuilderUtil.() -> Unit) = stopListener.add(listener)
+    fun onPlayerAdded(listener : BuilderUtil.(player : Player) -> Unit) = addedPlayerListener.add(listener)
 
     private val removedPlayerListener = ArrayList<BuilderUtil.(player : Player) -> Unit>()
-    fun onRemovedPlayer(listener : BuilderUtil.() -> Unit) = stopListener.add(listener)
+    fun onPlayerRemoved(listener : BuilderUtil.(player : Player) -> Unit) = removedPlayerListener.add(listener)
 
     private val miniGameCreatedListener = ArrayList<BuilderUtil.() -> Unit>()
     fun onMiniGameCreated(listener : BuilderUtil.() -> Unit) = miniGameCreatedListener.add(listener)
@@ -331,15 +362,31 @@ class MiniGameInstance(
     // why don't check if player is playing this minigame?
     // because allServerEvent option is false
 
-    fun onPlayerKicked(listener : QuantiumEvent<PlayerKickEvent>.() -> Unit) : Listener =
-        listener(PlayerKickEvent::class.java, false, listener)
+    fun onPlayerKicked(listener : QuantiumEvent<out PlayerKickEvent>.() -> Unit) : Listener =
+        listener(PlayerKickEvent::class.java, EventPriority.NORMAL,
+            ignoreCancelled = true,
+            register = true,
+            allServerEvent = false,
+            listener = listener
+        )
 
-    fun onPlayerDisconnected(listener : QuantiumEvent<PlayerQuitEvent>.() -> Unit) : Listener =
-        listener(PlayerQuitEvent::class.java, false, listener)
+    fun onPlayerDisconnected(listener : QuantiumEvent<out PlayerQuitEvent>.() -> Unit) : Listener =
+        listener(
+            PlayerQuitEvent::class.java, EventPriority.NORMAL,
+            ignoreCancelled = true,
+            register = true,
+            allServerEvent = false,
+            listener = listener
+        )
 
-    fun onPlayerRejoin(listener : QuantiumEvent<PlayerJoinEvent>.() -> Unit) : Listener? {
+    fun onPlayerRejoin(listener : QuantiumEvent<out PlayerJoinEvent>.() -> Unit) : Listener? {
         return if (enableRejoin) {
-            listener(PlayerJoinEvent::class.java, false, listener)
+            listener(PlayerJoinEvent::class.java, EventPriority.NORMAL,
+                ignoreCancelled = true,
+                register = true,
+                allServerEvent = false,
+                listener = listener
+            )
         } else {
             null
         }
@@ -355,19 +402,41 @@ class MiniGameInstance(
 
 
 
-    private val listeners1 = ArrayList<Listener>()
+    private val listeners1 = HashMap<Listener, Class<out Event>>()
+    private val eventPriorityData = HashMap<Listener, EventPriority>()
+    private val ignoreCancelledData = HashMap<Listener, Boolean>()
+
     fun <T : Event> listener(
-        clazz : Class<T>,
-        allServerEvent : Boolean = false,
-        listener: QuantiumEvent<T>.() -> Unit
+        clazz: Class<out T>,
+        eventPriority : EventPriority = EventPriority.NORMAL,
+        ignoreCancelled : Boolean = false,
+        register : Boolean = true,
+        allServerEvent: Boolean = false,
+        listener: QuantiumEvent<out T>.() -> Unit
     ) : Listener {
-        val out : Listener
-        if (started || finished) {
-            out = BuilderUtil(this).listener(clazz, allServerEvent, true, listener)
-        } else {
-            out = BuilderUtil(this).listener(clazz, allServerEvent, false, listener)
-            listeners1.add(out)
-        }
+        val out = BuilderUtil(this).listener(
+            clazz, allServerEvent, eventPriority, ignoreCancelled, register, listener
+        )
+        listeners1[out] = clazz
+        ignoreCancelledData[out] = ignoreCancelled
+        eventPriorityData[out] = eventPriority
         return out
+    }
+
+    private fun registerListeners() {
+        listeners1.forEach { (listener, _) ->
+            registerListener(listener)
+        }
+        listeners1.clear()
+        eventPriorityData.clear()
+        ignoreCancelledData.clear()
+    }
+
+    private fun registerListener(listener: Listener) {
+        listeners1[listener]?.let {
+            BuilderUtil(this).registerEvent(
+                listeners1[listener]!!, listener, eventPriorityData[listener]!!, ignoreCancelledData[listener]!!
+            )
+        }
     }
 }

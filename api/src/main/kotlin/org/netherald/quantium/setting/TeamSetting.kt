@@ -6,7 +6,7 @@ import org.netherald.quantium.TeamMatcher
 
 data class TeamSetting(
     var enable: Boolean = false,
-    var teamSize: Int = 0,
+    var teamSize: Int = 1,
 ) {
     var teamMatcher: TeamMatcher = DefaultTeamMatcher(this)
 
@@ -18,4 +18,11 @@ data class TeamSetting(
         }
     }
 
+    fun enable() {
+        enable = true
+    }
+
+    fun disable() {
+        enable = false
+    }
 }

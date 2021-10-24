@@ -27,6 +27,8 @@ class MiniGame(
 
         for (i in 0 until defaultInstanceSize) { createInstance() }
 
+        println("MiniGame $name is loaded")
+
     }
 
     val worlds : Collection<World>
@@ -74,24 +76,33 @@ class MiniGame(
         ).apply(instanceSettingValue)
 
         val worldNameId = UUID.randomUUID().toString()
-        val worlds = ArrayList<World>()
 
         val clone = fun (world : World, name : String) = instance.worldSetting.worldEditor.cloneWorld(world, name)
 
-        instance.worldSetting.baseWorld?.let { worlds.add(clone(it, "${it.name}_${worldNameId}")) }
-        instance.worldSetting.baseWorldNether?.let { worlds.add(clone(it, "${it.name}_${worldNameId}")) }
-        instance.worldSetting.baseWorldTheNether?.let { worlds.add(clone(it, "${it.name}_${worldNameId}")) }
-        instance.worldSetting.otherBaseWorlds.forEach { worlds.add(clone(it, "${it.name}_${worldNameId}")) }
+        instance.worldSetting.baseWorld?.let {
+            instance.UnSafe().world = clone(it, "${it.name}_${worldNameId}")
+        }
+        instance.worldSetting.baseWorldNether?.let {
+            instance.UnSafe().worldNether = clone(it, "${it.name}_${worldNameId}")
+        }
+        instance.worldSetting.baseWorldTheNether?.let {
+            instance.UnSafe().worldEnder = clone(it, "${it.name}_${worldNameId}")
+        }
+        instance.worldSetting.otherBaseWorlds.forEach {
+            instance.UnSafe().otherWorlds += clone(it, "${it.name}_${worldNameId}")
+        }
 
         addInstance(instance)
 
-        worlds.forEach { worldInstanceMap[it] = instance }
+        instance.worlds.forEach { worldInstanceMap[it] = instance }
 
         instance.UnSafe().callInstanceCreatedListener()
 
         pollQueuePlayers(maxPlayerSize - instance.players.size).forEach { player ->
             instance.addPlayer(player)
         }
+
+        println("$name's instance is added")
     }
 
     fun stopAll() {

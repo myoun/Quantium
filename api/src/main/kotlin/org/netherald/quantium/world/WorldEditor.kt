@@ -9,6 +9,5 @@ interface WorldEditor {
     }
 
     fun cloneWorld(baseWorld : World, newWorld : String) : World
-    fun setGameMode(world : World, gameMode: GameMode)
     fun deleteWorld(world: World)
 }

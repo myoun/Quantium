@@ -15,10 +15,6 @@ class MultiverseWorldEditor(private val worldManager : MVWorldManager) : WorldEd
         }
     }
 
-    override fun setGameMode(world: World, gameMode: GameMode) {
-        worldManager.getMVWorld(world).gameMode = gameMode
-    }
-
     override fun deleteWorld(world: World) {
         worldManager.deleteWorld(world.name)
     }

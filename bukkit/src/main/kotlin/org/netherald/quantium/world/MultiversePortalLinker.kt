@@ -2,15 +2,21 @@ package org.netherald.quantium.world
 
 import com.onarandombox.MultiverseNetherPortals.MultiverseNetherPortals
 import org.bukkit.PortalType
+import org.bukkit.World
 
 class MultiversePortalLinker(private val multiverseNetherPortals: MultiverseNetherPortals) : PortalLinker {
-    override fun linkNether(world: String, nether: String) {
-        multiverseNetherPortals.addWorldLink(world, nether, PortalType.NETHER)
-        multiverseNetherPortals.addWorldLink(nether, world, PortalType.NETHER)
+    override fun linkNether(world: World, nether: World) {
+        multiverseNetherPortals.addWorldLink(world.name, nether.name, PortalType.NETHER)
+        multiverseNetherPortals.addWorldLink(nether.name, world.name, PortalType.NETHER)
     }
 
-    override fun linkEnder(world: String, ender: String) {
-        multiverseNetherPortals.addWorldLink(world, ender, PortalType.ENDER)
-        multiverseNetherPortals.addWorldLink(ender, world, PortalType.ENDER)
+    override fun linkEnder(world: World, ender: World) {
+        multiverseNetherPortals.addWorldLink(world.name, ender.name, PortalType.ENDER)
+        multiverseNetherPortals.addWorldLink(ender.name, world.name, PortalType.ENDER)
+    }
+
+    override fun link(world: World, nether: World, ender: World) {
+        linkNether(world, nether)
+        linkEnder(world, ender)
     }
 }
