@@ -23,7 +23,7 @@ class MiniGame(
 
     init {
 
-        MiniGameInstance(this, ArrayList()).apply(instanceSettingValue).UnSafe().callMiniGameCreatedListener()
+        MiniGameInstance(this).apply(instanceSettingValue).UnSafe().callMiniGameCreatedListener()
 
         for (i in 0 until defaultInstanceSize) { createInstance() }
 
@@ -78,23 +78,15 @@ class MiniGame(
         val worldNameId = UUID.randomUUID().toString()
 
         val clone = fun (world : World, name : String) = instance.worldSetting.worldEditor.cloneWorld(world, name)
+        val addWorld = fun (base : World, addWorldType : MiniGameInstance.AddWorldType) =
+            instance.addWorld(clone(base, "${base.name}_$worldNameId"), addWorldType)
 
-        instance.worldSetting.baseWorld?.let {
-            instance.UnSafe().world = clone(it, "${it.name}_${worldNameId}")
-        }
-        instance.worldSetting.baseWorldNether?.let {
-            instance.UnSafe().worldNether = clone(it, "${it.name}_${worldNameId}")
-        }
-        instance.worldSetting.baseWorldTheNether?.let {
-            instance.UnSafe().worldEnder = clone(it, "${it.name}_${worldNameId}")
-        }
-        instance.worldSetting.otherBaseWorlds.forEach {
-            instance.UnSafe().otherWorlds += clone(it, "${it.name}_${worldNameId}")
-        }
+        instance.worldSetting.baseWorld?.let { addWorld(it, MiniGameInstance.AddWorldType.NORMAL) }
+        instance.worldSetting.baseWorldNether?.let { addWorld(it, MiniGameInstance.AddWorldType.NETHER) }
+        instance.worldSetting.baseWorldTheNether?.let { addWorld(it, MiniGameInstance.AddWorldType.ENDER) }
+        instance.worldSetting.otherBaseWorlds.forEach { addWorld(it, MiniGameInstance.AddWorldType.OTHER) }
 
         addInstance(instance)
-
-        instance.worlds.forEach { worldInstanceMap[it] = instance }
 
         instance.UnSafe().callInstanceCreatedListener()
 

@@ -36,8 +36,23 @@ open class BuilderUtil(private val miniGameInstance: MiniGameInstance) {
     private val owner : JavaPlugin
         get() = miniGameInstance.miniGame.owner
 
-    fun addWorld(world: World, addWorldType: MiniGameInstance.AddWorldType = MiniGameInstance.AddWorldType.OTHER) =
+    val worlds : Collection<World>
+        get() = miniGameInstance.worlds
+
+    val world : World?
+        get() = miniGameInstance.world
+    val worldNether : World?
+        get() = miniGameInstance.worldNether
+    val worldEnder : World?
+        get() = miniGameInstance.worldEnder
+    val otherWorlds : Collection<World>
+        get() = miniGameInstance.otherWorlds
+
+
+    fun addWorld(world: World, addWorldType: MiniGameInstance.AddWorldType) =
         miniGameInstance.addWorld(world, addWorldType)
+
+    fun remove(world: World) = miniGameInstance.removeWorld(world)
 
     var spectatorUtil : SpectatorUtil
         get() = miniGameInstance.spectatorUtil
@@ -230,19 +245,18 @@ open class BuilderUtil(private val miniGameInstance: MiniGameInstance) {
         ignoreCancelled: Boolean
     ) {
         val executor = EventExecutor { listener, event ->
-            try {
+            kotlin.runCatching {
                 if (!clazz.isAssignableFrom(event.javaClass)) {
                     return@EventExecutor
                 }
                 listenerData.javaClass.declaredMethods[0].invoke(listener, event)
-            } catch (ex: InvocationTargetException) {
-                throw EventException(ex.cause)
-            } catch (t: Throwable) {
-                throw EventException(t)
+            }.exceptionOrNull()?.let {
+                if (it is InvocationTargetException) throw EventException(it.cause)
+                throw EventException(it)
             }
         }
         if (Bukkit.getServer().pluginManager.useTimings()) {
-            getHandlerList(clazz).register(
+            clazz.handlerList.register(
                 TimedRegisteredListener(
                     listenerData,
                     executor,
@@ -252,31 +266,29 @@ open class BuilderUtil(private val miniGameInstance: MiniGameInstance) {
                 )
             )
         } else {
-            getHandlerList(clazz).register(
+            clazz.handlerList.register(
                 RegisteredListener(listenerData, executor, priority, owner, ignoreCancelled)
             )
         }
     }
-    //
-    private fun getHandlerList(
-        clazz: Class<out Event>
-    ) : HandlerList {
-        val throwException = fun (): Nothing = throw IllegalPluginAccessException(
-            "Unable to find handler list for event " + clazz.name + ". Static getHandlerList method required!"
-        )
-        try {
-            val method = clazz.getDeclaredMethod("getHandlerList").apply { isAccessible = true }
-            @Suppress("CAST_NEVER_SUCCEEDS")
-            return method.invoke(null) as HandlerList
-        } catch (e : NoSuchMethodException) {
-            clazz.superclass?.let {
-                if (it.superclass == Event::class.java) throwException()
-                @Suppress("UNCHECKED_CAST")
-                return getHandlerList(it as Class<out Event>)
-                // ```````````````````믕
-            } ?: run {
-                throwException()
+
+    private val Class<out Event>.handlerList : HandlerList
+        get() {
+            val throwException = fun (): Nothing = throw IllegalPluginAccessException(
+                "Unable to find handler list for event ${name}. Static getHandlerList method required!"
+            )
+
+            val exceptionableHandlerList = fun Class<out Event>.() : HandlerList {
+                val method = getDeclaredMethod("getHandlerList").apply { isAccessible = true }
+                return method.invoke(null) as HandlerList
+            }
+            var nowClass : Class<out Event> = this
+            kotlin.runCatching { return nowClass.exceptionableHandlerList() }
+            while (true) {
+                kotlin.runCatching { return nowClass.exceptionableHandlerList() }
+                nowClass.superclass ?: throwException()
+                if (nowClass.superclass == Event::class.java) throwException()
+                nowClass = nowClass.superclass as Class<out Event>
             }
         }
-    }
 }

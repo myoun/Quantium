@@ -22,7 +22,6 @@ import org.netherald.quantium.world.PortalLinker
 @QuantiumMarker
 class MiniGameInstance(
     val miniGame: MiniGame,
-    val reJoinData : MutableCollection<Player> = HashSet()
 ) {
 
     inner class UnSafe {
@@ -130,8 +129,8 @@ class MiniGameInstance(
         }
 
         fun deleteAllWorld() {
-            worlds.forEach { miniGame.worldInstanceMap -= it }
             worlds.forEach { worldSetting.worldEditor.deleteWorld(it) }
+            worlds.forEach { miniGame.worldInstanceMap -= it }
             (worlds as MutableCollection<World>).clear()
         }
 
@@ -177,6 +176,8 @@ class MiniGameInstance(
     var teamSetting : TeamSetting = TeamSetting()
     var worldSetting: WorldSetting = WorldSetting()
     var isolatedSetting: IsolatedSetting = IsolatedSetting()
+
+    val reJoinData : MutableCollection<Player> = HashSet()
 
     fun teamSetting(init : TeamSetting.() -> Unit) {
         teamSetting.init()
@@ -234,9 +235,12 @@ class MiniGameInstance(
     }
 
     fun addPlayer(player: Player) {
+
+        if (miniGame.maxPlayerSize < players.size+1) throw OutOfMaxPlayerSizeException()
+
         PlayerData.UnSafe.addAllMiniGameData(player, this)
         UnSafe().callPlayerAdded(player)
-        if (autoStart) {
+        if (autoStart && miniGame.minPlayerSize <= players.size) {
             runStartTask()
         }
     }
@@ -246,8 +250,6 @@ class MiniGameInstance(
      */
     fun removePlayer(player: Player) {
 
-        if (miniGame.maxPlayerSize < players.size+1) throw OutOfMaxPlayerSizeException()
-
         PlayerData.UnSafe.clearData(player)
         UnSafe().callPlayerRemoved(player)
 
@@ -256,14 +258,37 @@ class MiniGameInstance(
         }
     }
 
-    fun addWorld(world : World, addWorldType: AddWorldType = AddWorldType.OTHER) {
+    fun addWorld(value : World, addWorldType: AddWorldType) {
+        val removeData = fun (world : World?) = world?.let { miniGame.worldInstanceMap -= world }
         when (addWorldType) {
-            AddWorldType.NORMAL -> UnSafe().world = world
-            AddWorldType.NETHER -> UnSafe().worldNether = world
-            AddWorldType.ENDER -> UnSafe().worldEnder = world
-            AddWorldType.OTHER -> UnSafe().otherWorlds += world
+            AddWorldType.NORMAL -> {
+                removeData(world)
+                UnSafe().world = value
+            }
+            AddWorldType.NETHER -> {
+                removeData(worldNether)
+                UnSafe().worldNether = value
+            }
+            AddWorldType.ENDER -> {
+                removeData(worldEnder)
+                UnSafe().worldEnder = value
+            }
+            AddWorldType.OTHER -> {
+                UnSafe().otherWorlds += value
+            }
+            else -> {
+                throw RuntimeException("wrong AddWorldType")
+            }
         }
-        miniGame.worldInstanceMap[world] = this
+        miniGame.worldInstanceMap[value] = this
+    }
+
+    fun removeWorld(value : World) {
+        if (UnSafe().world == value) UnSafe().world = null
+        if (UnSafe().worldNether == value) UnSafe().worldNether = null
+        if (UnSafe().worldEnder == value) UnSafe().worldEnder = null
+        UnSafe().otherWorlds -= value
+        miniGame.worldInstanceMap -= value
     }
 
     enum class AddWorldType {

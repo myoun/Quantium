@@ -9,6 +9,7 @@ import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerRespawnEvent
 import org.bukkit.plugin.java.JavaPlugin
+import org.netherald.quantium.BuilderUtil
 import org.netherald.quantium.MiniGameInstance
 import org.netherald.quantium.registerMiniGame
 import kotlin.random.Random
@@ -28,8 +29,6 @@ class UHCPlugin : JavaPlugin() {
         saveDefaultConfig()
         val randomTeleportSize = config.getInt(teleportSizePath)
 
-        lateinit var miniGameInstance : MiniGameInstance
-
         val newWorld = fun (name : String, env : World.Environment) : World {
             val successful = mvWorldManager.addWorld(
                 name, env, null, WorldType.NORMAL, true, null
@@ -43,16 +42,28 @@ class UHCPlugin : JavaPlugin() {
             }
         }
 
-        lateinit var world : World
+        val addNewWorld = fun BuilderUtil.(name : String, env : World.Environment) {
+            val world = newWorld(name, env)
+            val addWorldData = fun (worldType : MiniGameInstance.AddWorldType) =
+                addWorld(world, worldType)
+            when (env) {
+                World.Environment.NORMAL -> addWorldData(MiniGameInstance.AddWorldType.NORMAL)
+                World.Environment.NETHER -> addWorldData(MiniGameInstance.AddWorldType.NETHER)
+                World.Environment.THE_END -> addWorldData(MiniGameInstance.AddWorldType.ENDER)
+                else -> throw RuntimeException("wrong world type")
+            }
+        }
+
+        lateinit var miniGameInstance : MiniGameInstance
 
         val randomTeleport = fun Player.() {
             lateinit var location : Location
             loop@ while (true) {
                 val baseLocation = Location(
                     world,
-                    Random.nextInt(randomTeleportSize).toDouble() - (randomTeleportSize/2),
+                    Random.nextInt(randomTeleportSize).toDouble() - (randomTeleportSize/2) + 0.5,
                     256.0,
-                    Random.nextInt(randomTeleportSize).toDouble() - (randomTeleportSize/2)
+                    Random.nextInt(randomTeleportSize).toDouble() - (randomTeleportSize/2) + 0.5
                 )
                 for (i in 256 downTo 0) {
                     val now = baseLocation.clone().apply { y = i.toDouble() }
@@ -71,6 +82,15 @@ class UHCPlugin : JavaPlugin() {
 
             miniGameInstance = this
             enableRejoin = false
+
+            onInstanceCreated {
+
+                addNewWorld(worldName, World.Environment.NORMAL)
+                addNewWorld(netherName, World.Environment.NETHER)
+                addNewWorld(enderName, World.Environment.THE_END)
+
+                spawn = Location(world, 0.0, 100.0, 0.0)
+            }
 
             teamSetting {
                 disable()
@@ -100,15 +120,8 @@ class UHCPlugin : JavaPlugin() {
                 event.reason = "플레이어 ${event.player.name}이 강퇴되었습니다"
             }
 
-            onInstanceCreated {
-                addWorld(newWorld(worldName, World.Environment.NORMAL).also { world = it })
-                addWorld(newWorld(netherName, World.Environment.NETHER), MiniGameInstance.AddWorldType.NETHER)
-                addWorld(newWorld(enderName, World.Environment.THE_END), MiniGameInstance.AddWorldType.ENDER)
-                spawn = Location(world, 0.0, 100.0, 0.0)
-            }
-
             onStart {
-                players.forEach { player -> player.randomTeleport() }
+                players.forEach { it.randomTeleport() }
             }
         }
 
