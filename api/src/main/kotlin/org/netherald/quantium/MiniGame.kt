@@ -83,7 +83,7 @@ class MiniGame(
 
         instance.worldSetting.baseWorld?.let { addWorld(it, MiniGameInstance.AddWorldType.NORMAL) }
         instance.worldSetting.baseWorldNether?.let { addWorld(it, MiniGameInstance.AddWorldType.NETHER) }
-        instance.worldSetting.baseWorldTheNether?.let { addWorld(it, MiniGameInstance.AddWorldType.ENDER) }
+        instance.worldSetting.baseWorldEnder?.let { addWorld(it, MiniGameInstance.AddWorldType.ENDER) }
         instance.worldSetting.otherBaseWorlds.forEach { addWorld(it, MiniGameInstance.AddWorldType.OTHER) }
 
         addInstance(instance)

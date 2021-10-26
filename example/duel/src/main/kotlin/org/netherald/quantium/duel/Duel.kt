@@ -7,13 +7,16 @@ import org.bukkit.entity.Player
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
+import org.bukkit.scheduler.BukkitRunnable
 import org.netherald.quantium.registerMiniGame
 
 class Duel : JavaPlugin() {
     override fun onEnable() {
         registerMiniGame("Duel-1vs1", 2, 2) {
 
-            worldSetting.baseWorld = Bukkit.getWorld("world")
+            worldSetting {
+                baseWorld = Bukkit.getWorld("world")
+            }
 
             teamSetting {
                 enable = true

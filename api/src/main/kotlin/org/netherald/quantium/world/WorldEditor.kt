@@ -1,6 +1,5 @@
 package org.netherald.quantium.world
 
-import org.bukkit.GameMode
 import org.bukkit.World
 
 interface WorldEditor {

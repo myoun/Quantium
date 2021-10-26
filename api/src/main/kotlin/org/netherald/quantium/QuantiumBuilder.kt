@@ -1,6 +1,7 @@
 package org.netherald.quantium
 
 import org.bukkit.plugin.java.JavaPlugin
+import org.bukkit.scheduler.BukkitRunnable
 import org.netherald.quantium.data.MiniGameData
 
 fun registerMiniGame(

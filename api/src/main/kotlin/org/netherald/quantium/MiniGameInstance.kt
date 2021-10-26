@@ -9,13 +9,13 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
 import org.bukkit.event.player.*
-import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scheduler.BukkitTask
 import org.netherald.quantium.data.*
 import org.netherald.quantium.exception.OutOfMaxPlayerSizeException
 import org.netherald.quantium.setting.IsolatedSetting
 import org.netherald.quantium.setting.TeamSetting
 import org.netherald.quantium.setting.WorldSetting
+import org.netherald.quantium.util.BuilderUtil
 import org.netherald.quantium.util.SpectatorUtil
 import org.netherald.quantium.world.PortalLinker
 
@@ -47,7 +47,6 @@ class MiniGameInstance(
             }
 
             if (teamSetting.enable) {
-                team as MutableList
                 team = teamSetting.teamMatcher.match(players)
             }
 
@@ -131,7 +130,10 @@ class MiniGameInstance(
         fun deleteAllWorld() {
             worlds.forEach { worldSetting.worldEditor.deleteWorld(it) }
             worlds.forEach { miniGame.worldInstanceMap -= it }
-            (worlds as MutableCollection<World>).clear()
+            UnSafe().world = null
+            UnSafe().worldNether = null
+            UnSafe().worldEnder = null
+            UnSafe().otherWorlds.clear()
         }
 
         fun clearPlayersData() {
@@ -141,14 +143,10 @@ class MiniGameInstance(
         }
     }
 
-    val world : World?
-        get() = UnSafe().world
-    val worldNether : World?
-        get() = UnSafe().worldNether
-    val worldEnder : World?
-        get() = UnSafe().worldEnder
-    val otherWorlds : Collection<World>
-        get() = UnSafe().otherWorlds
+    val world : World? get() = UnSafe().world
+    val worldNether : World? get() = UnSafe().worldNether
+    val worldEnder : World? get() = UnSafe().worldEnder
+    val otherWorlds : Collection<World> get() = UnSafe().otherWorlds
 
     val worlds : Collection<World>
         get() {
@@ -163,10 +161,8 @@ class MiniGameInstance(
     var autoDelete : Boolean = true
     var autoStart : Boolean = true
 
-    val isStarted : Boolean
-        get() = started
-    val isFinished : Boolean
-        get() = finished
+    val isStarted : Boolean get() = started
+    val isFinished : Boolean get() = finished
 
     private var started = false
     private var finished = false
@@ -207,25 +203,21 @@ class MiniGameInstance(
 
     fun runStartTask() {
         startTask ?: run {
-            var i = 15
 
             val sound = fun Player.() = playSound(location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f)
             val soundBroadCast = fun () = players.forEach { it.sound() }
 
-            startTask = object : BukkitRunnable() {
-                override fun run() {
-                    if (0 < i) {
-                        if (i == 15 || i <= 5) {
-                            broadcast("시작까지 ${i}초 전")
-                            soundBroadCast()
-                        }
-                        i--
-                    } else {
-                        cancelStartTask()
-                        UnSafe().start()
+            startTask = BuilderUtil(this).loopTask(15 downTo 0, 20, 20) { i ->
+                if (0 < i) {
+                    if (i == 15 || i <= 5) {
+                        broadcast("시작까지 ${i}초 전")
+                        soundBroadCast()
                     }
+                } else {
+                    cancelStartTask()
+                    UnSafe().start()
                 }
-            }.runTaskTimer(miniGame.owner, 20, 20)
+            }
         }
     }
 
@@ -320,22 +312,16 @@ class MiniGameInstance(
     }
 
     fun clearReJoinData() {
-        reJoinData.forEach {
-            it.clearReJoinData()
-        }
+        reJoinData.forEach { it.clearReJoinData() }
     }
 
     fun unregisterListeners() {
-        listeners.forEach {
-            HandlerList.unregisterAll(it)
-        }
+        listeners.forEach { HandlerList.unregisterAll(it) }
         listeners.clear()
     }
 
     fun unregisterTasks() {
-        tasks.forEach {
-            it.cancel()
-        }
+        tasks.forEach { it.cancel() }
         tasks.clear()
     }
 
@@ -446,6 +432,11 @@ class MiniGameInstance(
         ignoreCancelledData[out] = ignoreCancelled
         eventPriorityData[out] = eventPriority
         return out
+    }
+
+    private val listeners2 = ArrayList<Listener>()
+    fun registerEvents(listener: Listener) {
+        listeners2.add(listener)
     }
 
     private fun registerListeners() {

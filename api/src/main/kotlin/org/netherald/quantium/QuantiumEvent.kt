@@ -1,5 +1,6 @@
 package org.netherald.quantium
 
 import org.bukkit.event.Event
+import org.netherald.quantium.util.BuilderUtil
 
 class QuantiumEvent<T : Event>(val event : T,  miniGameInstance: MiniGameInstance) : BuilderUtil(miniGameInstance)

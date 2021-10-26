@@ -1,7 +1,6 @@
 package org.netherald.quantium.util
 
 import org.bukkit.entity.Player
-import org.netherald.quantium.MiniGame
 
 fun Player.connectToLobby() {
     PlayerUtil.default.sendToLobby(this)

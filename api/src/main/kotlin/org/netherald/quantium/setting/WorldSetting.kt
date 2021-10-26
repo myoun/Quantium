@@ -8,7 +8,7 @@ import org.netherald.quantium.world.WorldEditor
 data class WorldSetting(
     var baseWorld : World? = null,
     var baseWorldNether : World? = null,
-    var baseWorldTheNether : World? = null,
+    var baseWorldEnder : World? = null,
     val otherBaseWorlds : List<World> = ArrayList(),
     var linkPortal : Boolean = true,
     var enableOtherWorldTeleport : Boolean = false,

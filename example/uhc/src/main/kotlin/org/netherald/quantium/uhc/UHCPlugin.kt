@@ -9,7 +9,7 @@ import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerRespawnEvent
 import org.bukkit.plugin.java.JavaPlugin
-import org.netherald.quantium.BuilderUtil
+import org.netherald.quantium.util.BuilderUtil
 import org.netherald.quantium.MiniGameInstance
 import org.netherald.quantium.registerMiniGame
 import kotlin.random.Random

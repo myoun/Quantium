@@ -1,4 +1,4 @@
 package org.netherald.quantium
 
 @DslMarker
-annotation class QuantiumMarker()
+annotation class QuantiumMarker
