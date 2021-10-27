@@ -10,7 +10,7 @@ import org.netherald.quantium.util.*
 import org.netherald.quantium.world.*
 
 
-class Quantium : JavaPlugin() {
+class QuantiumPlugin : JavaPlugin() {
 
     override fun onEnable() {
 

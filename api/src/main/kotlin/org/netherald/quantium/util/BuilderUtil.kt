@@ -23,7 +23,8 @@ import org.bukkit.scheduler.BukkitTask
 import org.netherald.quantium.MiniGameInstance
 import org.netherald.quantium.QuantiumEvent
 import org.netherald.quantium.QuantiumMarker
-import org.netherald.quantium.TaskData
+import org.netherald.quantium.QuantiumTaskData
+import org.netherald.quantium.event.AllServerEvent
 import java.lang.reflect.InvocationTargetException
 
 @QuantiumMarker
@@ -48,7 +49,7 @@ open class BuilderUtil(private val miniGameInstance: MiniGameInstance) {
     fun addWorld(world: World, addWorldType: MiniGameInstance.AddWorldType) =
         miniGameInstance.addWorld(world, addWorldType)
 
-    fun remove(world: World) = miniGameInstance.removeWorld(world)
+    fun removeWorld(world: World) = miniGameInstance.removeWorld(world)
 
     var spectatorUtil : SpectatorUtil
         get() = miniGameInstance.spectatorUtil
@@ -67,71 +68,81 @@ open class BuilderUtil(private val miniGameInstance: MiniGameInstance) {
     fun Player.unApplySpectator() { spectatorUtil.unApplySpectator(this) }
 
     fun <T> loopTask(
-        range: Iterable<T>, delay : Long = 1, period : Long = 1, task : TaskData.(T) -> Unit
+        range: Iterable<T>, delay : Long = 1, period : Long = 1, task : QuantiumTaskData.(T) -> Unit
     ) : BukkitTask {
         return loopTask(delay, period, range.iterator(), task)
     }
 
     fun <T> loopTask(
-        delay : Long = 1, period : Long = 1, collection: Collection<T>, task : TaskData.(T) -> Unit
+        delay : Long = 1, period : Long = 1, collection: Collection<T>, task : QuantiumTaskData.(T) -> Unit
     ) : BukkitTask {
         return loopTask(delay, period, collection.iterator(), task)
     }
 
     fun <T> loopTask(
-        delay : Long = 1, period : Long = 1, iterator: Iterator<T>, task : TaskData.(T) -> Unit
+        delay : Long = 1, period : Long = 1, iterator: Iterator<T>, task : QuantiumTaskData.(T) -> Unit
     ) : BukkitTask {
-        return loopTask(delay, period) { if (iterator.hasNext()) task(this, iterator.next()) else cancel() }
+        return loopTask(delay, period) { if (iterator.hasNext()) task(iterator.next()) else cancel() }
     }
 
     fun loopTask(
-        delay : Long = 1, period : Long = 1, task : TaskData.() -> Unit
+        delay : Long = 1, period : Long = 1, task : QuantiumTaskData.() -> Unit
     ) : BukkitTask {
-        lateinit var out: BukkitTask
-        val taskData = TaskData(miniGameInstance)
-        val runnable : BukkitRunnable = object : BukkitRunnable() { override fun run() { task(taskData) } }
-        out = runnable.runTaskTimer(owner, delay, period)
-
-        taskData.task = out
-        miniGameInstance.tasks.add(out)
-        return out
+        val taskData = QuantiumTaskData(miniGameInstance)
+        val runnable : BukkitRunnable = object : BukkitRunnable() { override fun run() { taskData.task() } }
+        taskData.task = runnable.runTaskTimer(owner, delay, period)
+        miniGameInstance.tasks.add(taskData)
+        return taskData.task
     }
 
-    fun asyncLoopTask(delay : Long = 0, period : Long = 0, task : () -> Unit) : BukkitTask {
-        var taskData : BukkitTask? = null
-        val runnable = object : BukkitRunnable() {
-            override fun run() {
-                task()
-                miniGameInstance.tasks.remove(taskData)
-            }
-        }
-        taskData = runnable.runTaskTimerAsynchronously(owner, delay, period)
+    fun <T> asyncLoopTask(
+        range: Iterable<T>, delay : Long = 1, period : Long = 1, task : QuantiumTaskData.(T) -> Unit
+    ) : QuantiumTaskData {
+        return asyncLoopTask(delay, period, range.iterator(), task)
+    }
+
+    fun <T> asyncLoopTask(
+        delay : Long = 1, period : Long = 1, collection: Collection<T>, task : QuantiumTaskData.(T) -> Unit
+    ) : QuantiumTaskData {
+        return asyncLoopTask(delay, period, collection.iterator(), task)
+    }
+
+    fun <T> asyncLoopTask(
+        delay : Long = 1, period : Long = 1, iterator: Iterator<T>, task : QuantiumTaskData.(T) -> Unit
+    ) : QuantiumTaskData {
+        return asyncLoopTask(delay, period) { if (iterator.hasNext()) task(this, iterator.next()) else cancel() }
+    }
+
+    fun asyncLoopTask(delay : Long = 0, period : Long = 0, task : QuantiumTaskData.() -> Unit) : QuantiumTaskData {
+        val taskData = QuantiumTaskData(miniGameInstance)
+        val runnable = object : BukkitRunnable() { override fun run() { task(taskData) } }
+        taskData.task = runnable.runTaskTimerAsynchronously(owner, delay, period)
         miniGameInstance.tasks.add(taskData)
         return taskData
     }
 
-    fun runTaskLater(delay : Long, task : () -> Unit) : BukkitTask {
-        var taskData : BukkitTask? = null
+    fun runTaskLater(delay : Long, task : QuantiumTaskData.() -> Unit) : QuantiumTaskData {
+        val taskData = QuantiumTaskData(miniGameInstance)
         val runnable = object : BukkitRunnable() {
             override fun run() {
-                task()
+                taskData.task()
                 miniGameInstance.tasks.remove(taskData)
             }
         }
-        taskData = runnable.runTaskLater(owner, delay)
+        taskData.task = runnable.runTaskLater(owner, delay)
         miniGameInstance.tasks.add(taskData)
         return taskData
     }
 
-    fun runTaskLaterAsync(delay : Long, task : () -> Unit) : BukkitTask {
-        var taskData : BukkitTask? = null
+    fun runTaskLaterAsync(delay : Long, task : QuantiumTaskData.() -> Unit) : QuantiumTaskData {
+        val taskData = QuantiumTaskData(miniGameInstance)
         val runnable = object : BukkitRunnable() {
             override fun run() {
-                task()
+                taskData.task()
                 miniGameInstance.tasks.remove(taskData)
             }
         }
-        taskData = runnable.runTaskLaterAsynchronously(owner, delay)
+        taskData.task = runnable.runTaskLaterAsynchronously(owner, delay)
         miniGameInstance.tasks.add(taskData)
         return taskData
     }
@@ -169,15 +180,24 @@ open class BuilderUtil(private val miniGameInstance: MiniGameInstance) {
             if (it.isBridge || it.isSynthetic) return@forEach
             val handler = it.getAnnotation(EventHandler::class.java) ?: return@forEach
             if (clazz.typeParameters.size != 1) {
-                owner.getLogger().severe(
-                    owner.getDescription()
-                        .getFullName() + " attempted to register an invalid EventHandler method signature \""
+                owner.logger.severe(
+                    owner.description
+                        .fullName + " attempted to register an invalid EventHandler method signature \""
                             + it.toGenericString() + "\" in " + listener.javaClass
                 )
                 return@forEach
             }
             val classAsEvent = clazz.typeParameters[0].javaClass.asSubclass(Event::class.java)
-            val eventExecutor = eventExecutor(classAsEvent) { listener, event -> it.invoke(listener, event) }
+            lateinit var eventExecutor : EventExecutor
+            it.getAnnotation(AllServerEvent::class.java)?.let { _ ->
+                eventExecutor = eventExecutor(classAsEvent) { listener, event -> it.invoke(listener, event) }
+            } ?: run {
+                eventExecutor = eventExecutor(classAsEvent) { listener, event ->
+                    listenerFilter(event) {
+                        it.invoke(listener, event)
+                    }
+                }
+            }
             registerRegisteredListener(
                 classAsEvent, listener, eventExecutor, handler.priority, handler.ignoreCancelled
             )
@@ -284,9 +304,9 @@ open class BuilderUtil(private val miniGameInstance: MiniGameInstance) {
             }
         }
 
-    fun listenerFilter(event : Event, code : () -> Unit) { if (listenerFilter(event)) { code() } }
+    fun listenerFilter(event : Event, code : () -> Unit) { if (isMiniGameEvent(event)) { code() } }
 
-    fun listenerFilter(event : Event) : Boolean {
+    fun isMiniGameEvent(event : Event) : Boolean {
         val clazz = event::class.java
         return if (PlayerEvent::class.java.isAssignableFrom(clazz)) {
             val input = event as PlayerEvent

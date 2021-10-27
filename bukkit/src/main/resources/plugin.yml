@@ -1,5 +1,5 @@
 name: Quantium
-main: org.netherald.quantium.Quantium
+main: org.netherald.quantium.QuantiumPlugin
 version: 1.0
 depend:
   - Kotlin

@@ -188,7 +188,7 @@ class MiniGameInstance(
     }
 
     val listeners = ArrayList<Listener>()
-    val tasks = ArrayList<BukkitTask>()
+    val tasks = ArrayList<QuantiumTaskData>()
 
 
     val players = HashSet<Player>()
@@ -267,9 +267,6 @@ class MiniGameInstance(
             }
             AddWorldType.OTHER -> {
                 UnSafe().otherWorlds += value
-            }
-            else -> {
-                throw RuntimeException("wrong AddWorldType")
             }
         }
         miniGame.worldInstanceMap[value] = this
@@ -376,7 +373,6 @@ class MiniGameInstance(
     fun onPlayerKicked(listener : QuantiumEvent<out PlayerKickEvent>.() -> Unit) : Listener =
         listener(PlayerKickEvent::class.java, EventPriority.NORMAL,
             ignoreCancelled = true,
-            register = true,
             allServerEvent = false,
             listener = listener
         )
@@ -385,7 +381,6 @@ class MiniGameInstance(
         listener(
             PlayerQuitEvent::class.java, EventPriority.NORMAL,
             ignoreCancelled = true,
-            register = true,
             allServerEvent = false,
             listener = listener
         )
@@ -394,7 +389,6 @@ class MiniGameInstance(
         return if (enableRejoin) {
             listener(PlayerJoinEvent::class.java, EventPriority.NORMAL,
                 ignoreCancelled = true,
-                register = true,
                 allServerEvent = false,
                 listener = listener
             )
@@ -421,12 +415,11 @@ class MiniGameInstance(
         clazz: Class<out T>,
         eventPriority : EventPriority = EventPriority.NORMAL,
         ignoreCancelled : Boolean = false,
-        register : Boolean = true,
         allServerEvent: Boolean = false,
         listener: QuantiumEvent<out T>.() -> Unit
     ) : Listener {
         val out = BuilderUtil(this).listener(
-            clazz, allServerEvent, eventPriority, ignoreCancelled, register, listener
+            clazz, allServerEvent, eventPriority, ignoreCancelled, false, listener
         )
         listeners1[out] = clazz
         ignoreCancelledData[out] = ignoreCancelled
