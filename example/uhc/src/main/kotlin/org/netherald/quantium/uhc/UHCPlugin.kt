@@ -59,7 +59,7 @@ class UHCPlugin : JavaPlugin() {
             lateinit var location : Location
             loop@ while (true) {
                 val baseLocation = Location(
-                    world,
+                    miniGameInstance.world,
                     Random.nextInt(randomTeleportSize).toDouble() - (randomTeleportSize/2) + 0.5,
                     256.0,
                     Random.nextInt(randomTeleportSize).toDouble() - (randomTeleportSize/2) + 0.5
@@ -76,6 +76,14 @@ class UHCPlugin : JavaPlugin() {
             }
             teleport(location)
         }
+
+
+
+
+
+
+
+
 
         registerMiniGame("uhc_25-100", 1, 100) {
 

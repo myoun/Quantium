@@ -1,8 +1,10 @@
 package org.netherald.quantium
 
+import org.bukkit.Bukkit
 import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
+import org.netherald.quantium.event.InstanceCreatedEvent
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -20,10 +22,11 @@ class MiniGame(
     val worldInstanceMap: HashMap<World, MiniGameInstance> = HashMap<World, MiniGameInstance>()
     val players : List<Player> = ArrayList()
     val queue : Queue<Player> = LinkedList()
+    val unSafe = UnSafe()
 
     inner class UnSafe {
         fun init() {
-            MiniGameInstance(this@MiniGame).apply(instanceSettingValue).UnSafe().callMiniGameCreatedListener()
+            MiniGameInstance(this@MiniGame).apply(instanceSettingValue).unSafe.callMiniGameCreatedListener()
 
             for (i in 0 until defaultInstanceSize) { createInstance() }
 
@@ -88,7 +91,9 @@ class MiniGame(
 
         addInstance(instance)
 
-        instance.UnSafe().callInstanceCreatedListener()
+        instance.unSafe.callInstanceCreatedListener()
+
+        Bukkit.getServer().pluginManager.callEvent(InstanceCreatedEvent(instance))
 
         pollQueuePlayers(maxPlayerSize - instance.players.size).forEach { player ->
             instance.addPlayer(player)

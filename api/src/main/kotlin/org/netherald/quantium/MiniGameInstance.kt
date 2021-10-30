@@ -24,6 +24,8 @@ class MiniGameInstance(
     val miniGame: MiniGame,
 ) {
 
+    val unSafe = UnSafe()
+
     inner class UnSafe {
 
         var world : World? = null
@@ -130,10 +132,10 @@ class MiniGameInstance(
         fun deleteAllWorld() {
             worlds.forEach { worldSetting.worldEditor.deleteWorld(it) }
             worlds.forEach { miniGame.worldInstanceMap -= it }
-            UnSafe().world = null
-            UnSafe().worldNether = null
-            UnSafe().worldEnder = null
-            UnSafe().otherWorlds.clear()
+            unSafe.world = null
+            unSafe.worldNether = null
+            unSafe.worldEnder = null
+            unSafe.otherWorlds.clear()
         }
 
         fun clearPlayersData() {
@@ -143,18 +145,18 @@ class MiniGameInstance(
         }
     }
 
-    val world : World? get() = UnSafe().world
-    val worldNether : World? get() = UnSafe().worldNether
-    val worldEnder : World? get() = UnSafe().worldEnder
-    val otherWorlds : Collection<World> get() = UnSafe().otherWorlds
+    val world : World? get() = unSafe.world
+    val worldNether : World? get() = unSafe.worldNether
+    val worldEnder : World? get() = unSafe.worldEnder
+    val otherWorlds : Collection<World> get() = unSafe.otherWorlds
 
     val worlds : Collection<World>
         get() {
-            val out = HashSet<World>(UnSafe().otherWorlds)
-            UnSafe().world?.let { out.add(it) }
-            UnSafe().worldNether?.let { out.add(it) }
-            UnSafe().worldEnder?.let { out.add(it) }
-            UnSafe().otherWorlds.forEach { out.add(it) }
+            val out = HashSet<World>(unSafe.otherWorlds)
+            unSafe.world?.let { out.add(it) }
+            unSafe.worldNether?.let { out.add(it) }
+            unSafe.worldEnder?.let { out.add(it) }
+            unSafe.otherWorlds.forEach { out.add(it) }
             return out
         }
 
@@ -215,7 +217,7 @@ class MiniGameInstance(
                     }
                 } else {
                     cancelStartTask()
-                    UnSafe().start()
+                    unSafe.start()
                 }
             }
         }
@@ -231,7 +233,7 @@ class MiniGameInstance(
         if (miniGame.maxPlayerSize < players.size+1) throw OutOfMaxPlayerSizeException()
 
         PlayerData.UnSafe.addAllMiniGameData(player, this)
-        UnSafe().callPlayerAdded(player)
+        unSafe.callPlayerAdded(player)
         if (autoStart && miniGame.minPlayerSize <= players.size) {
             runStartTask()
         }
@@ -243,7 +245,7 @@ class MiniGameInstance(
     fun removePlayer(player: Player) {
 
         PlayerData.UnSafe.clearData(player)
-        UnSafe().callPlayerRemoved(player)
+        unSafe.callPlayerRemoved(player)
 
         if (players.size < miniGame.minPlayerSize) {
             cancelStartTask()
@@ -251,32 +253,31 @@ class MiniGameInstance(
     }
 
     fun addWorld(value : World, addWorldType: AddWorldType) {
-        val removeData = fun (world : World?) = world?.let { miniGame.worldInstanceMap -= world }
         when (addWorldType) {
             AddWorldType.NORMAL -> {
-                removeData(world)
-                UnSafe().world = value
+                world?.let { removeWorld(it) }
+                unSafe.world = value
             }
             AddWorldType.NETHER -> {
-                removeData(worldNether)
-                UnSafe().worldNether = value
+                worldNether?.let { removeWorld(it) }
+                unSafe.worldNether = value
             }
             AddWorldType.ENDER -> {
-                removeData(worldEnder)
-                UnSafe().worldEnder = value
+                worldEnder?.let { removeWorld(it) }
+                unSafe.worldEnder = value
             }
             AddWorldType.OTHER -> {
-                UnSafe().otherWorlds += value
+                unSafe.otherWorlds += value
             }
         }
         miniGame.worldInstanceMap[value] = this
     }
 
     fun removeWorld(value : World) {
-        if (UnSafe().world == value) UnSafe().world = null
-        if (UnSafe().worldNether == value) UnSafe().worldNether = null
-        if (UnSafe().worldEnder == value) UnSafe().worldEnder = null
-        UnSafe().otherWorlds -= value
+        if (unSafe.world == value) unSafe.world = null
+        if (unSafe.worldNether == value) unSafe.worldNether = null
+        if (unSafe.worldEnder == value) unSafe.worldEnder = null
+        unSafe.otherWorlds -= value
         miniGame.worldInstanceMap -= value
     }
 
@@ -302,7 +303,7 @@ class MiniGameInstance(
         unregisterListeners()
         unregisterTasks()
         players.forEach { spectatorUtil.unApplySpectator(it) }
-        UnSafe().callStopListener()
+        unSafe.callStopListener()
         if (autoDelete) delete()
         finished = true
         println("${miniGame.name} instance is stopped")
@@ -327,9 +328,9 @@ class MiniGameInstance(
         miniGame.instances as MutableList
         miniGame.instances.remove(this@MiniGameInstance)
 
-        UnSafe().deleteAllWorld()
-        UnSafe().clearPlayersData()
-        UnSafe().callDeleteListener()
+        unSafe.deleteAllWorld()
+        unSafe.clearPlayersData()
+        unSafe.callDeleteListener()
 
         if (miniGame.instances.size < miniGame.defaultInstanceSize) {
             miniGame.createInstance()

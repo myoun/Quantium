@@ -20,7 +20,7 @@ fun registerMiniGame(
         maxInstanceSize,
         if (defaultInstanceSize == -1) maxInstanceSize else defaultInstanceSize,
         miniGameInstanceSetting
-    ).also { it.UnSafe().init() }
+    ).also { it.unSafe.init() }
 }
 
 @JvmName("registerMiniGame1")
