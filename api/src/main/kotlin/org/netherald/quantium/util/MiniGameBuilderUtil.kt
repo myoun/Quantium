@@ -20,15 +20,12 @@ import org.bukkit.plugin.TimedRegisteredListener
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scheduler.BukkitTask
-import org.netherald.quantium.MiniGameInstance
-import org.netherald.quantium.QuantiumEvent
-import org.netherald.quantium.QuantiumMarker
-import org.netherald.quantium.QuantiumTaskData
+import org.netherald.quantium.*
 import org.netherald.quantium.event.AllServerEvent
 import java.lang.reflect.InvocationTargetException
 
 @QuantiumMarker
-open class BuilderUtil(private val miniGameInstance: MiniGameInstance) {
+open class MiniGameBuilderUtil(private val miniGameInstance : MiniGameInstance) {
 
     var spawn : Location?
         get() = miniGameInstance.worldSetting.spawn
@@ -45,6 +42,8 @@ open class BuilderUtil(private val miniGameInstance: MiniGameInstance) {
     val worldEnder : World? get() = miniGameInstance.worldEnder
     val otherWorlds : Collection<World> get() = miniGameInstance.otherWorlds
 
+    val miniGame : MiniGame = miniGameInstance.miniGame
+    fun createInstance() = miniGame.createInstance()
 
     fun addWorld(world: World, addWorldType: MiniGameInstance.AddWorldType) =
         miniGameInstance.addWorld(world, addWorldType)
@@ -165,7 +164,7 @@ open class BuilderUtil(private val miniGameInstance: MiniGameInstance) {
     ) : Listener {
         return if (!allServerEvent) {
             listener0(clazz, eventPriority, ignoreCancelled, register) {
-                listenerFilter(event) {
+                this@MiniGameBuilderUtil.listenerFilter(event) {
                     listener()
                 }
             }

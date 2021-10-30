@@ -21,7 +21,7 @@ class TabListUtilL(private val plugin: JavaPlugin) : Listener {
         event.player.reJoinData?.let { miniGame ->
             if (!targetMiniGame.contains(miniGame)) return
 
-            if (!miniGame.isolatedSetting.perPlayerList) return
+            if (!miniGame.isolatationSetting.perPlayerList) return
 
             val ignorePlayers = ArrayList<Player>(Bukkit.getOnlinePlayers())
             ignorePlayers.removeAll(event.player.world.players)

@@ -29,7 +29,9 @@ class QuantiumCommand : CommandExecutor, TabCompleter {
     }
 
     private fun CommandSender.notPlayer() {
-        sendMessage("야 ㅡㅡ")
+        if (this !is Player) {
+            sendMessage("야 ㅡㅡ")
+        }
     }
 
     override fun onCommand(
@@ -41,12 +43,8 @@ class QuantiumCommand : CommandExecutor, TabCompleter {
         when (args.size) {
             1 -> {
                 when (args[0].lowercase()) {
-                    "help" -> {
-                        sender.sendHelpMessage()
-                    }
-                    "queue" -> {
-                        sender.queueHelpMessage()
-                    }
+                    "help" -> sender.sendHelpMessage()
+                    "queue" -> sender.queueHelpMessage()
                     else -> sender.sendHelpMessage()
                 }
             }

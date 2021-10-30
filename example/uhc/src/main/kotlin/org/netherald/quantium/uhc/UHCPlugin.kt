@@ -9,7 +9,7 @@ import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerRespawnEvent
 import org.bukkit.plugin.java.JavaPlugin
-import org.netherald.quantium.util.BuilderUtil
+import org.netherald.quantium.util.MiniGameBuilderUtil
 import org.netherald.quantium.MiniGameInstance
 import org.netherald.quantium.registerMiniGame
 import kotlin.random.Random
@@ -42,10 +42,9 @@ class UHCPlugin : JavaPlugin() {
             }
         }
 
-        val addNewWorld = fun BuilderUtil.(name : String, env : World.Environment) {
+        val addNewWorld = fun MiniGameBuilderUtil.(name : String, env : World.Environment) {
             val world = newWorld(name, env)
-            val addWorldData = fun (worldType : MiniGameInstance.AddWorldType) =
-                addWorld(world, worldType)
+            val addWorldData = fun (worldType : MiniGameInstance.AddWorldType) = addWorld(world, worldType)
             when (env) {
                 World.Environment.NORMAL -> addWorldData(MiniGameInstance.AddWorldType.NORMAL)
                 World.Environment.NETHER -> addWorldData(MiniGameInstance.AddWorldType.NETHER)

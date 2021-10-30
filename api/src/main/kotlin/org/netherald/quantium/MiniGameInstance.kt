@@ -12,10 +12,10 @@ import org.bukkit.event.player.*
 import org.bukkit.scheduler.BukkitTask
 import org.netherald.quantium.data.*
 import org.netherald.quantium.exception.OutOfMaxPlayerSizeException
-import org.netherald.quantium.setting.IsolatedSetting
+import org.netherald.quantium.setting.IsolationSetting
 import org.netherald.quantium.setting.TeamSetting
 import org.netherald.quantium.setting.WorldSetting
-import org.netherald.quantium.util.BuilderUtil
+import org.netherald.quantium.util.MiniGameBuilderUtil
 import org.netherald.quantium.util.SpectatorUtil
 import org.netherald.quantium.world.PortalLinker
 
@@ -58,12 +58,12 @@ class MiniGameInstance(
                 }
             }
 
-            if (isolatedSetting.perChat) {
-                isolatedSetting.perMiniGameChatUtil.applyPerChat(this@MiniGameInstance)
+            if (isolatationSetting.perChat) {
+                isolatationSetting.perMiniGameChatUtil.applyPerChat(this@MiniGameInstance)
             }
 
-            if (isolatedSetting.perPlayerList) {
-                isolatedSetting.perMiniGameTabListUtil.applyPerTabList(this@MiniGameInstance)
+            if (isolatationSetting.perPlayerList) {
+                isolatationSetting.perMiniGameTabListUtil.applyPerTabList(this@MiniGameInstance)
             }
 
             registerListeners()
@@ -87,43 +87,43 @@ class MiniGameInstance(
 
         fun callPlayerAdded(player: Player) {
             addedPlayerListener.forEach {
-                it(BuilderUtil(this@MiniGameInstance), player)
+                it(MiniGameBuilderUtil(this@MiniGameInstance), player)
             }
         }
 
         fun callPlayerRemoved(player: Player) {
             removedPlayerListener.forEach {
-                it(BuilderUtil(this@MiniGameInstance), player)
+                it(MiniGameBuilderUtil(this@MiniGameInstance), player)
             }
         }
 
         fun callMiniGameCreatedListener() {
             miniGameCreatedListener.forEach {
-                it(BuilderUtil(this@MiniGameInstance))
+                it(MiniGameBuilderUtil(this@MiniGameInstance))
             }
         }
 
         fun callInstanceCreatedListener() {
             instanceCreatedListener.forEach {
-                it(BuilderUtil(this@MiniGameInstance))
+                it(MiniGameBuilderUtil(this@MiniGameInstance))
             }
         }
 
         fun callStartListener() {
             startListener.forEach {
-                it(BuilderUtil(this@MiniGameInstance))
+                it(MiniGameBuilderUtil(this@MiniGameInstance))
             }
         }
 
         fun callStopListener() {
             stopListener.forEach {
-                it(BuilderUtil(this@MiniGameInstance))
+                it(MiniGameBuilderUtil(this@MiniGameInstance))
             }
         }
 
         fun callDeleteListener() {
             deleteListener.forEach {
-                it(BuilderUtil(this@MiniGameInstance))
+                it(MiniGameBuilderUtil(this@MiniGameInstance))
             }
         }
 
@@ -171,7 +171,7 @@ class MiniGameInstance(
 
     var teamSetting : TeamSetting = TeamSetting()
     var worldSetting: WorldSetting = WorldSetting()
-    var isolatedSetting: IsolatedSetting = IsolatedSetting()
+    var isolatationSetting: IsolationSetting = IsolationSetting()
 
     val reJoinData : MutableCollection<Player> = HashSet()
 
@@ -183,8 +183,8 @@ class MiniGameInstance(
         worldSetting.init()
     }
 
-    fun isolatedSetting(init : IsolatedSetting.() -> Unit) {
-        isolatedSetting.init()
+    fun isolatedSetting(init : IsolationSetting.() -> Unit) {
+        isolatationSetting.init()
     }
 
     val listeners = ArrayList<Listener>()
@@ -207,7 +207,7 @@ class MiniGameInstance(
             val sound = fun Player.() = playSound(location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f)
             val soundBroadCast = fun () = players.forEach { it.sound() }
 
-            startTask = BuilderUtil(this).loopTask(15 downTo 0, 20, 20) { i ->
+            startTask = MiniGameBuilderUtil(this).loopTask(15 downTo 0, 20, 20) { i ->
                 if (0 < i) {
                     if (i == 15 || i <= 5) {
                         broadcast("시작까지 ${i}초 전")
@@ -341,26 +341,26 @@ class MiniGameInstance(
 
 
 
-    private val addedPlayerListener = ArrayList<BuilderUtil.(player : Player) -> Unit>()
-    fun onPlayerAdded(listener : BuilderUtil.(player : Player) -> Unit) = addedPlayerListener.add(listener)
+    private val addedPlayerListener = ArrayList<MiniGameBuilderUtil.(player : Player) -> Unit>()
+    fun onPlayerAdded(listener : MiniGameBuilderUtil.(player : Player) -> Unit) = addedPlayerListener.add(listener)
 
-    private val removedPlayerListener = ArrayList<BuilderUtil.(player : Player) -> Unit>()
-    fun onPlayerRemoved(listener : BuilderUtil.(player : Player) -> Unit) = removedPlayerListener.add(listener)
+    private val removedPlayerListener = ArrayList<MiniGameBuilderUtil.(player : Player) -> Unit>()
+    fun onPlayerRemoved(listener : MiniGameBuilderUtil.(player : Player) -> Unit) = removedPlayerListener.add(listener)
 
-    private val miniGameCreatedListener = ArrayList<BuilderUtil.() -> Unit>()
-    fun onMiniGameCreated(listener : BuilderUtil.() -> Unit) = miniGameCreatedListener.add(listener)
+    private val miniGameCreatedListener = ArrayList<MiniGameBuilderUtil.() -> Unit>()
+    fun onMiniGameCreated(listener : MiniGameBuilderUtil.() -> Unit) = miniGameCreatedListener.add(listener)
 
-    private val instanceCreatedListener = ArrayList<BuilderUtil.() -> Unit>()
-    fun onInstanceCreated(listener : BuilderUtil.() -> Unit) = instanceCreatedListener.add(listener)
+    private val instanceCreatedListener = ArrayList<MiniGameBuilderUtil.() -> Unit>()
+    fun onInstanceCreated(listener : MiniGameBuilderUtil.() -> Unit) = instanceCreatedListener.add(listener)
 
-    private val startListener = ArrayList<BuilderUtil.() -> Unit>()
-    fun onStart(listener : BuilderUtil.() -> Unit) = startListener.add(listener)
+    private val startListener = ArrayList<MiniGameBuilderUtil.() -> Unit>()
+    fun onStart(listener : MiniGameBuilderUtil.() -> Unit) = startListener.add(listener)
 
-    private val stopListener = ArrayList<BuilderUtil.() -> Unit>()
-    fun onStop(listener : BuilderUtil.() -> Unit) = stopListener.add(listener)
+    private val stopListener = ArrayList<MiniGameBuilderUtil.() -> Unit>()
+    fun onStop(listener : MiniGameBuilderUtil.() -> Unit) = stopListener.add(listener)
 
-    private val deleteListener = ArrayList<BuilderUtil.() -> Unit>()
-    fun onDelete(listener : BuilderUtil.() -> Unit) = stopListener.add(listener)
+    private val deleteListener = ArrayList<MiniGameBuilderUtil.() -> Unit>()
+    fun onDelete(listener : MiniGameBuilderUtil.() -> Unit) = stopListener.add(listener)
 
 
 
@@ -418,7 +418,7 @@ class MiniGameInstance(
         allServerEvent: Boolean = false,
         listener: QuantiumEvent<out T>.() -> Unit
     ) : Listener {
-        val out = BuilderUtil(this).listener(
+        val out = MiniGameBuilderUtil(this).listener(
             clazz, allServerEvent, eventPriority, ignoreCancelled, false, listener
         )
         listeners1[out] = clazz
@@ -433,17 +433,19 @@ class MiniGameInstance(
     }
 
     private fun registerListeners() {
-        listeners1.forEach { (listener, _) ->
-            registerListener(listener)
-        }
+
+        listeners1.forEach { (listener, _) -> registerListener(listener) }
         listeners1.clear()
         eventPriorityData.clear()
         ignoreCancelledData.clear()
+
+        listeners2.forEach { listener -> MiniGameBuilderUtil(this).registerEvents(listener) }
+
     }
 
     private fun registerListener(listener: Listener) {
         listeners1[listener]?.let {
-            BuilderUtil(this).registerEvent(
+            MiniGameBuilderUtil(this).registerEvent(
                 listeners1[listener]!!, listener, eventPriorityData[listener]!!, ignoreCancelledData[listener]!!
             )
         }

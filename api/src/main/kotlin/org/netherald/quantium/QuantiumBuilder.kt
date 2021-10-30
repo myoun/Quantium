@@ -1,7 +1,6 @@
 package org.netherald.quantium
 
 import org.bukkit.plugin.java.JavaPlugin
-import org.bukkit.scheduler.BukkitRunnable
 import org.netherald.quantium.data.MiniGameData
 
 fun registerMiniGame(
@@ -21,7 +20,7 @@ fun registerMiniGame(
         maxInstanceSize,
         if (defaultInstanceSize == -1) maxInstanceSize else defaultInstanceSize,
         miniGameInstanceSetting
-    )
+    ).also { it.UnSafe().init() }
 }
 
 @JvmName("registerMiniGame1")

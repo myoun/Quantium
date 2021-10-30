@@ -3,7 +3,7 @@ package org.netherald.quantium.setting
 import org.netherald.quantium.world.PerMiniGameChat
 import org.netherald.quantium.world.PerMiniGameTabList
 
-data class IsolatedSetting(
+data class IsolationSetting(
     var perChat : Boolean = true,
     var perPlayerList : Boolean = true,
 ) {

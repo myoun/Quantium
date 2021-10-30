@@ -11,8 +11,8 @@ class MiniGame(
     val name : String,
     val minPlayerSize : Int,
     val maxPlayerSize : Int,
-    var maxInstanceSize : Int,
-    var defaultInstanceSize : Int,
+    var maxInstanceSize : Int = 1,
+    var defaultInstanceSize : Int = 1,
     private val instanceSettingValue : MiniGameInstance.() -> Unit,
 ) {
 
@@ -21,14 +21,14 @@ class MiniGame(
     val players : List<Player> = ArrayList()
     val queue : Queue<Player> = LinkedList()
 
-    init {
+    inner class UnSafe {
+        fun init() {
+            MiniGameInstance(this@MiniGame).apply(instanceSettingValue).UnSafe().callMiniGameCreatedListener()
 
-        MiniGameInstance(this).apply(instanceSettingValue).UnSafe().callMiniGameCreatedListener()
+            for (i in 0 until defaultInstanceSize) { createInstance() }
 
-        for (i in 0 until defaultInstanceSize) { createInstance() }
-
-        println("MiniGame $name is loaded")
-
+            println("MiniGame $name is loaded")
+        }
     }
 
     val worlds : Collection<World>
