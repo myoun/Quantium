@@ -6,6 +6,7 @@ interface SpectatorUtil {
     companion object {
         lateinit var default : SpectatorUtil
     }
+    val spectators : Collection<Player>
 
     fun applySpectator(player: Player)
 

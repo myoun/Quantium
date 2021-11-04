@@ -6,8 +6,11 @@ import org.bukkit.plugin.java.JavaPlugin
 import org.netherald.quantium.data.MiniGameData
 import org.netherald.quantium.data.QuantiumConfig
 import org.netherald.quantium.listener.*
+import org.netherald.quantium.module.ModuleLoader
 import org.netherald.quantium.util.*
 import org.netherald.quantium.world.*
+import java.io.File
+import java.util.regex.Pattern
 
 
 class QuantiumPlugin : JavaPlugin() {
@@ -15,16 +18,10 @@ class QuantiumPlugin : JavaPlugin() {
     override fun onEnable() {
 
         saveDefaultConfig()
+        Quantium.plugin = this
+        Quantium.moduleLoader = ModuleLoader(this)
 
         server.pluginManager.registerEvents(SpawnTeleportL(), this)
-
-        (server.pluginManager.getPlugin("Multiverse-Core") as MultiverseCore?)?.let {
-            WorldEditor.default = MultiverseWorldEditor(it.mvWorldManager)
-        }
-
-        (server.pluginManager.getPlugin("Multiverse-NetherPortals") as MultiverseNetherPortals?)?.let {
-            PortalLinker.default = MultiversePortalLinker(it)
-        }
 
         SpectatorUtil.default = QuantiumSpectatorUtil()
         PerMiniGameTabList.default = QuantiumPerMiniGameTabList()
@@ -33,6 +30,14 @@ class QuantiumPlugin : JavaPlugin() {
         server.pluginManager.registerEvents(TabListUtilL(this), this)
         server.pluginManager.registerEvents(MiniGameChatL(), this)
         server.pluginManager.registerEvents(RespawnL(), this)
+
+        (server.pluginManager.getPlugin("Multiverse-Core") as MultiverseCore?)?.let {
+            WorldEditor.default = MultiverseWorldEditor(it.mvWorldManager)
+        }
+
+        (server.pluginManager.getPlugin("Multiverse-NetherPortals") as MultiverseNetherPortals?)?.let {
+            PortalLinker.default = MultiversePortalLinker(it)
+        }
 
         loadConfig()
 
@@ -55,6 +60,9 @@ class QuantiumPlugin : JavaPlugin() {
                 instance.delete()
             }
         }
+        Quantium.modules.forEach { (_, module) ->
+            Quantium.moduleLoader.unloadModule(module)
+        }
     }
 
     fun loadConfig() {
@@ -64,5 +72,19 @@ class QuantiumPlugin : JavaPlugin() {
         if (config.getBoolean(ConfigPath.BUNGEECORD)) QuantiumConfig.bungeecord = true
 
         QuantiumConfig.lobbyLocation = config.getLocation(ConfigPath.LOBBY_LOCATION)!!
+    }
+
+    fun loadModules() {
+
+        val directory = File(dataFolder, "modules")
+
+        if (!directory.exists()) { directory.mkdir() }
+        directory.listFiles { file ->
+            Pattern.matches("\\.jar$", file.name)
+        }!!.forEach { file ->
+            Quantium.moduleLoader.loadModule(file)
+        }
+
+        TODO()
     }
 }

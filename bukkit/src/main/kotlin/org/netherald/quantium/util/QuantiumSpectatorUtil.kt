@@ -8,6 +8,9 @@ class QuantiumSpectatorUtil : SpectatorUtil {
     companion object {
         val spectatorData = HashSet<Player>()
     }
+
+    override val spectators : Collection<Player> get() = spectatorData
+
     override fun applySpectator(player: Player) {
         player.gameMode = GameMode.SPECTATOR
         spectatorData += player

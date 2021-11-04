@@ -11,7 +11,7 @@ import org.netherald.quantium.data.playingGame
 class MiniGameChatL : Listener {
 
     companion object {
-        val targetMiniGame = ArrayList<MiniGameInstance>()
+        val targetMiniGame = HashSet<MiniGameInstance>()
     }
 
     @EventHandler(priority = EventPriority.LOW)

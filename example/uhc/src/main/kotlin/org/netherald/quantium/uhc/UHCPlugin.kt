@@ -29,9 +29,11 @@ class UHCPlugin : JavaPlugin() {
         saveDefaultConfig()
         val randomTeleportSize = config.getInt(teleportSizePath)
 
+        val seed = Random.nextLong()
+
         val newWorld = fun (name : String, env : World.Environment) : World {
             val successful = mvWorldManager.addWorld(
-                name, env, null, WorldType.NORMAL, true, null
+                name, env, seed.toString(), WorldType.NORMAL, true, null
             )
             if (successful) {
                 val world = mvWorldManager.getMVWorld(name)
@@ -57,21 +59,18 @@ class UHCPlugin : JavaPlugin() {
 
         val randomTeleport = fun Player.() {
             lateinit var location : Location
+            val generateRandom = fun () = Random.nextInt(randomTeleportSize).toDouble() - (randomTeleportSize/2) + 0.5
             loop@ while (true) {
-                val baseLocation = Location(
-                    miniGameInstance.world,
-                    Random.nextInt(randomTeleportSize).toDouble() - (randomTeleportSize/2) + 0.5,
-                    256.0,
-                    Random.nextInt(randomTeleportSize).toDouble() - (randomTeleportSize/2) + 0.5
-                )
+                val baseLocation = Location(miniGameInstance.world, generateRandom(), 256.0, generateRandom())
                 for (i in 256 downTo 0) {
                     val now = baseLocation.clone().apply { y = i.toDouble() }
                     val under = now.clone().apply { y-- }
                     if (under.block.type != Material.AIR) {
                         if (under.block.type == Material.LAVA) continue@loop
+                        if (under.block.type == Material.WATER) continue@loop
                         location = now
                         break@loop
-                    }
+                    } else if (under.y == 0.0) { continue@loop }
                 }
             }
             teleport(location)

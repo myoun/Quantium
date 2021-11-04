@@ -36,6 +36,7 @@ object PlayerData {
 
         fun clearData(player: Player) {
             player.clearData()
+
         }
     }
 }

@@ -1,5 +1,6 @@
 package org.netherald.quantium
 
+import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Sound
 import org.bukkit.World
@@ -11,6 +12,7 @@ import org.bukkit.event.Listener
 import org.bukkit.event.player.*
 import org.bukkit.scheduler.BukkitTask
 import org.netherald.quantium.data.*
+import org.netherald.quantium.event.InstanceDeletedEvent
 import org.netherald.quantium.exception.OutOfMaxPlayerSizeException
 import org.netherald.quantium.setting.IsolationSetting
 import org.netherald.quantium.setting.TeamSetting
@@ -39,11 +41,10 @@ class MiniGameInstance(
 
             if (!worldSetting.enableOtherWorldTeleport) {
                 listener(PlayerTeleportEvent::class.java) {
-                    if (
-                        this@MiniGameInstance.worlds.contains(event.from.world) xor
-                        this@MiniGameInstance.worlds.contains(event.to?.world)
-                    ) {
-                        event.isCancelled = true
+                    if (worlds.contains(event.from.world) xor worlds.contains(event.to?.world)) {
+                        if (event.cause == PlayerTeleportEvent.TeleportCause.SPECTATE) {
+                            event.isCancelled = true
+                        }
                     }
                 }
             }
@@ -60,12 +61,12 @@ class MiniGameInstance(
                 }
             }
 
-            if (isolatationSetting.perChat) {
-                isolatationSetting.perMiniGameChatUtil.applyPerChat(this@MiniGameInstance)
+            if (isolationSetting.perChat) {
+                isolationSetting.perMiniGameChatUtil.applyPerChat(this@MiniGameInstance)
             }
 
-            if (isolatationSetting.perPlayerList) {
-                isolatationSetting.perMiniGameTabListUtil.applyPerTabList(this@MiniGameInstance)
+            if (isolationSetting.perPlayerList) {
+                isolationSetting.perMiniGameTabListUtil.applyPerTabList(this@MiniGameInstance)
             }
 
             registerListeners()
@@ -78,6 +79,7 @@ class MiniGameInstance(
             started = true
 
             callStartListener()
+
             println("""
                 ${miniGame.name} instance started
                     world : ${world?.name}
@@ -141,6 +143,7 @@ class MiniGameInstance(
         fun clearPlayersData() {
             players.forEach { player ->
                 PlayerData.UnSafe.clearData(player)
+                player.unApplySpectator()
             }
         }
     }
@@ -171,22 +174,28 @@ class MiniGameInstance(
 
     var spectatorUtil: SpectatorUtil = SpectatorUtil.default
 
+    fun Player.applySpectator() = spectatorUtil.applySpectator(this)
+    fun Player.unApplySpectator() = spectatorUtil.unApplySpectator(this)
+
     var teamSetting : TeamSetting = TeamSetting()
     var worldSetting: WorldSetting = WorldSetting()
-    var isolatationSetting: IsolationSetting = IsolationSetting()
+    var isolationSetting: IsolationSetting = IsolationSetting()
 
     val reJoinData : MutableCollection<Player> = HashSet()
 
-    fun teamSetting(init : TeamSetting.() -> Unit) {
+    fun teamSetting(init : TeamSetting.() -> Unit): TeamSetting {
         teamSetting.init()
+        return teamSetting
     }
 
-    fun worldSetting(init : WorldSetting.() -> Unit) {
+    fun worldSetting(init : WorldSetting.() -> Unit) : WorldSetting {
         worldSetting.init()
+        return worldSetting
     }
 
-    fun isolatedSetting(init : IsolationSetting.() -> Unit) {
-        isolatationSetting.init()
+    fun isolatedSetting(init : IsolationSetting.() -> Unit) : IsolationSetting {
+        isolationSetting.init()
+        return isolationSetting
     }
 
     val listeners = ArrayList<Listener>()
@@ -206,7 +215,7 @@ class MiniGameInstance(
     fun runStartTask() {
         startTask ?: run {
 
-            val sound = fun Player.() = playSound(location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f)
+            val sound = fun Player.() = playSound(location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 5.0f)
             val soundBroadCast = fun () = players.forEach { it.sound() }
 
             startTask = MiniGameBuilderUtil(this).loopTask(15 downTo 0, 20, 20) { i ->
@@ -290,7 +299,12 @@ class MiniGameInstance(
 
 
 
-    fun broadcast(message : String) = players.forEach { it.sendMessage(message) }
+    fun broadcast(message : String) {
+        println("[${miniGame.name}] broadcast : $message")
+        players.forEach { it.sendMessage(message) }
+    }
+
+    fun broadcast(code : (Player) -> Unit) = players.forEach { code(it) }
 
 
 
@@ -331,6 +345,8 @@ class MiniGameInstance(
         unSafe.deleteAllWorld()
         unSafe.clearPlayersData()
         unSafe.callDeleteListener()
+
+        Bukkit.getPluginManager().callEvent(InstanceDeletedEvent(this))
 
         if (miniGame.instances.size < miniGame.defaultInstanceSize) {
             miniGame.createInstance()

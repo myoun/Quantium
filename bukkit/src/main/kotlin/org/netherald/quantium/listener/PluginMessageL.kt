@@ -6,6 +6,7 @@ import org.bukkit.plugin.messaging.PluginMessageListener
 import org.netherald.quantium.Channels
 import org.netherald.quantium.data.ConnectionType
 import org.netherald.quantium.data.PlayerData
+import org.netherald.quantium.data.QuantiumConfig
 import org.netherald.quantium.util.PluginMessagePlayerUtil
 
 class PluginMessageL : PluginMessageListener {
@@ -20,7 +21,10 @@ class PluginMessageL : PluginMessageListener {
             }
 
             Channels.SubChannels.Bungee.lobbyConnection -> {
-                PlayerData.connectionType[player] = ConnectionType.LOBBY
+                if (PlayerData.connectionType[player] != ConnectionType.LOBBY) {
+                    PlayerData.connectionType[player] = ConnectionType.LOBBY
+                    player.teleport(QuantiumConfig.lobbyLocation)
+                }
             }
 
             Channels.SubChannels.Bungee.miniGameConnection -> {

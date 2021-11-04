@@ -10,6 +10,7 @@ fun registerMiniGame(
     maxPlayerSize : Int,
     maxInstanceSize : Int = 1,
     defaultInstanceSize : Int = -1,
+    depends : Collection<String> = listOf(),
     miniGameInstanceSetting : MiniGameInstance.() -> Unit
 ) {
     MiniGameData.miniGames[name] = MiniGame(
@@ -30,6 +31,7 @@ fun JavaPlugin.registerMiniGame(
     maxPlayerSize : Int,
     maxInstanceSize : Int = 1,
     defaultInstanceSize : Int = -1,
+    depends : Collection<String> = listOf(),
     miniGameInstanceSetting : MiniGameInstance.() -> Unit
 ) {
     registerMiniGame(
@@ -39,6 +41,7 @@ fun JavaPlugin.registerMiniGame(
         maxPlayerSize,
         maxInstanceSize,
         defaultInstanceSize,
+        depends,
         miniGameInstanceSetting
     )
 }

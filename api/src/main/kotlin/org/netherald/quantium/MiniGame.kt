@@ -5,6 +5,7 @@ import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 import org.netherald.quantium.event.InstanceCreatedEvent
+import org.netherald.quantium.event.MiniGameCreateEvent
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -26,6 +27,7 @@ class MiniGame(
 
     inner class UnSafe {
         fun init() {
+            Bukkit.getPluginManager().callEvent(MiniGameCreateEvent(this@MiniGame))
             MiniGameInstance(this@MiniGame).apply(instanceSettingValue).unSafe.callMiniGameCreatedListener()
 
             for (i in 0 until defaultInstanceSize) { createInstance() }
