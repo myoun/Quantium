@@ -48,6 +48,7 @@ class QuantiumPlugin : JavaPlugin() {
             PlayerUtil.default = QuantiumPlayerUtil()
         }
 
+        loadModules()
     }
 
     override fun onDisable() {
@@ -65,7 +66,7 @@ class QuantiumPlugin : JavaPlugin() {
         }
     }
 
-    fun loadConfig() {
+    private fun loadConfig() {
 
         if (config.getBoolean(ConfigPath.ENABLE_LOBBY)) QuantiumConfig.enableLobby = true
         if (config.getBoolean(ConfigPath.ENABLE_MINIGAME)) QuantiumConfig.enableMiniGame = true
@@ -80,11 +81,13 @@ class QuantiumPlugin : JavaPlugin() {
 
         if (!directory.exists()) { directory.mkdir() }
         directory.listFiles { file ->
-            Pattern.matches("\\.jar$", file.name)
+            if (!file.isDirectory) Pattern.matches("\\.jar$", file.name) else false
         }!!.forEach { file ->
             Quantium.moduleLoader.loadModule(file)
         }
 
-        TODO()
+        Quantium.modules.forEach { (_, module) ->
+            module.classLoader.enableModule()
+        }
     }
 }

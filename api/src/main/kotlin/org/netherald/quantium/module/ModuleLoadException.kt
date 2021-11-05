@@ -1,3 +1,3 @@
 package org.netherald.quantium.module
 
-class ModuleLoadException : RuntimeException()
+class ModuleLoadException(message : String = "") : RuntimeException(message)

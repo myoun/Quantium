@@ -10,7 +10,7 @@ import java.io.FileOutputStream
 import java.io.OutputStream
 
 
-abstract class QuantiumModule() {
+abstract class QuantiumModule {
 
     lateinit var name : String
     lateinit var plugin : JavaPlugin
@@ -18,10 +18,11 @@ abstract class QuantiumModule() {
     lateinit var quantium : Quantium
     lateinit var dataFolder : File
     lateinit var configFile : File
+    lateinit var libraryLoader : ClassLoader
 
-    var isEnabled = false
+    val isEnabled : Boolean get() = classLoader.isEnabled
 
-    var config : FileConfiguration? = null
+    var config : FileConfiguration = YamlConfiguration()
 
     fun saveDefaultConfig(replace : Boolean) {
         val save = fun () {
@@ -43,19 +44,9 @@ abstract class QuantiumModule() {
         }
     }
 
-    fun enable() {
-        if (!isEnabled) {
-            onEnable()
-        }
-    }
-
-    fun disable() {
-        if (isEnabled) {
-            onDisable()
-        }
-    }
-
     open fun onLoad() {}
     open fun onEnable() {}
     open fun onDisable() {}
+
+    val classLoader : ModuleClassLoader get() = javaClass.classLoader as ModuleClassLoader
 }

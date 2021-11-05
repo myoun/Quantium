@@ -19,6 +19,7 @@ class AnnotationProcessor : AbstractProcessor() {
         super.init(processingEnv)
         filer = processingEnv.filer
     }
+
     override fun process(annotations: MutableSet<out TypeElement>, roundEnv: RoundEnvironment): Boolean {
 
         val yaml = Yaml()
@@ -26,6 +27,7 @@ class AnnotationProcessor : AbstractProcessor() {
             filer.createResource(StandardLocation.SOURCE_OUTPUT, yaml.dump(data), ModuleConfigPath.FILE_NAME)
 
         val out = HashMap<String, Any>()
+
         annotations.forEach { typeElement ->
             out[ModuleConfigPath.MAIN] = typeElement.qualifiedName.toString()
             typeElement.getAnnotation(QuantiumModuleMark::class.java)?.let { mark ->
