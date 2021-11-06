@@ -6,12 +6,12 @@ import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.Filer
 import javax.annotation.processing.ProcessingEnvironment
 import javax.annotation.processing.RoundEnvironment
+import javax.lang.model.SourceVersion
 import javax.lang.model.element.TypeElement
 import javax.tools.StandardLocation
 import kotlin.reflect.KClass
 
-
-class AnnotationProcessor : AbstractProcessor() {
+class JavaProcessor : AbstractProcessor() {
 
     private lateinit var filer : Filer
 
@@ -29,25 +29,31 @@ class AnnotationProcessor : AbstractProcessor() {
         val out = HashMap<String, Any>()
 
         annotations.forEach { typeElement ->
-            out[ModuleConfigPath.MAIN] = typeElement.qualifiedName.toString()
             typeElement.getAnnotation(QuantiumModuleMark::class.java)?.let { mark ->
+
+                out[ModuleConfigPath.MAIN] = typeElement.qualifiedName.toString()
 
                 out[ModuleConfigPath.NAME] = mark.name
 
                 typeElement.getAnnotation(
-                    Depend::class.java)?.let { out[ModuleConfigPath.DEPEND] = it.values }
+                    Depend::class.java
+                )?.let { out[ModuleConfigPath.DEPEND] = it.values }
 
                 typeElement.getAnnotation(
-                    SoftDepend::class.java)?.let { out[ModuleConfigPath.SOFT_DEPEND] = it.values }
+                    SoftDepend::class.java
+                )?.let { out[ModuleConfigPath.SOFT_DEPEND] = it.values }
 
                 typeElement.getAnnotation(
-                    PluginDepend::class.java)?.let { out[ModuleConfigPath.PLUGIN_DEPEND] =  it.values }
+                    PluginDepend::class.java
+                )?.let { out[ModuleConfigPath.PLUGIN_DEPEND] =  it.values }
 
                 typeElement.getAnnotation(
-                    PluginSoftDepend::class.java)?.let { out[ModuleConfigPath.PLUGIN_SOFT_DEPEND] =  it.values }
+                    PluginSoftDepend::class.java
+                )?.let { out[ModuleConfigPath.PLUGIN_SOFT_DEPEND] =  it.values }
 
                 typeElement.getAnnotation(
-                    Libraries::class.java)?.let { out[ModuleConfigPath.LIBRARIES] = it.values }
+                    Libraries::class.java
+                )?.let { out[ModuleConfigPath.LIBRARIES] = it.values }
             }
         }
 
@@ -65,5 +71,9 @@ class AnnotationProcessor : AbstractProcessor() {
             Libraries::class.add()
             QuantiumModuleMark::class.add()
         }
+    }
+
+    override fun getSupportedSourceVersion(): SourceVersion {
+        return SourceVersion.RELEASE_8
     }
 }

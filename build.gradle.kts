@@ -1,6 +1,14 @@
 plugins {
     kotlin("jvm") version "1.5.10"
+    kotlin("kapt") version "1.5.31"
     id("com.github.johnrengelman.shadow") version "7.0.0"
+    id("com.google.devtools.ksp")
+}
+
+buildscript {
+    dependencies {
+        classpath(kotlin("gradle-plugin", version = "1.5.31"))
+    }
 }
 
 group = "org.netherald"
@@ -10,6 +18,10 @@ subprojects {
     apply(plugin = "java")
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "com.github.johnrengelman.shadow")
+
+    if (name == "api" || name == "hrspectator") {
+        apply(plugin = "com.google.devtools.ksp")
+    }
 
     if (name == "bukkit" || name == "api") {
         repositories {
