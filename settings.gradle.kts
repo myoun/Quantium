@@ -19,5 +19,4 @@ include("common")
 include(":example:duel")
 include(":example:uhc")
 include(":example:hrspectator")
-findProject(":example:hrspectator")?.name = "hrspectator"
 include("annotation-processor")

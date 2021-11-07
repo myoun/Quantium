@@ -19,7 +19,7 @@ subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "com.github.johnrengelman.shadow")
 
-    if (name == "annotation-processor" || name == "hrspectator") {
+    if (name == "annotation-processor") {
         apply(plugin = "com.google.devtools.ksp")
         apply(plugin = "org.jetbrains.kotlin.kapt")
     }

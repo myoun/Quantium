@@ -43,9 +43,9 @@ class ModuleClassLoader(
 
         if (isLoaded) return module
 
+        libraryLoader = createLoader()
         val mainClass = loadClass(config.getString(ModuleConfigPath.MAIN))
         module = mainClass.newInstance() as QuantiumModule
-        libraryLoader = createLoader()
         module.patchData()
 
         ModuleData.modules[module.name] = module
