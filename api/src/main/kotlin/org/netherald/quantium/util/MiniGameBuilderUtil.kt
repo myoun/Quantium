@@ -289,14 +289,14 @@ open class MiniGameBuilderUtil(private val miniGameInstance : MiniGameInstance) 
                 "Unable to find handler list for event ${name}. Static getHandlerList method required!"
             )
 
-            val exceptionableHandlerList = fun Class<out Event>.() : HandlerList {
+            val throwableHandlerList = fun Class<out Event>.() : HandlerList {
                 val method = getDeclaredMethod("getHandlerList").apply { isAccessible = true }
                 return method.invoke(null) as HandlerList
             }
             var nowClass : Class<out Event> = this
-            kotlin.runCatching { return nowClass.exceptionableHandlerList() }
+            kotlin.runCatching { return nowClass.throwableHandlerList() }
             while (true) {
-                kotlin.runCatching { return nowClass.exceptionableHandlerList() }
+                kotlin.runCatching { return nowClass.throwableHandlerList() }
                 nowClass.superclass ?: throwException()
                 if (nowClass.superclass == Event::class.java) throwException()
                 nowClass = nowClass.superclass as Class<out Event>

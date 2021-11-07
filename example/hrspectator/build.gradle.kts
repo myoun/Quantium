@@ -12,6 +12,4 @@ repositories {
 
 dependencies {
     compileOnly(project(":api"))
-    implementation(project(":annotation-processor"))
-    ksp(project(":annotation-processor"))
 }

@@ -9,7 +9,6 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":api"))
     implementation("org.yaml:snakeyaml:1.25")
     implementation("com.google.devtools.ksp:symbol-processing-api:$kspVersion")
     implementation(kotlin("stdlib"))

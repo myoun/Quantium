@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.5.10"
+    kotlin("jvm") version "1.5.31"
     kotlin("kapt") version "1.5.31"
     id("com.github.johnrengelman.shadow") version "7.0.0"
     id("com.google.devtools.ksp")
@@ -19,8 +19,15 @@ subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "com.github.johnrengelman.shadow")
 
-    if (name == "api" || name == "hrspectator") {
+    if (name == "annotation-processor" || name == "hrspectator") {
         apply(plugin = "com.google.devtools.ksp")
+        apply(plugin = "org.jetbrains.kotlin.kapt")
+    }
+
+    if (name != "common") {
+        dependencies {
+            implementation(project(":common"))
+        }
     }
 
     if (name == "bukkit" || name == "api") {
@@ -41,9 +48,5 @@ allprojects {
 
     dependencies {
         compileOnly(kotlin("stdlib"))
-    }
-
-    tasks {
-        shadowJar
     }
 }

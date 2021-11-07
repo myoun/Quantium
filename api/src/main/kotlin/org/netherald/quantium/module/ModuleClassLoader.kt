@@ -32,10 +32,10 @@ class ModuleClassLoader(
     val moduleName : String get() = config.getString(ModuleConfigPath.NAME)!!
 
     init {
-        getResource(ModuleConfigPath.FILE_NAME)?.let {
+        getResource(ModuleConfigPath.FILE_NAME+"yml")?.let {
             config = YamlConfiguration.loadConfiguration(it.openStream().reader())
         } ?: run {
-            throw ModuleLoadException("Can't found ${ModuleConfigPath.FILE_NAME}!")
+            throw ModuleLoadException("Can't found ${ModuleConfigPath.FILE_NAME+"yml"}!")
         }
     }
 

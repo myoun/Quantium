@@ -1,0 +1,4 @@
+main: com.github.highright1234.hrspectator.HRSpectator
+name : HRSpectator
+plugin-depend:
+  - ProtocolLib

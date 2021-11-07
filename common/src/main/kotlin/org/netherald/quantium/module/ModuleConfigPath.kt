@@ -1,7 +1,7 @@
 package org.netherald.quantium.module
 
 object ModuleConfigPath {
-    const val FILE_NAME = "quantium-module"
+    const val FILE_NAME = "quantium"
     const val MAIN = "main"
     const val NAME = "name"
 
