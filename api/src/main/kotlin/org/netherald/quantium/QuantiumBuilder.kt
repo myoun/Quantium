@@ -12,7 +12,12 @@ fun registerMiniGame(
     defaultInstanceSize : Int = -1,
     depends : Collection<String> = listOf(),
     miniGameInstanceSetting : MiniGameInstance.() -> Unit
-) {
+) : MiniGame {
+    depends.forEach { depend ->
+        Quantium.modules[depend]?.let {
+            throw Exception("$it Not found $depend")
+        }
+    }
     MiniGameData.miniGames[name] = MiniGame(
         plugin,
         name,
@@ -21,7 +26,11 @@ fun registerMiniGame(
         maxInstanceSize,
         if (defaultInstanceSize == -1) maxInstanceSize else defaultInstanceSize,
         miniGameInstanceSetting
-    ).also { it.unSafe.init() }
+    ).also {
+        it.unSafe.init()
+    }
+
+    return MiniGameData.miniGames[name]!!
 }
 
 @JvmName("registerMiniGame1")
@@ -33,18 +42,16 @@ fun JavaPlugin.registerMiniGame(
     defaultInstanceSize : Int = -1,
     depends : Collection<String> = listOf(),
     miniGameInstanceSetting : MiniGameInstance.() -> Unit
-) {
-    registerMiniGame(
-        this,
-        name,
-        minPlayerSize,
-        maxPlayerSize,
-        maxInstanceSize,
-        defaultInstanceSize,
-        depends,
-        miniGameInstanceSetting
-    )
-}
+) = registerMiniGame(
+    this,
+    name,
+    minPlayerSize,
+    maxPlayerSize,
+    maxInstanceSize,
+    defaultInstanceSize,
+    depends,
+    miniGameInstanceSetting,
+)
 
 
 fun unregisterMiniGame(name : String) {

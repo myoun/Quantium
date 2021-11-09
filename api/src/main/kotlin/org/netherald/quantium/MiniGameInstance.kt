@@ -41,7 +41,7 @@ class MiniGameInstance(
 
             if (!worldSetting.enableOtherWorldTeleport) {
                 listener(PlayerTeleportEvent::class.java) {
-                    if (worlds.contains(event.from.world) xor worlds.contains(event.to?.world)) {
+                    if (worlds.contains(event.from.world) != worlds.contains(event.to?.world)) {
                         if (event.cause == PlayerTeleportEvent.TeleportCause.SPECTATE) {
                             event.isCancelled = true
                         }

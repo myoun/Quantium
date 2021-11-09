@@ -1,6 +1,15 @@
 
 bungeecord: true
 
+redis:
+  enable: true
+  password: nothing
+  #
+  TODO
+
+kubernetes:
+  enable : true
+
 #----------# for bungeecord #---------- #
 enable-lobby : true
 enable-minigame : true

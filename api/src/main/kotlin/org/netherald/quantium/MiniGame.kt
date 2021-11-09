@@ -40,8 +40,9 @@ class MiniGame(
         get() = worldInstanceMap.keys
 
     fun pollQueuePlayers(count : Int = 1) : Collection<Player> {
-        val out = ArrayList<Player>()
-        for (i in 0 until count) {
+        val returnSize = if (count < queue.size) count else queue.size
+        val out = ArrayList<Player>( returnSize )
+        for (i in 0 until returnSize) {
             queue.poll()?.let { player ->
                 out.add(player)
             } ?: return out

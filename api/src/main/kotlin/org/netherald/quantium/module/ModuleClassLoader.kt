@@ -74,7 +74,7 @@ class ModuleClassLoader(
                 } else throw Exception("Wrong pluginLoader")
             }
         }
-        throw Exception("not found pattern")
+        throw Exception("Not found pattern")
     }
 
     private val fileAssociations : Map<Pattern, PluginLoader>
@@ -110,21 +110,7 @@ class ModuleClassLoader(
                 it.pluginLoader.enablePlugin(it)
             }
         }
-        module.enable()
-    }
-
-    private fun QuantiumModule.enable() {
-        if (!isEnabled) {
-            module.onEnable()
-        }
-        enabled = true
-    }
-
-    private fun QuantiumModule.disable() {
-        if (isEnabled) {
-            module.onDisable()
-        }
-        enabled = false
+        module.setEnabled(true)
     }
 
     private fun QuantiumModule.patchData() {
@@ -151,7 +137,7 @@ class ModuleClassLoader(
                 module.classLoader.close()
             }
         }
-        module.disable()
+        module.setEnabled(false)
         super.close()
     }
 }

@@ -1,13 +1,12 @@
 package org.netherald.quantium.module
 
+import com.google.common.base.Charsets
 import org.bukkit.Server
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
 import org.netherald.quantium.Quantium
-import java.io.File
-import java.io.FileOutputStream
-import java.io.OutputStream
+import java.io.*
 
 
 abstract class QuantiumModule {
@@ -24,22 +23,50 @@ abstract class QuantiumModule {
 
     var config : FileConfiguration = YamlConfiguration()
 
-    fun saveDefaultConfig(replace : Boolean) {
+    fun saveDefaultConfig(replace : Boolean = false) {
+        saveResource("config.yml", replace)
+    }
+
+    fun reloadConfig() {
+        config = YamlConfiguration.loadConfiguration(configFile)
+
+        val defConfigStream = getResource("config.yml")
+
+        config.setDefaults(YamlConfiguration.loadConfiguration(InputStreamReader(defConfigStream, Charsets.UTF_8)))
+    }
+
+    fun saveResource(resourcePath : String, replace : Boolean) {
         val save = fun () {
-            (javaClass.classLoader as ModuleClassLoader).getResourceAsStream("config.yml")?.let {
-                val outStream: OutputStream = FileOutputStream(configFile)
+            getResource(resourcePath).let {
+                val outStream: OutputStream = FileOutputStream(File(dataFolder, resourcePath))
                 outStream.write(it.readBytes())
-                kotlin.runCatching {
-                    outStream.flush()
-                }
+                runCatching { outStream.flush() }
                 outStream.close()
             }
         }
+
         if (replace) {
             save()
         } else {
             if (!configFile.exists()) {
                 save()
+            }
+        }
+    }
+
+    fun getResource(resourcePath : String) : InputStream {
+        return classLoader.getResourceAsStream(resourcePath) ?: throw Exception("Null resource")
+    }
+
+    fun saveConfig() = config.save(configFile)
+
+    fun setEnabled(enabled : Boolean) {
+        if (enabled != isEnabled) {
+            if (enabled) {
+                onEnable()
+            } else {
+                onDisable()
+                Quantium.moduleManager.unregisterEvents(this)
             }
         }
     }
