@@ -4,8 +4,10 @@ import org.bukkit.Bukkit
 import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
+import org.netherald.quantium.data.MiniGameData
 import org.netherald.quantium.event.InstanceCreatedEvent
 import org.netherald.quantium.event.MiniGameCreateEvent
+import org.netherald.quantium.event.MiniGameDeletedEvent
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -36,8 +38,7 @@ class MiniGame(
         }
     }
 
-    val worlds : Collection<World>
-        get() = worldInstanceMap.keys
+    val worlds : Collection<World> get() = worldInstanceMap.keys
 
     fun pollQueuePlayers(count : Int = 1) : Collection<Player> {
         val returnSize = if (count < queue.size) count else queue.size
@@ -110,6 +111,12 @@ class MiniGame(
         instances.forEach { instance ->
             instance.stopGame()
         }
+    }
+
+    fun delete() {
+        stopAll()
+        MiniGameData.miniGames.remove(name, this)
+        Bukkit.getPluginManager().callEvent(MiniGameDeletedEvent(this))
     }
 
     private fun addInstance(instance: MiniGameInstance) {

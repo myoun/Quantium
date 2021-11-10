@@ -44,12 +44,21 @@ class ModuleClassLoader(
         if (isLoaded) return module
 
         libraryLoader = createLoader()
+        val modulePath = config.getString(ModuleConfigPath.MAIN)
+        val moduleName = config.getString(ModuleConfigPath.MAIN)
+        moduleName ?: throw ModuleLoadException("Not found Name $modulePath")
+        modulePath ?: throw ModuleLoadException("Not found Main $moduleName")
         val mainClass = loadClass(config.getString(ModuleConfigPath.MAIN))
+
+        if (!QuantiumModule::class.java.isAssignableFrom(mainClass)) {
+            throw ModuleLoadException("${mainClass.simpleName} is not QuantiumModule")
+        }
         module = mainClass.newInstance() as QuantiumModule
         module.patchData()
 
         ModuleData.modules[module.name] = module
         module.onLoad()
+        Quantium.plugin.logger.info("$moduleName is loaded")
         loaded = true
 
         return module
@@ -114,7 +123,7 @@ class ModuleClassLoader(
     }
 
     private fun QuantiumModule.patchData() {
-        name = this@ModuleClassLoader.config.getString(ModuleConfigPath.NAME)!!
+        name = moduleName
         plugin = this@ModuleClassLoader.plugin
         server = Bukkit.getServer()
         dataFolder = File(plugin.dataFolder, name)

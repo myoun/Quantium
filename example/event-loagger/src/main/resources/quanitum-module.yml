@@ -1,0 +1,2 @@
+name: EventLogger
+main: org.netherald.eventlogger.EventLogger

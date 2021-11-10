@@ -159,7 +159,7 @@ class MiniGameInstance(
             unSafe.world?.let { out.add(it) }
             unSafe.worldNether?.let { out.add(it) }
             unSafe.worldEnder?.let { out.add(it) }
-            unSafe.otherWorlds.forEach { out.add(it) }
+            out.addAll(otherWorlds)
             return out
         }
 
