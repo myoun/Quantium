@@ -1,93 +1,94 @@
 package org.netherald.quantium.module
 
-import org.bukkit.scheduler.BukkitTask
 import java.util.function.Consumer
 
 class QuantiumScheduler {
 
-    private val taskMap = HashMap<QuantiumModule, ArrayList<BukkitTask>>()
+    private val taskMap = HashMap<QuantiumModule, ArrayList<QuantiumTask>>()
 
-    private val QuantiumModule.tasks : ArrayList<BukkitTask>
+    private val QuantiumModule.tasks : ArrayList<QuantiumTask>
     get() {
         taskMap[this] ?: run { taskMap[this] = ArrayList() }
         return taskMap[this]!!
     }
 
-    private val taskMap2 = HashMap<BukkitTask, QuantiumModule>()
-
-    private fun cancelTasks(module: QuantiumModule) {
+    fun cancelTasks(module: QuantiumModule) {
         module.tasks.forEach {
             it.cancel()
         }
     }
 
-    fun scheduleSyncDelayedTask(module: QuantiumModule, task: Runnable): Int {
+    fun cancelTask(task : QuantiumTask) {
+        task.cancel()
+    }
+
+    fun scheduleSyncDelayedTask(module: QuantiumModule, task: QuantiumRunnable): Int {
         TODO()
     }
 
-    fun runTask(module: QuantiumModule, runnable: Runnable): BukkitTask {
-        TODO()
-    }
-
-    @Throws(IllegalArgumentException::class)
-    fun runTask(module: QuantiumModule, task: Consumer<BukkitTask>) {
-        TODO()
-    }
-
-    fun runTaskAsynchronously(module: QuantiumModule, runnable: Runnable): BukkitTask {
+    fun runTask(module: QuantiumModule, runnable: QuantiumRunnable): QuantiumTask {
         TODO()
     }
 
     @Throws(IllegalArgumentException::class)
-    fun runTaskAsynchronously(module: QuantiumModule, task: Consumer<BukkitTask>) {
+    fun runTask(module: QuantiumModule, task: Consumer<QuantiumTask>) {
         TODO()
     }
 
-    fun scheduleSyncDelayedTask(module: QuantiumModule, task: Runnable, delay: Long): Int {
-        TODO()
-    }
-
-    fun runTaskLater(module: QuantiumModule, runnable: Runnable, delay: Long): BukkitTask {
+    fun runTaskAsynchronously(module: QuantiumModule, runnable: QuantiumRunnable): QuantiumTask {
         TODO()
     }
 
     @Throws(IllegalArgumentException::class)
-    fun runTaskLater(module: QuantiumModule, task: Consumer<BukkitTask>, delay: Long) {
+    fun runTaskAsynchronously(module: QuantiumModule, task: Consumer<QuantiumTask>) {
         TODO()
     }
 
-    fun runTaskLaterAsynchronously(module: QuantiumModule, runnable: Runnable, delay: Long): BukkitTask {
+    fun scheduleSyncDelayedTask(module: QuantiumModule, task: QuantiumRunnable, delay: Long): Int {
         TODO()
     }
 
-    @Throws(IllegalArgumentException::class)
-    fun runTaskLaterAsynchronously(module: QuantiumModule, task: Consumer<BukkitTask>, delay: Long) {
-        TODO()
-    }
-
-    @Throws(IllegalArgumentException::class)
-    fun runTaskTimerAsynchronously(module: QuantiumModule, task: Consumer<BukkitTask>, delay: Long, period: Long) {
-        TODO()
-    }
-
-    fun scheduleSyncRepeatingTask(module: QuantiumModule, runnable: Runnable, delay: Long, period: Long): Int {
-        TODO()
-    }
-
-    fun runTaskTimer(module: QuantiumModule, runnable: Runnable, delay: Long, period: Long): BukkitTask {
+    fun runTaskLater(module: QuantiumModule, runnable: QuantiumRunnable, delay: Long): QuantiumTask {
         TODO()
     }
 
     @Throws(IllegalArgumentException::class)
-    fun runTaskTimer(module: QuantiumModule, task: Consumer<BukkitTask>, delay: Long, period: Long) {
+    fun runTaskLater(module: QuantiumModule, task: Consumer<QuantiumTask>, delay: Long) {
         TODO()
     }
 
-    fun scheduleInternalTask(run: Runnable, delay: Int, taskName: String?): BukkitTask {
+    fun runTaskLaterAsynchronously(module: QuantiumModule, runnable: QuantiumRunnable, delay: Long): QuantiumTask {
         TODO()
     }
 
-    fun runTaskTimerAsynchronously(module: QuantiumModule, runnable: Runnable, delay: Long, period: Long): BukkitTask {
+    @Throws(IllegalArgumentException::class)
+    fun runTaskLaterAsynchronously(module: QuantiumModule, task: Consumer<QuantiumTask>, delay: Long) {
+        TODO()
+    }
+
+    @Throws(IllegalArgumentException::class)
+    fun runTaskTimerAsynchronously(module: QuantiumModule, task: Consumer<QuantiumTask>, delay: Long, period: Long) {
+        TODO()
+    }
+
+    fun scheduleSyncRepeatingTask(module: QuantiumModule, runnable: QuantiumRunnable, delay: Long, period: Long): Int {
+        TODO()
+    }
+
+    fun runTaskTimer(module: QuantiumModule, runnable: QuantiumRunnable, delay: Long, period: Long): QuantiumTask {
+        TODO()
+    }
+
+    @Throws(IllegalArgumentException::class)
+    fun runTaskTimer(module: QuantiumModule, task: Consumer<QuantiumTask>, delay: Long, period: Long) {
+        TODO()
+    }
+
+    fun scheduleInternalTask(run: QuantiumRunnable, delay: Int, taskName: String): QuantiumTask {
+        TODO()
+    }
+
+    fun runTaskTimerAsynchronously(module: QuantiumModule, runnable: QuantiumRunnable, delay: Long, period: Long): QuantiumTask {
         TODO()
     }
 }

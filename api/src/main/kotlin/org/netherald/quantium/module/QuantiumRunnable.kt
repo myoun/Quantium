@@ -1,7 +1,8 @@
 package org.netherald.quantium.module
 
-abstract class QuantiumTask : Runnable {
+import org.bukkit.scheduler.BukkitRunnable
 
+class QuantiumRunnable() {
     fun getTaskId(): Int {
         TODO()
     }
