@@ -33,6 +33,7 @@ abstract class QuantiumModule {
                 val isDependsThis =
                     fun QuantiumModule.() = classLoader.depend.contains(this) || classLoader.softDepend.contains(this)
                 Quantium.moduleManager.unregisterEvents(this)
+                tasks.forEach { it.cancel() }
                 Quantium.modules.forEach { (_, module) ->
                     if (!module.isEnabled) return@forEach
                     if (module.isDependsThis()) {
