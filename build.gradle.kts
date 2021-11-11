@@ -26,8 +26,14 @@ subprojects {
     }
 
     if (name != "common") {
-        dependencies {
-            implementation(project(":common"))
+        var continueThis = false
+        parent?.let {
+            if (it.name == "example") continueThis = true
+        }
+        if (!continueThis) {
+            dependencies {
+                implementation(project(":common"))
+            }
         }
     }
 
