@@ -228,7 +228,7 @@ class MiniGameInstance(
                     cancelStartTask()
                     unSafe.start()
                 }
-            }
+            }.task
         }
     }
 
