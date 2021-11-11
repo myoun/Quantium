@@ -1,10 +1,13 @@
 package org.netherald.quantium.module
 
-import java.util.function.Consumer
+import org.bukkit.Bukkit
+import org.netherald.quantium.Quantium
 
 class QuantiumScheduler {
 
     private val taskMap = HashMap<QuantiumModule, ArrayList<QuantiumTask>>()
+    private val taskMap2 = HashMap<QuantiumTask, Int>()
+    private val scheduler = Bukkit.getScheduler()
 
     private val QuantiumModule.tasks : ArrayList<QuantiumTask>
     get() {
@@ -22,73 +25,155 @@ class QuantiumScheduler {
         task.cancel()
     }
 
-    fun scheduleSyncDelayedTask(module: QuantiumModule, task: QuantiumRunnable): Int {
-        TODO()
-    }
-
     fun runTask(module: QuantiumModule, runnable: QuantiumRunnable): QuantiumTask {
-        TODO()
-    }
-
-    @Throws(IllegalArgumentException::class)
-    fun runTask(module: QuantiumModule, task: Consumer<QuantiumTask>) {
-        TODO()
+        val task = QuantiumTask(
+            scheduler.runTask(Quantium.plugin, RunnableConverter2(runnable)),
+            module
+        )
+        runnable.task = task
+        return task
     }
 
     fun runTaskAsynchronously(module: QuantiumModule, runnable: QuantiumRunnable): QuantiumTask {
-        TODO()
-    }
-
-    @Throws(IllegalArgumentException::class)
-    fun runTaskAsynchronously(module: QuantiumModule, task: Consumer<QuantiumTask>) {
-        TODO()
-    }
-
-    fun scheduleSyncDelayedTask(module: QuantiumModule, task: QuantiumRunnable, delay: Long): Int {
-        TODO()
+        val task = QuantiumTask(
+            scheduler.runTaskAsynchronously(Quantium.plugin, RunnableConverter2(runnable)),
+            module
+        )
+        runnable.task = task
+        return task
     }
 
     fun runTaskLater(module: QuantiumModule, runnable: QuantiumRunnable, delay: Long): QuantiumTask {
-        TODO()
+        val task = QuantiumTask(
+            scheduler.runTaskLater(Quantium.plugin, RunnableConverter2(runnable), delay),
+            module
+        )
+        runnable.task = task
+        return task
     }
 
-    @Throws(IllegalArgumentException::class)
-    fun runTaskLater(module: QuantiumModule, task: Consumer<QuantiumTask>, delay: Long) {
-        TODO()
+    fun runTaskLaterAsynchronously(
+        module: QuantiumModule, runnable: QuantiumRunnable, delay: Long,
+    ): QuantiumTask {
+        val task = QuantiumTask(
+            scheduler.runTaskLaterAsynchronously(Quantium.plugin, RunnableConverter2(runnable), delay),
+            module
+        )
+        runnable.task = task
+        return task
     }
 
-    fun runTaskLaterAsynchronously(module: QuantiumModule, runnable: QuantiumRunnable, delay: Long): QuantiumTask {
-        TODO()
+    fun runTaskTimer(module: QuantiumModule, runnable: QuantiumRunnable, delay: Long, period: Long = 0): QuantiumTask {
+        val task = QuantiumTask(
+            scheduler.runTaskTimer(Quantium.plugin, RunnableConverter2(runnable), delay, period), module
+        )
+        runnable.task = task
+        return task
     }
 
-    @Throws(IllegalArgumentException::class)
-    fun runTaskLaterAsynchronously(module: QuantiumModule, task: Consumer<QuantiumTask>, delay: Long) {
-        TODO()
+    fun runTaskTimerAsynchronously(
+        module: QuantiumModule, runnable: QuantiumRunnable, delay: Long, period: Long = 0
+    ): QuantiumTask {
+        val task = QuantiumTask(
+            scheduler.runTaskTimerAsynchronously(Quantium.plugin, RunnableConverter2(runnable), delay, period),
+            module
+        )
+        runnable.task = task
+        return task
     }
 
-    @Throws(IllegalArgumentException::class)
-    fun runTaskTimerAsynchronously(module: QuantiumModule, task: Consumer<QuantiumTask>, delay: Long, period: Long) {
-        TODO()
+    fun <T> loopTask(
+        module: QuantiumModule,
+        range: Iterable<T>, delay : Long = 1, period : Long = 1, task : QuantiumTask.(T) -> Unit
+    ) : QuantiumTask {
+        return loopTask(module, delay, period, range.iterator(), task)
     }
 
-    fun scheduleSyncRepeatingTask(module: QuantiumModule, runnable: QuantiumRunnable, delay: Long, period: Long): Int {
-        TODO()
+    fun <T> loopTask(
+        module: QuantiumModule,
+        delay : Long = 1,
+        period : Long = 1,
+        collection: Collection<T>,
+        task : QuantiumTask.(T) -> Unit
+    ) : QuantiumTask {
+        return loopTask(module, delay, period, collection.iterator(), task)
     }
 
-    fun runTaskTimer(module: QuantiumModule, runnable: QuantiumRunnable, delay: Long, period: Long): QuantiumTask {
-        TODO()
+    fun <T> loopTask(
+        module: QuantiumModule,
+        delay : Long = 1,
+        period : Long = 1,
+        iterator: Iterator<T>,
+        task : QuantiumTask.(T) -> Unit
+    ) : QuantiumTask {
+        return loopTask(module, delay, period) { if (iterator.hasNext()) task(iterator.next()) else cancel() }
     }
 
-    @Throws(IllegalArgumentException::class)
-    fun runTaskTimer(module: QuantiumModule, task: Consumer<QuantiumTask>, delay: Long, period: Long) {
-        TODO()
+    fun loopTask(
+        module: QuantiumModule,
+        delay : Long = 1,
+        period : Long = 1,
+        task : QuantiumTask.() -> Unit
+    ) : QuantiumTask = runTaskTimer(module, RunnableConverter(module, task), delay, period)
+
+    fun <T> asyncLoopTask(
+        module: QuantiumModule,
+        range: Iterable<T>,
+        delay : Long = 1,
+        period : Long = 1,
+        task : QuantiumTask.(T) -> Unit
+    ) : QuantiumTask = asyncLoopTask(module, delay, period, range.iterator(), task)
+
+    fun <T> asyncLoopTask(
+        module: QuantiumModule,
+        delay : Long = 1,
+        period : Long = 1,
+        collection: Collection<T>,
+        task : QuantiumTask.(T) -> Unit
+    ) : QuantiumTask = asyncLoopTask(module, delay, period, collection.iterator(), task)
+
+    fun <T> asyncLoopTask(
+        module: QuantiumModule,
+        delay : Long = 1,
+        period : Long = 1,
+        iterator: Iterator<T>,
+        task : QuantiumTask.(T) -> Unit
+    ) : QuantiumTask =
+        asyncLoopTask(module, delay, period) { if (iterator.hasNext()) task(this, iterator.next()) else cancel() }
+
+    fun asyncLoopTask(
+        module: QuantiumModule,
+        delay : Long = 0,
+        period : Long = 0,
+        task : QuantiumTask.() -> Unit
+    ) : QuantiumTask = runTaskTimerAsynchronously(module, RunnableConverter(module, task), delay, period)
+
+    fun runTaskLater(
+        module: QuantiumModule,
+        delay : Long,
+        task : QuantiumTask.() -> Unit
+    ) : QuantiumTask = runTaskLater(module, RunnableConverter(module, task), delay)
+
+    fun runTaskLaterAsync(
+        module: QuantiumModule,
+        delay : Long,
+        task : QuantiumTask.() -> Unit
+    ) : QuantiumTask = runTaskLaterAsynchronously(module, RunnableConverter(module, task), delay)
+
+    inner class RunnableConverter(
+        module: QuantiumModule,
+        val code :  QuantiumTask.() -> Unit
+    ) : QuantiumRunnable(module) {
+        override fun run() {
+            task.code()
+        }
     }
 
-    fun scheduleInternalTask(run: QuantiumRunnable, delay: Int, taskName: String): QuantiumTask {
-        TODO()
-    }
-
-    fun runTaskTimerAsynchronously(module: QuantiumModule, runnable: QuantiumRunnable, delay: Long, period: Long): QuantiumTask {
-        TODO()
+    inner class RunnableConverter2(
+        val runnable: QuantiumRunnable
+    ) : Runnable {
+        override fun run() {
+            runnable.run()
+        }
     }
 }

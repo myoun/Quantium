@@ -199,7 +199,7 @@ class MiniGameInstance(
     }
 
     val listeners = ArrayList<Listener>()
-    val tasks = ArrayList<QuantiumTaskData>()
+    val tasks = ArrayList<MiniGameInstanceTask>()
 
 
     val players = HashSet<Player>()

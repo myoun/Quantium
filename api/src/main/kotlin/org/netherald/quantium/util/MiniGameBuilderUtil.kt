@@ -67,61 +67,61 @@ open class MiniGameBuilderUtil(private val miniGameInstance : MiniGameInstance) 
     fun Player.unApplySpectator() { spectatorUtil.unApplySpectator(this) }
 
     fun <T> loopTask(
-        range: Iterable<T>, delay : Long = 1, period : Long = 1, task : QuantiumTaskData.(T) -> Unit
-    ) : BukkitTask {
+        range: Iterable<T>, delay : Long = 1, period : Long = 1, task : MiniGameInstanceTask.(T) -> Unit
+    ) : MiniGameInstanceTask {
         return loopTask(delay, period, range.iterator(), task)
     }
 
     fun <T> loopTask(
-        delay : Long = 1, period : Long = 1, collection: Collection<T>, task : QuantiumTaskData.(T) -> Unit
-    ) : BukkitTask {
+        delay : Long = 1, period : Long = 1, collection: Collection<T>, task : MiniGameInstanceTask.(T) -> Unit
+    ) : MiniGameInstanceTask {
         return loopTask(delay, period, collection.iterator(), task)
     }
 
     fun <T> loopTask(
-        delay : Long = 1, period : Long = 1, iterator: Iterator<T>, task : QuantiumTaskData.(T) -> Unit
-    ) : BukkitTask {
+        delay : Long = 1, period : Long = 1, iterator: Iterator<T>, task : MiniGameInstanceTask.(T) -> Unit
+    ) : MiniGameInstanceTask {
         return loopTask(delay, period) { if (iterator.hasNext()) task(iterator.next()) else cancel() }
     }
 
     fun loopTask(
-        delay : Long = 1, period : Long = 1, task : QuantiumTaskData.() -> Unit
-    ) : BukkitTask {
-        val taskData = QuantiumTaskData(miniGameInstance)
+        delay : Long = 1, period : Long = 1, task : MiniGameInstanceTask.() -> Unit
+    ) : MiniGameInstanceTask {
+        val taskData = MiniGameInstanceTask(miniGameInstance)
         val runnable : BukkitRunnable = object : BukkitRunnable() { override fun run() { taskData.task() } }
         taskData.task = runnable.runTaskTimer(owner, delay, period)
         miniGameInstance.tasks.add(taskData)
-        return taskData.task
+        return taskData
     }
 
     fun <T> asyncLoopTask(
-        range: Iterable<T>, delay : Long = 1, period : Long = 1, task : QuantiumTaskData.(T) -> Unit
-    ) : QuantiumTaskData {
+        range: Iterable<T>, delay : Long = 1, period : Long = 1, task : MiniGameInstanceTask.(T) -> Unit
+    ) : MiniGameInstanceTask {
         return asyncLoopTask(delay, period, range.iterator(), task)
     }
 
     fun <T> asyncLoopTask(
-        delay : Long = 1, period : Long = 1, collection: Collection<T>, task : QuantiumTaskData.(T) -> Unit
-    ) : QuantiumTaskData {
+        delay : Long = 1, period : Long = 1, collection: Collection<T>, task : MiniGameInstanceTask.(T) -> Unit
+    ) : MiniGameInstanceTask {
         return asyncLoopTask(delay, period, collection.iterator(), task)
     }
 
     fun <T> asyncLoopTask(
-        delay : Long = 1, period : Long = 1, iterator: Iterator<T>, task : QuantiumTaskData.(T) -> Unit
-    ) : QuantiumTaskData {
+        delay : Long = 1, period : Long = 1, iterator: Iterator<T>, task : MiniGameInstanceTask.(T) -> Unit
+    ) : MiniGameInstanceTask {
         return asyncLoopTask(delay, period) { if (iterator.hasNext()) task(this, iterator.next()) else cancel() }
     }
 
-    fun asyncLoopTask(delay : Long = 0, period : Long = 0, task : QuantiumTaskData.() -> Unit) : QuantiumTaskData {
-        val taskData = QuantiumTaskData(miniGameInstance)
+    fun asyncLoopTask(delay : Long = 0, period : Long = 0, task : MiniGameInstanceTask.() -> Unit) : MiniGameInstanceTask {
+        val taskData = MiniGameInstanceTask(miniGameInstance)
         val runnable = object : BukkitRunnable() { override fun run() { task(taskData) } }
         taskData.task = runnable.runTaskTimerAsynchronously(owner, delay, period)
         miniGameInstance.tasks.add(taskData)
         return taskData
     }
 
-    fun runTaskLater(delay : Long, task : QuantiumTaskData.() -> Unit) : QuantiumTaskData {
-        val taskData = QuantiumTaskData(miniGameInstance)
+    fun runTaskLater(delay : Long, task : MiniGameInstanceTask.() -> Unit) : MiniGameInstanceTask {
+        val taskData = MiniGameInstanceTask(miniGameInstance)
         val runnable = object : BukkitRunnable() {
             override fun run() {
                 taskData.task()
@@ -133,8 +133,8 @@ open class MiniGameBuilderUtil(private val miniGameInstance : MiniGameInstance) 
         return taskData
     }
 
-    fun runTaskLaterAsync(delay : Long, task : QuantiumTaskData.() -> Unit) : QuantiumTaskData {
-        val taskData = QuantiumTaskData(miniGameInstance)
+    fun runTaskLaterAsync(delay : Long, task : MiniGameInstanceTask.() -> Unit) : MiniGameInstanceTask {
+        val taskData = MiniGameInstanceTask(miniGameInstance)
         val runnable = object : BukkitRunnable() {
             override fun run() {
                 taskData.task()

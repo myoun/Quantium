@@ -1,25 +1,15 @@
 package org.netherald.quantium.module
 
-import org.bukkit.scheduler.BukkitRunnable
+import org.bukkit.scheduler.BukkitTask
 
-class QuantiumRunnable() {
-    fun getTaskId(): Int {
-        TODO()
-    }
+abstract class QuantiumRunnable(val owner : QuantiumModule) : Runnable {
 
-    fun getOwner(): QuantiumModule {
-        TODO()
-    }
+    lateinit var task : QuantiumTask
 
-    fun isSync(): Boolean {
-        TODO()
-    }
+    val bukkitTask : BukkitTask = task.bukkitTask
+    val taskId : Int = task.taskId
+    val isSync: Boolean = task.isSync
+    val isCancelled: Boolean = task.isCancelled
+    fun cancel() = task.cancel()
 
-    fun isCancelled(): Boolean {
-        TODO()
-    }
-
-    fun cancel() {
-        TODO()
-    }
 }

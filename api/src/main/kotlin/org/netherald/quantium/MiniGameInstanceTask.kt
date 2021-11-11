@@ -2,7 +2,7 @@ package org.netherald.quantium
 
 import org.bukkit.scheduler.BukkitTask
 
-class QuantiumTaskData(private val instance: MiniGameInstance) {
+class MiniGameInstanceTask(private val instance: MiniGameInstance) {
 
     lateinit var task: BukkitTask
 
