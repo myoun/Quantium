@@ -12,12 +12,12 @@ pluginManagement {
 }
 
 rootProject.name = "Quantium"
-include("bungee")
-include("bukkit")
-include("api")
-include("common")
+include(":bungee")
+include(":bukkit")
+include(":api")
+include(":common")
 include(":example:duel")
 include(":example:uhc")
-include("annotation-processor")
-include("example:event-loagger")
+include(":annotation-processor")
+include(":example:event-loagger")
 findProject(":example:event-loagger")?.name = "event-logger"
