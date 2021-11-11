@@ -4,6 +4,7 @@ package org.netherald.quantium.module
 
 import org.bukkit.Bukkit
 import org.bukkit.configuration.file.YamlConfiguration
+import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.PluginDescriptionFile
 import org.bukkit.plugin.PluginLoader
 import org.bukkit.plugin.SimplePluginManager
@@ -37,6 +38,14 @@ class ModuleClassLoader(
         } ?: run {
             throw ModuleLoadException("Can't found ${ModuleConfigPath.FILE_NAME+"yml"}!")
         }
+    }
+
+    val depend : Collection<QuantiumModule> get() = config.getStringList(ModuleConfigPath.DEPEND).map {
+        Quantium.modules[it]!!
+    }
+
+    val pluginDepend : Collection<Plugin> get() = config.getStringList(ModuleConfigPath.PLUGIN_DEPEND).map {
+        Bukkit.getPluginManager().getPlugin(it)!!
     }
 
     fun loadModule() : QuantiumModule {
