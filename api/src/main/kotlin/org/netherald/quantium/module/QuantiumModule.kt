@@ -71,6 +71,12 @@ abstract class QuantiumModule {
         }
     }
 
+    val tasks : List<QuantiumTask>
+        get() {
+            Quantium.scheduler.taskMap[this] ?: run { Quantium.scheduler.taskMap[this] = ArrayList() }
+            return Quantium.scheduler.taskMap[this]!!
+        }
+
     open fun onLoad() {}
     open fun onEnable() {}
     open fun onDisable() {}

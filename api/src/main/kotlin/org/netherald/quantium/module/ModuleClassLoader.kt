@@ -20,7 +20,7 @@ class ModuleClassLoader(
 ) : URLClassLoader(arrayOf(file.toURI().toURL()), parent) {
 
     lateinit var module : QuantiumModule
-    lateinit var config : YamlConfiguration
+    private lateinit var config : YamlConfiguration
     lateinit var libraryLoader : ClassLoader
 
     private var loaded = false

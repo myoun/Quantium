@@ -5,15 +5,9 @@ import org.netherald.quantium.Quantium
 
 class QuantiumScheduler {
 
-    private val taskMap = HashMap<QuantiumModule, ArrayList<QuantiumTask>>()
-    private val taskMap2 = HashMap<QuantiumTask, Int>()
+    val taskMap = HashMap<QuantiumModule, ArrayList<QuantiumTask>>()
+    private val taskMap2 = HashMap<QuantiumTask, QuantiumModule>()
     private val scheduler = Bukkit.getScheduler()
-
-    private val QuantiumModule.tasks : ArrayList<QuantiumTask>
-    get() {
-        taskMap[this] ?: run { taskMap[this] = ArrayList() }
-        return taskMap[this]!!
-    }
 
     fun cancelTasks(module: QuantiumModule) {
         module.tasks.forEach {
@@ -23,6 +17,16 @@ class QuantiumScheduler {
 
     fun cancelTask(task : QuantiumTask) {
         task.cancel()
+        val module = taskMap2[task]!!
+        module.removeTask(task)
+    }
+
+    private fun QuantiumModule.removeTask(task: QuantiumTask) {
+        tasks as ArrayList<QuantiumTask> -= task
+    }
+
+    private fun QuantiumModule.addTask(task : QuantiumTask) {
+        tasks as ArrayList<QuantiumTask> += task
     }
 
     fun runTask(module: QuantiumModule, runnable: QuantiumRunnable): QuantiumTask {
@@ -31,6 +35,7 @@ class QuantiumScheduler {
             module
         )
         runnable.task = task
+        module.addTask(task)
         return task
     }
 
@@ -40,6 +45,7 @@ class QuantiumScheduler {
             module
         )
         runnable.task = task
+        module.addTask(task)
         return task
     }
 
@@ -49,6 +55,7 @@ class QuantiumScheduler {
             module
         )
         runnable.task = task
+        module.addTask(task)
         return task
     }
 
@@ -60,6 +67,7 @@ class QuantiumScheduler {
             module
         )
         runnable.task = task
+        module.addTask(task)
         return task
     }
 
@@ -68,6 +76,7 @@ class QuantiumScheduler {
             scheduler.runTaskTimer(Quantium.plugin, RunnableConverter2(runnable), delay, period), module
         )
         runnable.task = task
+        module.addTask(task)
         return task
     }
 
@@ -79,6 +88,7 @@ class QuantiumScheduler {
             module
         )
         runnable.task = task
+        module.addTask(task)
         return task
     }
 
