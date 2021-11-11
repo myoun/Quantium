@@ -24,11 +24,9 @@ class ModuleClassLoader(
     private lateinit var config : YamlConfiguration
     lateinit var libraryLoader : ClassLoader
 
-    private var loaded = false
-    private var enabled = false
-
+    private var loaded : Boolean = false
     val isLoaded : Boolean get() = loaded
-    val isEnabled : Boolean get() = enabled
+    val isEnabled : Boolean get() = module.isEnabled
 
     val moduleName : String get() = config.getString(ModuleConfigPath.NAME)!!
 
@@ -44,7 +42,15 @@ class ModuleClassLoader(
         Quantium.modules[it]!!
     }
 
+    val softDepend : Collection<QuantiumModule> get() = config.getStringList(ModuleConfigPath.SOFT_DEPEND).map {
+        Quantium.modules[it]!!
+    }
+
     val pluginDepend : Collection<Plugin> get() = config.getStringList(ModuleConfigPath.PLUGIN_DEPEND).map {
+        Bukkit.getPluginManager().getPlugin(it)!!
+    }
+
+    val pluginSoftDepend : Collection<Plugin> get() = config.getStringList(ModuleConfigPath.PLUGIN_SOFT_DEPEND).map {
         Bukkit.getPluginManager().getPlugin(it)!!
     }
 
@@ -67,7 +73,7 @@ class ModuleClassLoader(
 
         ModuleData.modules[module.name] = module
         module.onLoad()
-        Quantium.plugin.logger.info("$moduleName is loaded")
+        plugin.logger.info("$moduleName is loaded")
         loaded = true
 
         return module
@@ -145,9 +151,7 @@ class ModuleClassLoader(
 
     override fun close() {
         val isDependsThis =
-            fun QuantiumModule.() =
-                classLoader.config.getStringList(ModuleConfigPath.DEPEND).contains(module.name) ||
-                        classLoader.config.getStringList(ModuleConfigPath.SOFT_DEPEND).contains(module.name)
+            fun QuantiumModule.() = classLoader.depend.contains(module) || classLoader.softDepend.contains(module)
 
         Quantium.modules.forEach { (_, module) ->
             if (!module.isEnabled) return@forEach
@@ -155,7 +159,9 @@ class ModuleClassLoader(
                 module.classLoader.close()
             }
         }
+        val moduleName = moduleName
         module.setEnabled(false)
         super.close()
+        plugin.logger.info("Module $moduleName is unloaded")
     }
 }

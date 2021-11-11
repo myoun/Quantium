@@ -19,7 +19,31 @@ abstract class QuantiumModule {
     lateinit var configFile : File
     lateinit var libraryLoader : ClassLoader
 
-    val isEnabled : Boolean get() = classLoader.isEnabled
+    private var enabled : Boolean = false
+    val isEnabled : Boolean get() = enabled
+
+    fun setEnabled(enabled : Boolean) {
+        if (enabled != isEnabled) {
+            if (enabled) {
+                onEnable()
+                this.enabled = true
+                plugin.logger.info("Module $name is enabled")
+            } else {
+                this.enabled = false
+                val isDependsThis =
+                    fun QuantiumModule.() = classLoader.depend.contains(this) || classLoader.softDepend.contains(this)
+                Quantium.moduleManager.unregisterEvents(this)
+                Quantium.modules.forEach { (_, module) ->
+                    if (!module.isEnabled) return@forEach
+                    if (module.isDependsThis()) {
+                        module.classLoader.close()
+                    }
+                }
+                onDisable()
+                plugin.logger.info("Module $name is disabled")
+            }
+        }
+    }
 
     var config : FileConfiguration = YamlConfiguration()
 
@@ -59,17 +83,6 @@ abstract class QuantiumModule {
     }
 
     fun saveConfig() = config.save(configFile)
-
-    fun setEnabled(enabled : Boolean) {
-        if (enabled != isEnabled) {
-            if (enabled) {
-                onEnable()
-            } else {
-                onDisable()
-                Quantium.moduleManager.unregisterEvents(this)
-            }
-        }
-    }
 
     val tasks : List<QuantiumTask>
         get() {
