@@ -4,11 +4,10 @@ bungeecord: true
 redis:
   enable: true
   password: nothing
-  #
-  TODO
+  # TODO
 
 kubernetes:
-  enable : true
+  enable: true
 
 #----------# for bungeecord #---------- #
 enable-lobby : true
