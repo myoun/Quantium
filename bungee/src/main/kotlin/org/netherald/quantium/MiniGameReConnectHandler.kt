@@ -22,9 +22,7 @@ class MiniGameReConnectHandler : ReconnectHandler {
         }
     }
 
-    override fun save() {
-    }
+    override fun save() {}
 
-    override fun close() {
-    }
+    override fun close() {}
 }

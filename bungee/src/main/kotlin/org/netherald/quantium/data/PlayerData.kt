@@ -13,12 +13,13 @@ object PlayerData {
 }
 
 var ProxiedPlayer.playingMiniGame : MiniGameInfo?
-    get() = PlayerData.playerPlayingMap[this.uniqueId]
+    get() = PlayerData.playerPlayingMap[uniqueId]
     set(value) {
         value?.let {
-            PlayerData.playerPlayingMap[this.uniqueId]?.players?.remove(this.uniqueId)
-            PlayerData.playerPlayingMap[this.uniqueId] = it
-            PlayerData.playerPlayingMap[this.uniqueId]!!.players.add(this.uniqueId)
+            val mutable =  PlayerData.playerPlayingMap[uniqueId]?.players as MutableCollection<UUID>
+            mutable.remove(uniqueId)
+            PlayerData.playerPlayingMap[uniqueId] = it
+            mutable.add(uniqueId)
         } ?: run {
             throw NullPointerException()
         }

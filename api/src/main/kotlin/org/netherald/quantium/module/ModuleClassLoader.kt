@@ -12,6 +12,8 @@ import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.plugin.java.JavaPluginLoader
 import org.netherald.quantium.Quantium
 import org.netherald.quantium.data.ModuleData
+import org.netherald.quantium.module.exception.ModuleEnableException
+import org.netherald.quantium.module.exception.ModuleLoadException
 import java.io.File
 import java.net.URLClassLoader
 import java.util.regex.Pattern

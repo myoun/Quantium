@@ -1,18 +1,48 @@
 package org.netherald.quantium.util
 
+import net.md_5.bungee.api.ProxyServer
 import net.md_5.bungee.api.config.ServerInfo
 import net.md_5.bungee.api.connection.ProxiedPlayer
+import org.netherald.quantium.MiniGameInfo
 import org.netherald.quantium.data.ServerData
+import org.netherald.quantium.data.isBlocked
+import org.netherald.quantium.data.servers
+import org.netherald.quantium.event.MiniGameConnectedEvent
+import org.netherald.quantium.event.MiniGameConnectingEvent
+import org.netherald.quantium.util.exception.NotFoundServerException
 
 fun ProxiedPlayer.connect(servers : List<ServerInfo>, algorithm : PlayerConnectionUtil.SelectionAlgorithm) {
     PlayerConnectionUtil.connect(this, servers, algorithm)
 }
 
+fun ProxiedPlayer.connectToLobby() {
+    PlayerConnectionUtil.connectToLobby(this)
+}
+
+fun ProxiedPlayer.connectToGame(miniGameInfo: MiniGameInfo) {
+    PlayerConnectionUtil.connectToGame(this, miniGameInfo)
+}
 
 object PlayerConnectionUtil {
 
     fun connectToLobby(player: ProxiedPlayer) {
-        connect(player, ServerData.lobby, SelectionAlgorithm.PLAYER_COUNT_LOWER)
+        connect(player, ServerData.lobby.filter { !it.isBlocked }, SelectionAlgorithm.PLAYER_COUNT_LOWER)
+    }
+
+    fun connectToGame(player: ProxiedPlayer, game : MiniGameInfo) {
+        val servers = game.servers.filter { !it.isBlocked }
+        if (servers.isEmpty()) {
+            throw NotFoundServerException("Not found minigame server")
+        } else {
+            if (
+                !ProxyServer.getInstance().pluginManager.callEvent(
+                    MiniGameConnectingEvent(player, game)
+                ).isCancelled
+            ) {
+                player.connect(game.bestServer)
+                ProxyServer.getInstance().pluginManager.callEvent(MiniGameConnectedEvent(player, game))
+            }
+        }
     }
 
     // server name
@@ -24,7 +54,7 @@ object PlayerConnectionUtil {
 
             SelectionAlgorithm.PLAYER_COUNT_HIGHER -> {
                 lateinit var nowServer : ServerInfo
-                servers.forEach {
+                servers.filter { !it.isBlocked }.forEach {
                     if (nowServer.players.size < it.players.size) {
                         nowServer = it
                     }
@@ -34,8 +64,7 @@ object PlayerConnectionUtil {
 
             SelectionAlgorithm.PLAYER_COUNT_LOWER -> {
                 lateinit var nowServer : ServerInfo
-                servers.forEach {
-
+                servers.filter { !it.isBlocked }.forEach {
                     if (it.players.size < nowServer.players.size) {
                         nowServer = it
                     }

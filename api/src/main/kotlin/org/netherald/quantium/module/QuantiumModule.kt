@@ -6,6 +6,7 @@ import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
 import org.netherald.quantium.Quantium
+import org.netherald.quantium.module.scheduler.QuantiumTask
 import java.io.*
 
 

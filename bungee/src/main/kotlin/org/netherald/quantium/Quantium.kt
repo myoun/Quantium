@@ -1,5 +1,6 @@
 package org.netherald.quantium
 
+import io.lettuce.core.RedisURI
 import net.md_5.bungee.api.ProxyServer
 import net.md_5.bungee.api.plugin.Plugin
 import net.md_5.bungee.config.Configuration
@@ -7,7 +8,9 @@ import net.md_5.bungee.config.ConfigurationProvider
 import net.md_5.bungee.config.YamlConfiguration
 import org.netherald.quantium.data.addMiniGame
 import org.netherald.quantium.data.setLobby
+import org.netherald.quantium.listener.InstanceL
 import org.netherald.quantium.listener.PluginMessageL
+import org.netherald.quantium.util.RedisServerUtil
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
@@ -26,6 +29,7 @@ class Quantium : Plugin() {
         proxy.reconnectHandler = MiniGameReConnectHandler()
         proxy.registerChannel(Channels.mainChannel)
         proxy.pluginManager.registerListener(this, PluginMessageL())
+        proxy.pluginManager.registerListener(this, InstanceL())
 
         config.getSection(ConfigPath.lobby)?.let {
             it.keys.forEach { serverName ->
@@ -39,6 +43,13 @@ class Quantium : Plugin() {
                     ProxyServer.getInstance().getServerInfo(serverName)?.addMiniGame(miniGame)
                 }
             }
+        }
+        config.getSection(ConfigPath.redis).apply {
+            val address = getString(ConfigPath.Redis.address)!!
+            val port = getInt(ConfigPath.Redis.port)
+            RedisServerUtil.init(
+                RedisURI.create(address, port)
+            )
         }
     }
 

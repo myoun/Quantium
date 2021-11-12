@@ -1,6 +1,7 @@
-package org.netherald.quantium.module
+package org.netherald.quantium.module.scheduler
 
 import org.bukkit.scheduler.BukkitTask
+import org.netherald.quantium.module.QuantiumModule
 
 abstract class QuantiumRunnable(val owner : QuantiumModule) : Runnable {
 

@@ -8,9 +8,6 @@ import net.md_5.bungee.api.plugin.Listener
 import net.md_5.bungee.event.EventHandler
 import org.netherald.quantium.Channels
 import org.netherald.quantium.data.MiniGameData
-import org.netherald.quantium.data.PlayerData
-import org.netherald.quantium.data.ServerData
-import org.netherald.quantium.data.servers
 import org.netherald.quantium.event.MiniGameConnectingEvent
 import org.netherald.quantium.util.PlayerConnectionUtil
 
@@ -23,11 +20,7 @@ class PluginMessageL : Listener {
             val data = ByteStreams.newDataInput(event.data)
             when (data.readUTF()) {
                 Channels.SubChannels.Bukkit.lobby -> {
-                    PlayerConnectionUtil.connect(
-                        player,
-                        ServerData.lobby,
-                        PlayerConnectionUtil.SelectionAlgorithm.PLAYER_COUNT_LOWER
-                    )
+                    PlayerConnectionUtil.connectToLobby(player)
                 }
 
                 Channels.SubChannels.Bukkit.game -> {
@@ -36,12 +29,7 @@ class PluginMessageL : Listener {
                         if (!ProxyServer.getInstance().pluginManager.callEvent(
                             MiniGameConnectingEvent(player, it)).isCancelled
                         ) {
-                            PlayerData.playerPlayingMap[player.uniqueId] = it
-                            PlayerConnectionUtil.connect(
-                                player,
-                                it.servers,
-                                PlayerConnectionUtil.SelectionAlgorithm.PLAYER_COUNT_LOWER
-                            )
+                            PlayerConnectionUtil.connectToGame(player, it)
                         }
                     }
                 }

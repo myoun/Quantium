@@ -10,4 +10,8 @@ commands:
   quantiumbukkit:
     aliases:
       - qb
-    description: Quantium command
+    description: Quantium comman
+libraries:
+  - org.jetbrains.kotlin:kotlin-stdlib:1.5.31
+  - org.jetbrains.kotlin:kotlin-reflect:1.5.31
+  - io.lettuce:lettuce-core:6.1.5.RELEASE

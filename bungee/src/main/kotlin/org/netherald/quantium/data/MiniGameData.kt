@@ -17,7 +17,7 @@ object MiniGameData {
         if (minigames[name] == null) {
             addMiniGameInfo(name)
         }
-        miniGameServerData[minigames[name]!!]?.add(serverInfo)
+        (miniGameServerData[minigames[name]!!] as MutableCollection).add(serverInfo)
     }
 
     fun removeMiniGame(name : String) {
@@ -31,16 +31,16 @@ object MiniGameData {
     }
 
 
-    fun servers(miniGameInfo : MiniGameInfo) : List<ServerInfo> {
+    fun servers(miniGameInfo : MiniGameInfo) : Collection<ServerInfo> {
         miniGameServerData[miniGameInfo] ?: run {
-            miniGameServerData[miniGameInfo] = ArrayList()
+            miniGameServerData[miniGameInfo] = HashSet()
         }
-        return miniGameServerData[miniGameInfo] as ArrayList<ServerInfo>
+        return miniGameServerData[miniGameInfo]!!
     }
 }
 
 
-val MiniGameInfo.servers : List<ServerInfo>
+val MiniGameInfo.servers : Collection<ServerInfo>
     get() {
         return MiniGameData.servers(this)
     }

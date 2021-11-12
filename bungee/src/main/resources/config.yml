@@ -23,3 +23,11 @@
 #  BedWars-1:
 #    - server1
 #    - server2
+redis:
+  enable: true
+  password: nothing
+  address: localhost
+  port: 6379
+kubernetes:
+  enable: true
+  # TODO

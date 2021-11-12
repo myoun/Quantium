@@ -1,7 +1,8 @@
-package org.netherald.quantium.module
+package org.netherald.quantium.module.scheduler
 
 import org.bukkit.Bukkit
 import org.netherald.quantium.Quantium
+import org.netherald.quantium.module.QuantiumModule
 
 class QuantiumScheduler {
 

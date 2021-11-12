@@ -5,7 +5,7 @@ import org.netherald.quantium.data.ModuleData
 import org.netherald.quantium.module.ModuleLoader
 import org.netherald.quantium.module.ModuleManager
 import org.netherald.quantium.module.QuantiumModule
-import org.netherald.quantium.module.QuantiumScheduler
+import org.netherald.quantium.module.scheduler.QuantiumScheduler
 
 object Quantium {
     lateinit var plugin : JavaPlugin
@@ -13,4 +13,17 @@ object Quantium {
     lateinit var moduleLoader : ModuleLoader
     val moduleManager = ModuleManager()
     val scheduler = QuantiumScheduler()
+
+    val serverBlocked = true
+    val isServerBlocked : Boolean get() = serverBlocked
+
+    fun setServerBlocked(value: Boolean) {
+        if (isServerBlocked != value) {
+            if (value) {
+
+            } else {
+
+            }
+        }
+    }
 }
