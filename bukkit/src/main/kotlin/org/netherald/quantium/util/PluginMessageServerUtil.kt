@@ -19,7 +19,7 @@ class PluginMessageServerUtil(val serverName : String) : ServerUtil {
     override val isBlocked: Boolean get() = blocked
 
     init {
-        Bukkit.getScheduler().runTaskTimer(Quantium.plugin, { task ->
+        Bukkit.getScheduler().runTaskTimer(Quantium.plugin, { _ ->
             requestMiniGames()
         }, 0, 200)
     }
@@ -28,7 +28,7 @@ class PluginMessageServerUtil(val serverName : String) : ServerUtil {
 
     override val miniGames: Collection<String> get() = games
 
-    fun requestMiniGames() {
+    private fun requestMiniGames() {
         @Suppress("UnstableApiUsage")
         val out = ByteStreams.newDataOutput()
         out.writeUTF(Channels.SubChannels.GET_MINI_GAMES)
@@ -43,8 +43,7 @@ class PluginMessageServerUtil(val serverName : String) : ServerUtil {
 
         @Suppress("UnstableApiUsage")
         val out = ByteStreams.newDataOutput()
-        out.writeUTF(Channels.SubChannels.Bukkit.GAME)
-        out.writeUTF(serverName)
+        out.writeBoolean(value)
         sendPluginMessage(out.toByteArray())
 
     }

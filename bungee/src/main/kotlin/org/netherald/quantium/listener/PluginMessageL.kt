@@ -3,11 +3,13 @@ package org.netherald.quantium.listener
 import com.google.common.io.ByteStreams
 import net.md_5.bungee.api.ProxyServer
 import net.md_5.bungee.api.connection.ProxiedPlayer
+import net.md_5.bungee.api.connection.Server
 import net.md_5.bungee.api.event.PluginMessageEvent
 import net.md_5.bungee.api.plugin.Listener
 import net.md_5.bungee.event.EventHandler
 import org.netherald.quantium.Channels
 import org.netherald.quantium.data.MiniGameData
+import org.netherald.quantium.data.isBlocked
 import org.netherald.quantium.event.MiniGameConnectingEvent
 import org.netherald.quantium.util.PlayerConnectionUtil
 
@@ -32,6 +34,11 @@ class PluginMessageL : Listener {
                             PlayerConnectionUtil.connectToGame(player, it)
                         }
                     }
+                }
+
+                Channels.SubChannels.Bukkit.SET_BLOCK -> {
+                    val server = event.sender as Server
+                    server.info.isBlocked = data.readBoolean()
                 }
 
                 Channels.SubChannels.GET_MINI_GAME_PLAYER_COUNT -> {

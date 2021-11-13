@@ -7,6 +7,7 @@ object Channels {
     object SubChannels {
 
         object Bukkit {
+            const val SET_BLOCK = "block"
             const val GAME = "game"
             const val LOBBY = "lobby"
         }
