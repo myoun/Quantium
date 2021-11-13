@@ -50,13 +50,15 @@ class QuantiumPlugin : JavaPlugin() {
                     serverName,
                     RedisURI.create(QuantiumConfig.Redis.address, QuantiumConfig.Redis.port)
                 )
+                ServerUtil.default = RedisServerUtil.instance!!
             } else {
-                PluginMessageServerUtil(serverName)
+                ServerUtil.default = PluginMessageServerUtil(serverName)
             }
             PlayerUtil.default = PluginMessagePlayerUtil()
             server.messenger.registerIncomingPluginChannel(this, Channels.mainChannel, PluginMessageL())
         } else {
             PlayerUtil.default = QuantiumPlayerUtil()
+            ServerUtil.default = EmptyServerUtil()
         }
 
         val command = QuantiumCommand()

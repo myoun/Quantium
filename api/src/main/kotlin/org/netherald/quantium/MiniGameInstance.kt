@@ -14,10 +14,12 @@ import org.bukkit.scheduler.BukkitTask
 import org.netherald.quantium.data.*
 import org.netherald.quantium.event.InstanceDeletedEvent
 import org.netherald.quantium.exception.OutOfMaxPlayerSizeException
+import org.netherald.quantium.setting.AutomaticFunctionSetting
 import org.netherald.quantium.setting.IsolationSetting
 import org.netherald.quantium.setting.TeamSetting
 import org.netherald.quantium.setting.WorldSetting
 import org.netherald.quantium.util.MiniGameBuilderUtil
+import org.netherald.quantium.util.PlayerUtil
 import org.netherald.quantium.util.SpectatorUtil
 import org.netherald.quantium.world.PortalLinker
 
@@ -163,9 +165,6 @@ class MiniGameInstance(
             return out
         }
 
-    var autoDelete : Boolean = true
-    var autoStart : Boolean = true
-
     val isStarted : Boolean get() = started
     val isFinished : Boolean get() = finished
 
@@ -177,11 +176,17 @@ class MiniGameInstance(
     fun Player.applySpectator() = spectatorUtil.applySpectator(this)
     fun Player.unApplySpectator() = spectatorUtil.unApplySpectator(this)
 
+    var automaticFunctionSetting : AutomaticFunctionSetting = AutomaticFunctionSetting()
     var teamSetting : TeamSetting = TeamSetting()
     var worldSetting: WorldSetting = WorldSetting()
     var isolationSetting: IsolationSetting = IsolationSetting()
 
     val reJoinData : MutableCollection<Player> = HashSet()
+
+    fun automaticFunctionSetting(init : AutomaticFunctionSetting.() -> Unit): AutomaticFunctionSetting {
+        automaticFunctionSetting.init()
+        return automaticFunctionSetting
+    }
 
     fun teamSetting(init : TeamSetting.() -> Unit): TeamSetting {
         teamSetting.init()
@@ -243,7 +248,7 @@ class MiniGameInstance(
 
         PlayerData.UnSafe.addAllMiniGameData(player, this)
         unSafe.callPlayerAdded(player)
-        if (autoStart && miniGame.minPlayerSize <= players.size) {
+        if (automaticFunctionSetting.autoStart && miniGame.minPlayerSize <= players.size) {
             runStartTask()
         }
     }
@@ -318,7 +323,7 @@ class MiniGameInstance(
         unregisterTasks()
         players.forEach { spectatorUtil.unApplySpectator(it) }
         unSafe.callStopListener()
-        if (autoDelete) delete()
+        if (automaticFunctionSetting.autoDelete) delete()
         finished = true
         println("${miniGame.name} instance is stopped")
     }
@@ -343,12 +348,19 @@ class MiniGameInstance(
         miniGame.instances.remove(this@MiniGameInstance)
 
         unSafe.deleteAllWorld()
+
+        if (automaticFunctionSetting.autoSendToLobby) {
+            broadcast {
+                PlayerUtil.default.sendToLobby(it)
+            }
+        }
+
         unSafe.clearPlayersData()
         unSafe.callDeleteListener()
 
         Bukkit.getPluginManager().callEvent(InstanceDeletedEvent(this))
 
-        if (miniGame.instances.size < miniGame.defaultInstanceSize) {
+        if (automaticFunctionSetting.autoCreateInstance && (miniGame.instances.size < miniGame.defaultInstanceSize)) {
             miniGame.createInstance()
         }
 
