@@ -11,6 +11,7 @@ import org.bukkit.event.player.PlayerRespawnEvent
 import org.bukkit.plugin.java.JavaPlugin
 import org.netherald.quantium.util.MiniGameBuilderUtil
 import org.netherald.quantium.MiniGameInstance
+import org.netherald.quantium.data.QuantiumConfig
 import org.netherald.quantium.registerMiniGame
 import kotlin.random.Random
 
@@ -19,7 +20,7 @@ class UHCPlugin : JavaPlugin() {
     private val teleportSizePath = "random-teleport-size"
     private val worldName = "uhc_playing_world"
     private val netherName = "uhc_playing_world_nether"
-    private val enderName = "uhc_playing_world_the_end"
+    private val endName = "uhc_playing_world_the_end"
 
     private val mvWorldManager =
         (server.pluginManager.getPlugin("Multiverse-Core") as MultiverseCore).mvWorldManager!!
@@ -93,7 +94,7 @@ class UHCPlugin : JavaPlugin() {
 
                 addNewWorld(worldName, World.Environment.NORMAL)
                 addNewWorld(netherName, World.Environment.NETHER)
-                addNewWorld(enderName, World.Environment.THE_END)
+                addNewWorld(endName, World.Environment.THE_END)
 
                 spawn = Location(world, 0.0, 100.0, 0.0)
             }
@@ -131,13 +132,15 @@ class UHCPlugin : JavaPlugin() {
             }
         }
 
-        server.pluginManager.registerEvents(object : Listener {
-            @EventHandler
-            fun onJoin(e : PlayerJoinEvent) {
-                if (!(miniGameInstance.isStarted || miniGameInstance.isFinished)) {
-                    miniGameInstance.addPlayer(e.player)
+        if (!(QuantiumConfig.Bungee.enable || QuantiumConfig.enableLobby)) {
+            server.pluginManager.registerEvents(object : Listener {
+                @EventHandler
+                fun onJoin(e : PlayerJoinEvent) {
+                    if (!(miniGameInstance.isStarted || miniGameInstance.isFinished)) {
+                        miniGameInstance.addPlayer(e.player)
+                    }
                 }
-            }
-        }, this)
+            }, this)
+        }
     }
 }

@@ -31,25 +31,43 @@ class Quantium : Plugin() {
         proxy.pluginManager.registerListener(this, PluginMessageL())
         proxy.pluginManager.registerListener(this, InstanceL())
 
-        config.getSection(ConfigPath.lobby)?.let {
+        config.getSection(ConfigPath.LOBBY)?.let {
             it.keys.forEach { serverName ->
                 ProxyServer.getInstance().getServerInfo(serverName).setLobby()
             }
         }
 
-        config.getSection(ConfigPath.minigame)?.let { miniGameSection ->
-            miniGameSection.keys.forEach { miniGame ->
-                miniGameSection.getSection(miniGame).keys.forEach { serverName ->
-                    ProxyServer.getInstance().getServerInfo(serverName)?.addMiniGame(miniGame)
+        config.getSection(ConfigPath.MINI_GAME)?.let { miniGameSection ->
+            miniGameSection.keys.forEach { name ->
+                miniGameSection.getSection(name).apply {
+                    val miniGame = MiniGameInfo(
+                        name,
+                        getInt(ConfigPath.MiniGame.MIN_PLAYER_SIZE),
+                        getInt(ConfigPath.MiniGame.MAX_PLAYER_SIZE)
+                    )
+                    miniGameSection.getSection(ConfigPath.MiniGame.SERVERS).keys.forEach { serverName ->
+                        ProxyServer.getInstance().getServerInfo(serverName)?.addMiniGame(miniGame)
+                    }
                 }
             }
         }
-        config.getSection(ConfigPath.redis).apply {
+        config.getSection(ConfigPath.REDIS).apply {
             val address = getString(ConfigPath.Redis.address)!!
             val port = getInt(ConfigPath.Redis.port)
-            RedisServerUtil.init(
-                RedisURI.create(address, port)
-            )
+            if (getBoolean(ConfigPath.ENABLE)) {
+                getString(ConfigPath.Redis.password)?.let { password ->
+                    RedisServerUtil.init(
+                        RedisURI.create(address, port).apply {
+                            @Suppress("DEPRECATION")
+                            setPassword(password)
+                        }
+                    )
+                } ?: run {
+                    RedisServerUtil.init(
+                        RedisURI.create(address, port)
+                    )
+                }
+            }
         }
     }
 

@@ -46,10 +46,20 @@ class QuantiumPlugin : JavaPlugin() {
         if (QuantiumConfig.Bungee.enable) {
             val serverName = QuantiumConfig.Bungee.serverName
             if (QuantiumConfig.Redis.enable) {
-                RedisServerUtil.instance = RedisServerUtil(
-                    serverName,
-                    RedisURI.create(QuantiumConfig.Redis.address, QuantiumConfig.Redis.port)
-                )
+                QuantiumConfig.Redis.password?.let { password ->
+                    RedisServerUtil.instance = RedisServerUtil(
+                        serverName,
+                        RedisURI.create(QuantiumConfig.Redis.address, QuantiumConfig.Redis.port).apply {
+                            @Suppress("DEPRECATION")
+                            setPassword(password)
+                        }
+                    )
+                } ?: run {
+                    RedisServerUtil.instance = RedisServerUtil(
+                        serverName,
+                        RedisURI.create(QuantiumConfig.Redis.address, QuantiumConfig.Redis.port)
+                    )
+                }
                 ServerUtil.default = RedisServerUtil.instance!!
             } else {
                 ServerUtil.default = PluginMessageServerUtil(serverName)
@@ -68,9 +78,9 @@ class QuantiumPlugin : JavaPlugin() {
     }
 
     override fun onDisable() {
-        MiniGameData.miniGames.forEach { (_, minigame) ->
-            minigame.defaultInstanceSize = 0
-            val iterator = minigame.instances.iterator() as MutableIterator
+        MiniGameData.miniGames.forEach { (_, miniGame) ->
+            miniGame.defaultInstanceSize = 0
+            val iterator = miniGame.instances.iterator() as MutableIterator
             while (iterator.hasNext()) {
                 val instance = iterator.next()
                 iterator.remove()

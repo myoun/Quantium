@@ -5,16 +5,19 @@ import net.md_5.bungee.api.connection.ProxiedPlayer
 import org.netherald.quantium.data.isBlocked
 import org.netherald.quantium.data.maxInstanceCount
 import org.netherald.quantium.data.playerCount
-import org.netherald.quantium.data.servers
 import org.netherald.quantium.util.exception.NotFoundServerException
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
+import kotlin.collections.HashSet
 
 data class MiniGameInfo(
     val name : String,
+    val minPlayerSize : Int,
+    val maxPlayerSize : Int,
     val queue : LinkedList<ProxiedPlayer> = LinkedList(),
     val players : Collection<UUID> = HashSet(),
+    val servers : Collection<ServerInfo> = HashSet(),
     val maxInstanceCount : Map<ServerInfo, Int> = HashMap(),
     val playerCount : Map<ServerInfo, Int> = HashMap(),
     val runningInstanceCount : Map<ServerInfo, Int> = HashMap()

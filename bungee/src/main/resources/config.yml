@@ -21,13 +21,18 @@
 #  - server1
 #minigame:
 #  BedWars-1:
-#    - server1
-#    - server2
+#    min-player-size: 12
+#    max-player-size: 16
+#    servers:
+#      server1:
+#        max-instance-count: 1
+#      server2:
+#        max-instance-count: 1
 redis:
-  enable: true
-  password: nothing
+  enable: false
+  password: nothing # if you don't use password you can remove this
   address: localhost
   port: 6379
 kubernetes:
-  enable: true
+  enable: false
   # TODO

@@ -7,9 +7,12 @@ import net.md_5.bungee.api.ProxyServer
 import net.md_5.bungee.api.plugin.Event
 import org.netherald.quantium.RedisMessageType
 import org.netherald.quantium.data.MiniGameData
+import org.netherald.quantium.data.ServerData
 import org.netherald.quantium.data.isBlocked
 import org.netherald.quantium.event.InstanceAddedEvent
 import org.netherald.quantium.event.InstanceDeletedEvent
+import org.netherald.quantium.event.ServerBlockedEvent
+import org.netherald.quantium.event.ServerUnBlockedEvent
 
 object RedisServerUtil {
 
@@ -32,6 +35,11 @@ object RedisServerUtil {
                     message.content[0]?.let {
                         it as String
                         server.isBlocked = it.toBoolean()
+                        if (server.isBlocked) {
+                            callEvent(ServerBlockedEvent(server))
+                        } else {
+                            callEvent(ServerUnBlockedEvent(server))
+                        }
                     }
                 }
                 RedisMessageType.ADDED_INSTANCE -> {
@@ -47,6 +55,7 @@ object RedisServerUtil {
                 }
             }
         }
+
         val sync = client.connectPubSub().sync()
         ProxyServer.getInstance().servers.forEach { (name, _) ->
             sync.subscribe("$name/${RedisMessageType.BLOCK}")

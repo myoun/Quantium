@@ -6,7 +6,6 @@ import net.md_5.bungee.api.connection.ProxiedPlayer
 import org.netherald.quantium.MiniGameInfo
 import org.netherald.quantium.data.ServerData
 import org.netherald.quantium.data.isBlocked
-import org.netherald.quantium.data.servers
 import org.netherald.quantium.event.MiniGameConnectedEvent
 import org.netherald.quantium.event.MiniGameConnectingEvent
 import org.netherald.quantium.util.exception.NotFoundServerException

@@ -12,12 +12,11 @@ class QuantiumCommand : CommandExecutor, TabCompleter {
 
     private fun CommandSender.sendHelpMessage() {
         sendMessage("/qb help / print help message")
-        queueHelpMessage()
+        joinHelpMessage()
     }
 
-    private fun CommandSender.queueHelpMessage() {
-        sendMessage("/qb queue <player> / move queue to player")
-        sendMessage("/qb queue <MiniGameName> [player] / add queue")
+    private fun CommandSender.joinHelpMessage() {
+        sendMessage("/qb join <MiniGameName> [player] / add queue")
     }
 
     private fun CommandSender.sendOfflinePlayerMessage() {
@@ -44,16 +43,16 @@ class QuantiumCommand : CommandExecutor, TabCompleter {
             1 -> {
                 when (args[0].lowercase()) {
                     "help" -> sender.sendHelpMessage()
-                    "queue" -> sender.queueHelpMessage()
+                    "queue" -> sender.joinHelpMessage()
                     else -> sender.sendHelpMessage()
                 }
             }
             2 -> {
                 when (args[0]) {
-                    "queue" -> {
+                    "join" -> {
                         if (sender is Player) {
-                            MiniGameData.miniGames[args[1]]?.let { minigame ->
-                                minigame.addPlayer(sender)
+                            MiniGameData.miniGames[args[1]]?.let { miniGame ->
+                                miniGame.addPlayer(sender)
                                 return true
                             } ?: run {
                                 sender.notFountMiniGame()
@@ -61,25 +60,6 @@ class QuantiumCommand : CommandExecutor, TabCompleter {
                             }
                         } else {
                             sender.notPlayer()
-                        }
-                    }
-                    else -> sender.sendHelpMessage()
-                }
-            }
-            3 -> {
-                when (args[0]) {
-                    "queue" -> {
-                        val player = Bukkit.getPlayer(args[2])
-                        player ?: run {
-                            sender.sendOfflinePlayerMessage()
-                            return false
-                        }
-                        MiniGameData.miniGames[args[1]]?.let { minigame ->
-                            minigame.addPlayer(player)
-                            return true
-                        } ?: run {
-                            sender.notFountMiniGame()
-                            return false
                         }
                     }
                     else -> sender.sendHelpMessage()
@@ -98,6 +78,37 @@ class QuantiumCommand : CommandExecutor, TabCompleter {
         alias: String,
         args: Array<out String>
     ): MutableList<String> {
-        return ArrayList()
+        val out = ArrayList<String>()
+        when (args.size) {
+            1 -> {
+                when (args[0]) {
+                    "join" -> {
+                        MiniGameData.miniGames.forEach { (_, it) -> out.add(it.name) }
+                    }
+                }
+            }
+            2 -> {
+                when (args[0]) {
+                    "join" -> {
+                        MiniGameData.miniGames.filter {
+                            it.value.name.startsWith(args[1])
+                        }
+                    }
+                }
+            }
+            3 -> {
+                when (args[0]) {
+                    "join" -> {
+                        Bukkit.getOnlinePlayers().filter {
+                            it.name.startsWith(args[1])
+                        }
+                    }
+                }
+            }
+            else -> {
+
+            }
+        }
+        return out
     }
 }
