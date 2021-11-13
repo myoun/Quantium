@@ -65,7 +65,7 @@ class QuantiumPlugin : JavaPlugin() {
                 ServerUtil.default = PluginMessageServerUtil(serverName)
             }
             PlayerUtil.default = PluginMessagePlayerUtil()
-            server.messenger.registerIncomingPluginChannel(this, Channels.mainChannel, PluginMessageL())
+            server.messenger.registerIncomingPluginChannel(this, Channels.MAIN_CHANNEL, PluginMessageL())
         } else {
             PlayerUtil.default = QuantiumPlayerUtil()
         }

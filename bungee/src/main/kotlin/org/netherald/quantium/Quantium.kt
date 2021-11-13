@@ -27,28 +27,13 @@ class Quantium : Plugin() {
         config = configLoad()
 
         proxy.reconnectHandler = MiniGameReConnectHandler()
-        proxy.registerChannel(Channels.mainChannel)
+        proxy.registerChannel(Channels.MAIN_CHANNEL)
         proxy.pluginManager.registerListener(this, PluginMessageL())
         proxy.pluginManager.registerListener(this, InstanceL())
 
         config.getSection(ConfigPath.LOBBY)?.let {
             it.keys.forEach { serverName ->
                 ProxyServer.getInstance().getServerInfo(serverName).setLobby()
-            }
-        }
-
-        config.getSection(ConfigPath.MINI_GAME)?.let { miniGameSection ->
-            miniGameSection.keys.forEach { name ->
-                miniGameSection.getSection(name).apply {
-                    val miniGame = MiniGameInfo(
-                        name,
-                        getInt(ConfigPath.MiniGame.MIN_PLAYER_SIZE),
-                        getInt(ConfigPath.MiniGame.MAX_PLAYER_SIZE)
-                    )
-                    miniGameSection.getSection(ConfigPath.MiniGame.SERVERS).keys.forEach { serverName ->
-                        ProxyServer.getInstance().getServerInfo(serverName)?.addMiniGame(miniGame)
-                    }
-                }
             }
         }
         config.getSection(ConfigPath.REDIS).apply {
@@ -66,6 +51,23 @@ class Quantium : Plugin() {
                     RedisServerUtil.init(
                         RedisURI.create(address, port)
                     )
+                }
+            }
+        }
+
+        config.getSection(ConfigPath.MINI_GAME)?.let { miniGameSection ->
+            miniGameSection.keys.forEach { name ->
+                miniGameSection.getSection(name).apply {
+                    val miniGame = MiniGameInfo(
+                        name,
+                        getInt(ConfigPath.MiniGame.MIN_PLAYER_SIZE),
+                        getInt(ConfigPath.MiniGame.MAX_PLAYER_SIZE)
+                    )
+                    RedisServerUtil.addMiniGame(miniGame.name)
+                    miniGameSection.getSection(ConfigPath.MiniGame.SERVERS).keys.forEach { serverName ->
+                        ProxyServer.getInstance().getServerInfo(serverName)?.addMiniGame(miniGame)
+                        RedisServerUtil.addMiniGame(serverName, miniGame.name)
+                    }
                 }
             }
         }

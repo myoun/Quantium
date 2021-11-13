@@ -7,6 +7,7 @@ import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 import org.netherald.quantium.data.MiniGameData
+import org.netherald.quantium.util.ServerUtil
 
 class QuantiumCommand : CommandExecutor, TabCompleter {
 
@@ -112,8 +113,16 @@ class QuantiumCommand : CommandExecutor, TabCompleter {
             2 -> {
                 when (args[0]) {
                     "join" -> {
-                        MiniGameData.miniGames.filter {
-                            it.value.name.startsWith(args[1])
+                        ServerUtil.default?.let { serverUtil ->
+                            out.addAll(serverUtil.miniGames.filter {
+                                it.startsWith(args[1])
+                            })
+                        } ?: run {
+                            MiniGameData.miniGames.forEach { (_, it) ->
+                                if (it.name.startsWith(args[1])) {
+                                    out.add(it.name)
+                                }
+                            }
                         }
                     }
                 }

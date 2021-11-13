@@ -14,16 +14,16 @@ import org.netherald.quantium.util.PlayerConnectionUtil
 class PluginMessageL : Listener {
     @EventHandler
     fun on(event : PluginMessageEvent) {
-        if (event.tag == Channels.mainChannel && event.receiver is ProxiedPlayer) {
+        if (event.tag == Channels.MAIN_CHANNEL && event.receiver is ProxiedPlayer) {
             val player = event.receiver as ProxiedPlayer
             @Suppress("UnstableApiUsage")
             val data = ByteStreams.newDataInput(event.data)
             when (data.readUTF()) {
-                Channels.SubChannels.Bukkit.lobby -> {
+                Channels.SubChannels.Bukkit.LOBBY -> {
                     PlayerConnectionUtil.connectToLobby(player)
                 }
 
-                Channels.SubChannels.Bukkit.game -> {
+                Channels.SubChannels.Bukkit.GAME -> {
                     val miniGame = data.readUTF()
                     MiniGameData.minigames[miniGame]?.let {
                         if (!ProxyServer.getInstance().pluginManager.callEvent(
@@ -34,12 +34,12 @@ class PluginMessageL : Listener {
                     }
                 }
 
-                Channels.SubChannels.getMiniGamePlayerCount -> {
+                Channels.SubChannels.GET_MINI_GAME_PLAYER_COUNT -> {
 
                     @Suppress("UnstableApiUsage")
                     val out = ByteStreams.newDataOutput()
 
-                    out.writeUTF(Channels.SubChannels.getMiniGamePlayerCountResponse)
+                    out.writeUTF(Channels.SubChannels.GET_MINI_GAME_PLAYER_COUNT_RESPONSE)
                     out.writeLong(data.readLong())
 
                     MiniGameData.minigames[data.readUTF()]?.let {
@@ -48,7 +48,7 @@ class PluginMessageL : Listener {
                         out.writeInt(-1)
                     }
 
-                    (event.receiver as ProxiedPlayer).server.sendData(Channels.mainChannel, out.toByteArray())
+                    (event.receiver as ProxiedPlayer).server.sendData(Channels.MAIN_CHANNEL, out.toByteArray())
 
                 }
             }

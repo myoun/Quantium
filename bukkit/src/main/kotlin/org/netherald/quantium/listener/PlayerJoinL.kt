@@ -11,7 +11,7 @@ class PlayerJoinL : Listener {
     @EventHandler
     fun on(event : PlayerJoinEvent) {
         PluginMessageServerUtil.queuedMessage.forEach {
-            event.player.sendPluginMessage(Quantium.plugin, Channels.mainChannel, it)
+            event.player.sendPluginMessage(Quantium.plugin, Channels.MAIN_CHANNEL, it)
         }
         PluginMessageServerUtil.queuedMessage.clear()
     }

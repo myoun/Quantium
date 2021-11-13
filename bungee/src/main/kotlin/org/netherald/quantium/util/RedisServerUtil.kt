@@ -5,9 +5,9 @@ import io.lettuce.core.RedisURI
 import io.lettuce.core.api.StatefulRedisConnection
 import net.md_5.bungee.api.ProxyServer
 import net.md_5.bungee.api.plugin.Event
+import org.netherald.quantium.RedisKeyType
 import org.netherald.quantium.RedisMessageType
 import org.netherald.quantium.data.MiniGameData
-import org.netherald.quantium.data.ServerData
 import org.netherald.quantium.data.isBlocked
 import org.netherald.quantium.event.InstanceAddedEvent
 import org.netherald.quantium.event.InstanceDeletedEvent
@@ -62,6 +62,48 @@ object RedisServerUtil {
             sync.subscribe("$name:${RedisMessageType.ADDED_INSTANCE}")
             sync.subscribe("$name:${RedisMessageType.DELETED_INSTANCE}")
         }
+    }
 
+    fun addMiniGame(name : String) {
+        val sync = connection.sync()
+        sync.sadd(
+            RedisKeyType.MINI_GAMES,
+            name
+        )
+    }
+
+    fun removeMiniGame(name : String) {
+        val sync = connection.sync()
+        sync.del(
+            "${RedisKeyType.MINI_GAME}:$name:${RedisKeyType.SERVERS}",
+        )
+        sync.srem(
+            RedisKeyType.MINI_GAMES,
+            name
+        )
+    }
+
+    fun addMiniGame(serverName: String, gameName: String) {
+        val sync = connection.sync()
+        sync.sadd(RedisKeyType.MINI_GAMES, gameName)
+        sync.set(
+            "${RedisKeyType.SERVER}:$serverName:${RedisKeyType.MINI_GAMES}",
+            gameName
+        )
+        sync.sadd(
+            "${RedisKeyType.MINI_GAME}:${gameName}:${RedisKeyType.SERVERS}",
+            serverName
+        )
+    }
+
+    fun removeMiniGame(serverName: String, gameName: String) {
+        val sync = connection.sync()
+        sync.del(
+            "${RedisKeyType.SERVER}:$serverName:${RedisKeyType.MINI_GAMES}",
+        )
+        sync.srem(
+            "${RedisKeyType.MINI_GAME}:${gameName}:${RedisKeyType.SERVERS}",
+            serverName
+        )
     }
 }

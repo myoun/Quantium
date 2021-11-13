@@ -14,16 +14,16 @@ class PluginMessagePlayerUtil : PlayerUtil {
     override fun sendToLobby(player: Player) {
         @Suppress("UnstableApiUsage")
         val out = ByteStreams.newDataOutput()
-        out.writeUTF(Channels.SubChannels.Bukkit.lobby)
-        player.sendPluginMessage(plugin, Channels.mainChannel, out.toByteArray())
+        out.writeUTF(Channels.SubChannels.Bukkit.LOBBY)
+        player.sendPluginMessage(plugin, Channels.MAIN_CHANNEL, out.toByteArray())
     }
 
     override fun sendToMiniGame(player: Player, miniGame : String) {
         @Suppress("UnstableApiUsage")
         val out = ByteStreams.newDataOutput()
-        out.writeUTF(Channels.SubChannels.Bukkit.game)
+        out.writeUTF(Channels.SubChannels.Bukkit.GAME)
         out.writeUTF(miniGame)
-        player.sendPluginMessage(plugin, Channels.mainChannel, out.toByteArray())
+        player.sendPluginMessage(plugin, Channels.MAIN_CHANNEL, out.toByteArray())
     }
 
     override fun sendToServer(player: Player, serverName : String) {

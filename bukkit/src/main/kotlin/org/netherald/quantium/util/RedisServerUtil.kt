@@ -3,6 +3,7 @@ package org.netherald.quantium.util
 import io.lettuce.core.RedisClient
 import io.lettuce.core.RedisURI
 import io.lettuce.core.api.StatefulRedisConnection
+import org.netherald.quantium.RedisKeyType
 
 class RedisServerUtil(val serverName : String, redisURI: RedisURI) : ServerUtil {
 
@@ -20,4 +21,6 @@ class RedisServerUtil(val serverName : String, redisURI: RedisURI) : ServerUtil 
         connection.sync().publish("$serverName:block", value.toString())
         blocked = value
     }
+
+    override val miniGames : Collection<String> get() = connection.sync().smembers(RedisKeyType.MINI_GAMES)
 }
