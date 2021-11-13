@@ -65,6 +65,28 @@ class QuantiumCommand : CommandExecutor, TabCompleter {
                     else -> sender.sendHelpMessage()
                 }
             }
+            3 -> {
+                when (args[0]) {
+                    "join" -> {
+                        if (sender is Player) {
+                            MiniGameData.miniGames[args[1]]?.let { miniGame ->
+                                Bukkit.getPlayer(args[2])?.let {
+                                    miniGame.addPlayer(it)
+                                } ?: run {
+                                    sender.sendOfflinePlayerMessage()
+                                }
+                                return true
+                            } ?: run {
+                                sender.notFountMiniGame()
+                                return false
+                            }
+                        } else {
+                            sender.notPlayer()
+                        }
+                    }
+                    else -> sender.sendHelpMessage()
+                }
+            }
             else -> {
                 sender.sendHelpMessage()
             }
