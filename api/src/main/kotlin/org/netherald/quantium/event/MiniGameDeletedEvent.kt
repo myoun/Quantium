@@ -6,10 +6,10 @@ import org.netherald.quantium.MiniGame
 class MiniGameDeletedEvent(override val miniGame: MiniGame) : MiniGameEvent() {
     companion object {
         @JvmStatic
-        var handlerlist = HandlerList()
+        var handlerList = HandlerList()
     }
 
     override fun getHandlers(): HandlerList {
-        return handlerlist
+        return handlerList
     }
 }

@@ -60,11 +60,9 @@ class ModuleClassLoader(
 
         if (isLoaded) return module
 
-        if (ModuleConfigPath.LIBRARIES.isNotEmpty()) {
-            libraryLoader = createLoader()
-        }
+        libraryLoader = createLoader()
         val modulePath = config.getString(ModuleConfigPath.MAIN)
-        val moduleName = config.getString(ModuleConfigPath.MAIN)
+        val moduleName = config.getString(ModuleConfigPath.NAME)
         moduleName ?: throw ModuleLoadException("Not found Name $modulePath")
         modulePath ?: throw ModuleLoadException("Not found Main $moduleName")
         val mainClass = loadClass(config.getString(ModuleConfigPath.MAIN))
@@ -75,8 +73,8 @@ class ModuleClassLoader(
         module = mainClass.newInstance() as QuantiumModule
         module.patchData()
 
-        ModuleData.modules[module.name] = module
         module.onLoad()
+        ModuleData.modules[moduleName] = module
         plugin.logger.info("$moduleName is loaded")
         loaded = true
 
@@ -85,15 +83,17 @@ class ModuleClassLoader(
     }
 
     private fun createLoader() : ClassLoader? {
+        val libraries = config.getStringList(ModuleConfigPath.LIBRARIES)
+        if (libraries.isEmpty()) return null
         val descriptionFile = PluginDescriptionFile(moduleName, "", "")
         // Don't use addAll
-        config.getStringList(ModuleConfigPath.LIBRARIES).forEach { descriptionFile.libraries.add(it) }
+        libraries.forEach { descriptionFile.libraries.add(it) }
         fileAssociations.forEach { (_, it) ->
             if (it is JavaPluginLoader) {
                 val libraryLoader =
                     it.javaClass.getDeclaredField("libraryLoader").apply {
                         isAccessible = true
-                    }.get(it) ?: return null
+                    }[it] ?: return null
 
                 return libraryLoader.javaClass
                     .getDeclaredMethod("createLoader", PluginDescriptionFile::class.java).apply {

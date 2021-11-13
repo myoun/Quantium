@@ -6,7 +6,7 @@ import org.bukkit.event.HandlerList
 class UnBlockedServerEvent : Event() {
     companion object {
         @JvmStatic
-        var handlerlist = HandlerList()
+        var handlerList = HandlerList()
     }
-    override fun getHandlers(): HandlerList { return handlerlist }
+    override fun getHandlers(): HandlerList { return handlerList }
 }

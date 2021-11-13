@@ -24,27 +24,25 @@ abstract class QuantiumModule {
     val isEnabled : Boolean get() = enabled
 
     fun setEnabled(enabled : Boolean) {
-        if (enabled != isEnabled) {
-            if (enabled) {
-                onEnable()
-                this.enabled = true
-                plugin.logger.info("Module $name is enabled")
-            } else {
-                this.enabled = false
-                Quantium.moduleManager.unregisterEvents(this)
-                tasks.forEach { it.cancel() }
-                val isDependsThis =
-                    fun QuantiumModule.() = classLoader.depend.contains(this) || classLoader.softDepend.contains(this)
-                Quantium.modules.forEach { (_, module) ->
-                    if (!module.isEnabled) return@forEach
-                    if (module.isDependsThis()) {
-                        module.setEnabled(false)
-                    }
+        if (enabled == isEnabled) return
+        if (enabled) {
+            onEnable()
+            plugin.logger.info("Module $name is enabled")
+        } else {
+            Quantium.moduleManager.unregisterEvents(this)
+            tasks.forEach { it.cancel() }
+            val isDependsThis =
+                fun QuantiumModule.() = classLoader.depend.contains(this) || classLoader.softDepend.contains(this)
+            Quantium.modules.forEach { (_, module) ->
+                if (!module.isEnabled) return@forEach
+                if (module.isDependsThis()) {
+                    module.setEnabled(false)
                 }
-                onDisable()
-                plugin.logger.info("Module $name is disabled")
             }
+            onDisable()
+            plugin.logger.info("Module $name is disabled")
         }
+        this.enabled = enabled
     }
 
     var config : FileConfiguration = YamlConfiguration()

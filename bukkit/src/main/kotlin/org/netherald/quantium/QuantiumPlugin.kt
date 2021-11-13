@@ -128,7 +128,7 @@ class QuantiumPlugin : JavaPlugin() {
         }
 
         Quantium.modules.forEach { (_, module) ->
-            kotlin.runCatching { module.classLoader.enableModule() }
+            kotlin.runCatching { module.classLoader.enableModule() }.exceptionOrNull()?.printStackTrace()
         }
     }
 }
