@@ -24,7 +24,7 @@ class ModuleClassLoader(
 
     lateinit var module : QuantiumModule
     private lateinit var config : YamlConfiguration
-    lateinit var libraryLoader : ClassLoader
+    var libraryLoader : ClassLoader? = null
 
     private var loaded : Boolean = false
     val isLoaded : Boolean get() = loaded
@@ -33,10 +33,10 @@ class ModuleClassLoader(
     val moduleName : String get() = config.getString(ModuleConfigPath.NAME)!!
 
     init {
-        getResource(ModuleConfigPath.FILE_NAME+"yml")?.let {
+        getResource(ModuleConfigPath.FILE)?.let {
             config = YamlConfiguration.loadConfiguration(it.openStream().reader())
         } ?: run {
-            throw ModuleLoadException("Can't found ${ModuleConfigPath.FILE_NAME+"yml"}!")
+            throw ModuleLoadException("Can't found ${ModuleConfigPath.FILE}!")
         }
     }
 
@@ -60,7 +60,9 @@ class ModuleClassLoader(
 
         if (isLoaded) return module
 
-        libraryLoader = createLoader()
+        if (ModuleConfigPath.LIBRARIES.isNotEmpty()) {
+            libraryLoader = createLoader()
+        }
         val modulePath = config.getString(ModuleConfigPath.MAIN)
         val moduleName = config.getString(ModuleConfigPath.MAIN)
         moduleName ?: throw ModuleLoadException("Not found Name $modulePath")
@@ -82,25 +84,25 @@ class ModuleClassLoader(
 
     }
 
-    private fun createLoader() : ClassLoader {
+    private fun createLoader() : ClassLoader? {
         val descriptionFile = PluginDescriptionFile(moduleName, "", "")
-        descriptionFile.libraries.addAll(config.getStringList(ModuleConfigPath.LIBRARIES))
-        fileAssociations.forEach { (pattern, it) ->
-            if (pattern.matcher("test.jar").find()) {
-                if (it is JavaPluginLoader) {
-                    val libraryLoader =
-                        JavaPluginLoader::class.java.getDeclaredField("libraryLoader").apply {
-                            isAccessible = true
-                        }[it]
-                    return libraryLoader.javaClass
-                        .getDeclaredMethod("createLoader").apply {
-                            isAccessible = true
-                        }.invoke(libraryLoader, descriptionFile) as ClassLoader
+        // Don't use addAll
+        config.getStringList(ModuleConfigPath.LIBRARIES).forEach { descriptionFile.libraries.add(it) }
+        fileAssociations.forEach { (_, it) ->
+            if (it is JavaPluginLoader) {
+                val libraryLoader =
+                    it.javaClass.getDeclaredField("libraryLoader").apply {
+                        isAccessible = true
+                    }.get(it) ?: return null
 
-                } else throw Exception("Wrong pluginLoader")
+                return libraryLoader.javaClass
+                    .getDeclaredMethod("createLoader", PluginDescriptionFile::class.java).apply {
+                        isAccessible = true
+                    }.invoke(libraryLoader, descriptionFile) as ClassLoader
+
             }
         }
-        throw Exception("Not found pattern")
+        throw Exception("Not found classLoader")
     }
 
     private val fileAssociations : Map<Pattern, PluginLoader>

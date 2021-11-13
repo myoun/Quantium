@@ -46,7 +46,10 @@ class QuantiumPlugin : JavaPlugin() {
         if (QuantiumConfig.Bungee.enable) {
             val serverName = QuantiumConfig.Bungee.serverName
             if (QuantiumConfig.Redis.enable) {
-                RedisServerUtil(serverName, RedisURI.create(QuantiumConfig.Redis.address, QuantiumConfig.Redis.port))
+                RedisServerUtil.instance = RedisServerUtil(
+                    serverName,
+                    RedisURI.create(QuantiumConfig.Redis.address, QuantiumConfig.Redis.port)
+                )
             } else {
                 PluginMessageServerUtil(serverName)
             }
@@ -83,18 +86,33 @@ class QuantiumPlugin : JavaPlugin() {
         if (config.getBoolean(ConfigPath.ENABLE_LOBBY)) QuantiumConfig.enableLobby = true
         if (config.getBoolean(ConfigPath.ENABLE_MINIGAME)) QuantiumConfig.enableMiniGame = true
 
-        QuantiumConfig.lobbyLocation = config.getLocation(ConfigPath.LOBBY_LOCATION)!!
+        val throwException = fun (type : String): Nothing = throw Exception("Not found $type")
+
+        QuantiumConfig.lobbyLocation = config.getLocation(ConfigPath.LOBBY_LOCATION)
+            ?: throwException(ConfigPath.LOBBY_LOCATION)
 
         config.getConfigurationSection(ConfigPath.BUNGEECORD)?.apply {
-            if (config.getBoolean(ConfigPath.ENABLE)) QuantiumConfig.Bungee.enable = true
-            QuantiumConfig.Bungee.serverName = config.getString(ConfigPath.Bungee.SERVER_NAME)!!
+
+            if (getBoolean(ConfigPath.ENABLE)) QuantiumConfig.Bungee.enable = true
+
+            QuantiumConfig.Bungee.serverName = getString(ConfigPath.Bungee.SERVER_NAME)
+                ?: throwException(ConfigPath.Bungee.SERVER_NAME)
+
         }
 
         config.getConfigurationSection(ConfigPath.REDIS)?.apply {
+
             QuantiumConfig.Redis.enable = getBoolean(ConfigPath.ENABLE)
-            QuantiumConfig.Redis.address = getString(ConfigPath.Redis.ADDRESS)!!
+
+            QuantiumConfig.Redis.address = getString(ConfigPath.Redis.ADDRESS)
+                ?: throwException(ConfigPath.Redis.ADDRESS)
+
             QuantiumConfig.Redis.port = getInt(ConfigPath.Redis.PORT)
-            QuantiumConfig.Redis.password = getString(ConfigPath.Redis.PASSWORD)!!
+            if (QuantiumConfig.Redis.port == 0) throwException(ConfigPath.Redis.PORT)
+
+            QuantiumConfig.Redis.password = getString(ConfigPath.Redis.PASSWORD)
+                ?: throwException(ConfigPath.Redis.PASSWORD)
+
         }
     }
 
@@ -104,13 +122,13 @@ class QuantiumPlugin : JavaPlugin() {
 
         if (!directory.exists()) { directory.mkdir() }
         directory.listFiles { file ->
-            if (!file.isDirectory) Pattern.matches("\\.jar$", file.name) else false
+            !file.isDirectory && Pattern.compile("\\.jar$").matcher(file.name).find()
         }!!.forEach { file ->
-            Quantium.moduleLoader.loadModule(file)
+            kotlin.runCatching { Quantium.moduleLoader.loadModule(file) }.exceptionOrNull()?.printStackTrace()
         }
 
         Quantium.modules.forEach { (_, module) ->
-            module.classLoader.enableModule()
+            kotlin.runCatching { module.classLoader.enableModule() }
         }
     }
 }

@@ -1,8 +1,6 @@
 name: Quantium
 main: org.netherald.quantium.QuantiumPlugin
 version: 1.0
-depend:
-  - Kotlin
 softdepend:
   - Multiverse-Core
   - Multiverse-NetherPortals

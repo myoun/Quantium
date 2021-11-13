@@ -2,6 +2,7 @@ package org.netherald.quantium.module
 
 object ModuleConfigPath {
     const val FILE_NAME = "quantium"
+    const val FILE = "$FILE_NAME.yml"
     const val MAIN = "main"
     const val NAME = "name"
 

@@ -18,7 +18,7 @@ abstract class QuantiumModule {
     lateinit var quantium : Quantium
     lateinit var dataFolder : File
     lateinit var configFile : File
-    lateinit var libraryLoader : ClassLoader
+    var libraryLoader : ClassLoader? = null
 
     private var enabled : Boolean = false
     val isEnabled : Boolean get() = enabled
@@ -38,7 +38,7 @@ abstract class QuantiumModule {
                 Quantium.modules.forEach { (_, module) ->
                     if (!module.isEnabled) return@forEach
                     if (module.isDependsThis()) {
-                        module.classLoader.close()
+                        module.setEnabled(false)
                     }
                 }
                 onDisable()

@@ -9,7 +9,7 @@ import org.netherald.quantium.data.playingGame
 import org.netherald.quantium.util.QuantiumSpectatorUtil
 
 class RespawnL : Listener {
-    @EventHandler(priority = EventPriority.LOW)
+    @EventHandler(priority = EventPriority.HIGHEST)
     fun on(event : PlayerRespawnEvent) {
         event.player.playingGame?.let { instance ->
             instance.worldSetting.spawn?.let {
