@@ -17,7 +17,7 @@ class RedisServerUtil(val serverName : String, redisURI: RedisURI) : ServerUtil 
     override val isBlocked: Boolean get() = blocked
 
     override fun setBlockServer(value: Boolean) {
-        connection.sync().publish("$serverName/block", value.toString())
+        connection.sync().publish("$serverName:block", value.toString())
         blocked = value
     }
 }
