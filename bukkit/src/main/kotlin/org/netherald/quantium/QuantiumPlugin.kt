@@ -63,6 +63,7 @@ class QuantiumPlugin : JavaPlugin() {
                 ServerUtil.default = RedisServerUtil.instance!!
             } else {
                 ServerUtil.default = PluginMessageServerUtil(serverName)
+                server.pluginManager.registerEvents(PlayerJoinL(), this)
             }
             PlayerUtil.default = PluginMessagePlayerUtil()
             server.messenger.registerIncomingPluginChannel(this, Channels.MAIN_CHANNEL, PluginMessageL())

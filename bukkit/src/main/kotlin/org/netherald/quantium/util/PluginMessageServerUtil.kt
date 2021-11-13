@@ -20,7 +20,7 @@ class PluginMessageServerUtil(val serverName : String) : ServerUtil {
 
     init {
         Bukkit.getScheduler().runTaskTimer(Quantium.plugin, { task ->
-
+            requestMiniGames()
         }, 0, 200)
     }
 
@@ -28,18 +28,33 @@ class PluginMessageServerUtil(val serverName : String) : ServerUtil {
 
     override val miniGames: Collection<String> get() = games
 
+    fun requestMiniGames() {
+        @Suppress("UnstableApiUsage")
+        val out = ByteStreams.newDataOutput()
+        out.writeUTF(Channels.SubChannels.GET_MINI_GAMES)
+
+        val playerArray = Bukkit.getOnlinePlayers().stream().toArray()
+        if (playerArray.isNotEmpty()) {
+            (playerArray[0] as Player).sendPluginMessage(Quantium.plugin, Channels.MAIN_CHANNEL, out.toByteArray())
+        }
+    }
+
     override fun setBlockServer(value: Boolean) {
 
         @Suppress("UnstableApiUsage")
         val out = ByteStreams.newDataOutput()
         out.writeUTF(Channels.SubChannels.Bukkit.GAME)
         out.writeUTF(serverName)
-        val playerArray = Bukkit.getOnlinePlayers().stream().toArray()
-        if (playerArray.isEmpty()) {
-            (playerArray[0] as Player).sendPluginMessage(Quantium.plugin, Channels.MAIN_CHANNEL, out.toByteArray())
-        } else {
-            queuedMessage.add(out.toByteArray())
-        }
+        sendPluginMessage(out.toByteArray())
 
+    }
+
+    private fun sendPluginMessage(data : ByteArray) {
+        val playerArray = Bukkit.getOnlinePlayers().stream().toArray()
+        if (playerArray.isNotEmpty()) {
+            (playerArray[0] as Player).sendPluginMessage(Quantium.plugin, Channels.MAIN_CHANNEL, data)
+        } else {
+            queuedMessage.add(data)
+        }
     }
 }
