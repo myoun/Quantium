@@ -58,7 +58,6 @@ class QuantiumPlugin : JavaPlugin() {
             server.messenger.registerIncomingPluginChannel(this, Channels.mainChannel, PluginMessageL())
         } else {
             PlayerUtil.default = QuantiumPlayerUtil()
-            ServerUtil.default = EmptyServerUtil()
         }
 
         val command = QuantiumCommand()

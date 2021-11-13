@@ -2,7 +2,7 @@ package org.netherald.quantium.util
 
 interface ServerUtil {
     companion object {
-        lateinit var default : ServerUtil
+        var default : ServerUtil? = null
     }
     val isBlocked : Boolean
     fun setBlockServer(value: Boolean)
