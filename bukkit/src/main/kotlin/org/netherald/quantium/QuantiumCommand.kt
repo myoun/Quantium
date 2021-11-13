@@ -132,6 +132,8 @@ class QuantiumCommand : CommandExecutor, TabCompleter {
                     "join" -> {
                         Bukkit.getOnlinePlayers().filter {
                             it.name.startsWith(args[1])
+                        }.forEach {
+                            out.add(it.name)
                         }
                     }
                 }
