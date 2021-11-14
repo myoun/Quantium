@@ -73,6 +73,10 @@ class Quantium : Plugin() {
         }
     }
 
+    override fun onDisable() {
+        RedisServerUtil.client?.shutdown()
+    }
+
     fun configLoad() : Configuration {
         saveDefaultConfig()
         return loadData()

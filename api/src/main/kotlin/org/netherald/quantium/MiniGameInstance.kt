@@ -22,11 +22,17 @@ import org.netherald.quantium.util.MiniGameBuilderUtil
 import org.netherald.quantium.util.PlayerUtil
 import org.netherald.quantium.util.SpectatorUtil
 import org.netherald.quantium.world.PortalLinker
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
+import kotlin.collections.HashSet
 
 @QuantiumMarker
 class MiniGameInstance(
     val miniGame: MiniGame,
 ) {
+
+    val uuid = UUID.randomUUID()
 
     val unSafe = UnSafe()
 
@@ -209,7 +215,7 @@ class MiniGameInstance(
 
     val players = HashSet<Player>()
 
-    // it works when this minigame is team game
+    // it works when this mini-game is team game
     var team : List<List<Player>> = ArrayList()
 
     var enableRejoin : Boolean = false
@@ -263,6 +269,12 @@ class MiniGameInstance(
 
         if (players.size < miniGame.minPlayerSize) {
             cancelStartTask()
+        }
+
+        if (automaticFunctionSetting.autoPlayerPool) {
+            miniGame.pollQueuePlayers(1).forEach {
+                addPlayer(it)
+            }
         }
     }
 
@@ -396,7 +408,7 @@ class MiniGameInstance(
 
 
 
-    // why don't check if player is playing this minigame?
+    // why don't check if player is playing this mini-game?
     // because allServerEvent option is false
 
     fun onPlayerKicked(listener : QuantiumEvent<out PlayerKickEvent>.() -> Unit) : Listener =

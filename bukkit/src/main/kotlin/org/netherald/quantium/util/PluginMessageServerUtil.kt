@@ -15,6 +15,11 @@ class PluginMessageServerUtil(val serverName : String) : ServerUtil {
         val queuedMessage = ArrayList<ByteArray>()
     }
 
+    override val miniGames: Collection<String>
+        get() = games
+
+    override fun getInstances(game: String): Collection<UUID>? = instances[game]
+
     private val blocked = true
     override val isBlocked: Boolean get() = blocked
 
@@ -25,17 +30,31 @@ class PluginMessageServerUtil(val serverName : String) : ServerUtil {
     }
 
     var games: Collection<String> = MiniGameData.miniGames.map { it.key }
+    var instances : Map<String, Collection<UUID>> = instancesInit()
 
-    override val miniGames: Collection<String> get() = games
+    private fun instancesInit() : Map<String, Collection<UUID>> {
+        val out = HashMap<String, Collection<UUID>>()
+        MiniGameData.miniGames.forEach { (name, miniGame) ->
+            val instances = miniGame.instances.map { it.uuid }
+            out[name] = instances
+        }
+        return out
+    }
 
     private fun requestMiniGames() {
         @Suppress("UnstableApiUsage")
         val out = ByteStreams.newDataOutput()
         out.writeUTF(Channels.SubChannels.GET_MINI_GAMES)
+        sendPluginMessage0(out.toByteArray())
+    }
 
-        val playerArray = Bukkit.getOnlinePlayers().stream().toArray()
-        if (playerArray.isNotEmpty()) {
-            (playerArray[0] as Player).sendPluginMessage(Quantium.plugin, Channels.MAIN_CHANNEL, out.toByteArray())
+    private fun requestInstances() {
+        games.forEach {
+            @Suppress("UnstableApiUsage")
+            val out = ByteStreams.newDataOutput()
+            out.writeUTF(Channels.SubChannels.GET_INSTANCES)
+            out.writeUTF(it)
+            sendPluginMessage0(out.toByteArray())
         }
     }
 
@@ -49,11 +68,16 @@ class PluginMessageServerUtil(val serverName : String) : ServerUtil {
     }
 
     private fun sendPluginMessage(data : ByteArray) {
+        if (!sendPluginMessage0(data)) {
+            queuedMessage.add(data)
+        }
+    }
+
+    private fun sendPluginMessage0(data : ByteArray) : Boolean {
         val playerArray = Bukkit.getOnlinePlayers().stream().toArray()
         if (playerArray.isNotEmpty()) {
             (playerArray[0] as Player).sendPluginMessage(Quantium.plugin, Channels.MAIN_CHANNEL, data)
-        } else {
-            queuedMessage.add(data)
         }
+        return playerArray.isNotEmpty()
     }
 }

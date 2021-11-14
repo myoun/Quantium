@@ -57,12 +57,17 @@ class MiniGame(
 
     val recommendMatchingInstance : MiniGameInstance?
         get() {
+            var out : MiniGameInstance? = null
             for (instance in instances) {
                 if (!instance.isStarted && !instance.isFinished) {
-                    return instance
+                    out?.let {
+                        if (it.players.size < instance.players.size) {
+                            out = instance
+                        }
+                    } ?: run { out = instance }
                 }
             }
-            return null
+            return out
         }
 
     val matchingInstances : List<MiniGameInstance>
@@ -82,11 +87,9 @@ class MiniGame(
             this,
         ).apply(instanceSettingValue)
 
-        val worldNameId = UUID.randomUUID().toString()
-
         val clone = fun (world : World, name : String) = instance.worldSetting.worldEditor.cloneWorld(world, name)
         val addWorld = fun (base : World, addWorldType : MiniGameInstance.AddWorldType) =
-            instance.addWorld(clone(base, "${base.name}_$worldNameId"), addWorldType)
+            instance.addWorld(clone(base, "${instance.uuid}_${base.name}"), addWorldType)
 
         instance.worldSetting.baseWorld?.let { addWorld(it, MiniGameInstance.AddWorldType.NORMAL) }
         instance.worldSetting.baseWorldNether?.let { addWorld(it, MiniGameInstance.AddWorldType.NETHER) }
@@ -99,8 +102,10 @@ class MiniGame(
 
         Bukkit.getServer().pluginManager.callEvent(InstanceCreatedEvent(instance))
 
-        pollQueuePlayers(maxPlayerSize - instance.players.size).forEach { player ->
-            instance.addPlayer(player)
+        if (instance.automaticFunctionSetting.autoPlayerPool) {
+            pollQueuePlayers(maxPlayerSize - instance.players.size).forEach { player ->
+                instance.addPlayer(player)
+            }
         }
 
         println("$name's instance is added")

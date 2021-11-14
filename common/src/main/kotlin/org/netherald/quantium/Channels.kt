@@ -20,6 +20,9 @@ object Channels {
         const val GET_MINI_GAMES = "getMiniGames"
         const val GET_MINI_GAMES_RESPONSE = "getMiniGamesResponse"
 
+        const val GET_INSTANCES = "getInstances"
+        const val GET_INSTANCES_RESPONSE = "getInstancesResponse"
+
         const val GET_MINI_GAME_PLAYER_COUNT = "PlayerCountRequest"
         const val GET_MINI_GAME_PLAYER_COUNT_RESPONSE = "PlayerCountResponse"
 

@@ -1,5 +1,7 @@
 package org.netherald.quantium.util
 
+import java.util.*
+
 interface ServerUtil {
     companion object {
         var default : ServerUtil? = null
@@ -8,4 +10,6 @@ interface ServerUtil {
     fun setBlockServer(value: Boolean)
 
     val miniGames : Collection<String>
+
+    fun getInstances(game : String) : Collection<UUID>?
 }

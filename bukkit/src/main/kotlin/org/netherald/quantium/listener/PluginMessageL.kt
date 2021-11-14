@@ -9,6 +9,9 @@ import org.netherald.quantium.data.PlayerData
 import org.netherald.quantium.data.QuantiumConfig
 import org.netherald.quantium.util.PluginMessagePlayerUtil
 import org.netherald.quantium.util.PluginMessageServerUtil
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashSet
 
 class PluginMessageL : PluginMessageListener {
     override fun onPluginMessageReceived(channel: String, player: Player, message: ByteArray) {
@@ -40,6 +43,17 @@ class PluginMessageL : PluginMessageListener {
                 }
                 PluginMessageServerUtil.instance?.let {
                     it.games = list
+                }
+            }
+
+            Channels.SubChannels.GET_INSTANCES_RESPONSE -> {
+                val miniGame = data.readUTF()
+                val instances = HashSet<UUID>()
+                for (i in 0..data.readInt()) {
+                    instances.add(UUID(data.readLong(), data.readLong()))
+                }
+                PluginMessageServerUtil.instance?.let {
+                    (it.instances as MutableMap<String, Collection<UUID>>)[miniGame] = instances
                 }
             }
         }

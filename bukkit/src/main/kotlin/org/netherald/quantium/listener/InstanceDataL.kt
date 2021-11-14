@@ -2,6 +2,7 @@ package org.netherald.quantium.listener
 
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.netherald.quantium.RedisKeyType
 import org.netherald.quantium.RedisMessageType
 import org.netherald.quantium.event.InstanceCreatedEvent
 import org.netherald.quantium.event.InstanceDeletedEvent
@@ -10,9 +11,9 @@ import org.netherald.quantium.util.RedisServerUtil
 class InstanceDataL : Listener {
 
     private fun publish(channel : String, value : String) {
-        RedisServerUtil.instance?.apply {
-            connection.sync().publish(
-                "$serverName/${channel}", value
+        RedisServerUtil.sync?.apply {
+            publish(
+                "${RedisKeyType.SERVER}:${RedisServerUtil.instance!!.serverName}:${channel}", value
             )
         }
     }
