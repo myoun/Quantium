@@ -46,20 +46,11 @@ class QuantiumPlugin : JavaPlugin() {
         if (QuantiumConfig.Bungee.enable) {
             val serverName = QuantiumConfig.Bungee.serverName
             if (QuantiumConfig.Redis.enable) {
-                QuantiumConfig.Redis.password?.let { password ->
-                    RedisServerUtil.instance = RedisServerUtil(
-                        serverName,
-                        RedisURI.create(QuantiumConfig.Redis.address, QuantiumConfig.Redis.port).apply {
-                            @Suppress("DEPRECATION")
-                            setPassword(password)
-                        }
-                    )
-                } ?: run {
-                    RedisServerUtil.instance = RedisServerUtil(
-                        serverName,
-                        RedisURI.create(QuantiumConfig.Redis.address, QuantiumConfig.Redis.port)
-                    )
+                @Suppress("DEPRECATION")
+                val url : RedisURI = RedisURI.create(QuantiumConfig.Redis.address, QuantiumConfig.Redis.port).apply {
+                    setPassword(QuantiumConfig.Redis.password ?: "")
                 }
+                RedisServerUtil.instance = RedisServerUtil(serverName, url)
                 ServerUtil.default = RedisServerUtil.instance!!
             } else {
                 ServerUtil.default = PluginMessageServerUtil(serverName)

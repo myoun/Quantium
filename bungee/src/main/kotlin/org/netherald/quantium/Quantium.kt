@@ -35,18 +35,12 @@ class Quantium : Plugin() {
             val address = getString(ConfigPath.Redis.address)!!
             val port = getInt(ConfigPath.Redis.port)
             if (getBoolean(ConfigPath.ENABLE)) {
+                val url = RedisURI.create(address, port)
                 getString(ConfigPath.Redis.password)?.let { password ->
-                    RedisServerUtil.init(
-                        RedisURI.create(address, port).apply {
-                            @Suppress("DEPRECATION")
-                            setPassword(password)
-                        }
-                    )
-                } ?: run {
-                    RedisServerUtil.init(
-                        RedisURI.create(address, port)
-                    )
+                    @Suppress("DEPRECATION")
+                    url.setPassword(password)
                 }
+                RedisServerUtil.init(url)
             }
         }
 
