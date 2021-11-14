@@ -5,11 +5,12 @@ import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 import org.netherald.quantium.Channels
+import org.netherald.quantium.Quantium
 import kotlin.random.Random
 
 class PluginMessagePlayerUtil : PlayerUtil {
 
-    lateinit var plugin : JavaPlugin
+    private val plugin : JavaPlugin get() = Quantium.plugin
 
     override fun sendToLobby(player: Player) {
         @Suppress("UnstableApiUsage")

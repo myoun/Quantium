@@ -6,7 +6,7 @@ import org.netherald.quantium.MiniGameInfo
 import org.netherald.quantium.event.ServerBlockedEvent
 import org.netherald.quantium.event.ServerUnBlockedEvent
 import org.netherald.quantium.util.RedisServerUtil
-import org.netherald.quantium.util.exception.NotFoundMiniGameException
+import org.netherald.quantium.exception.NotFoundMiniGameException
 
 object ServerData {
     val lobby = ArrayList<ServerInfo>()
@@ -26,11 +26,11 @@ object ServerData {
     }
 
     fun addMiniGame(serverInfo: ServerInfo, name: String) {
-        addMiniGame(serverInfo, MiniGameData.minigames[name]!!)
+        addMiniGame(serverInfo, MiniGameData.miniGames[name]!!)
     }
 
     fun removeMiniGame(serverInfo: ServerInfo, name : String) {
-        removeMiniGame(serverInfo, MiniGameData.minigames[name]!!)
+        removeMiniGame(serverInfo, MiniGameData.miniGames[name]!!)
     }
 
     fun removeMiniGame(serverInfo: ServerInfo, game : MiniGameInfo) {
@@ -75,9 +75,9 @@ fun ServerInfo.instanceCount(miniGameInfo: MiniGameInfo) : Int {
     if (miniGameInfo.servers.contains(this)) {
         throw NotFoundMiniGameException()
     }
-    miniGameInfo.runningInstanceCount[this]
-        ?: run { (miniGameInfo.runningInstanceCount as MutableMap<ServerInfo, Int>)[this] = 0 }
-    return miniGameInfo.runningInstanceCount[this]!!
+    miniGameInfo.startedInstanceCount[this]
+        ?: run { (miniGameInfo.startedInstanceCount as MutableMap<ServerInfo, Int>)[this] = 0 }
+    return miniGameInfo.startedInstanceCount[this]!!
 }
 
 fun ServerInfo.maxInstanceCount(miniGameInfo: MiniGameInfo) : Int {

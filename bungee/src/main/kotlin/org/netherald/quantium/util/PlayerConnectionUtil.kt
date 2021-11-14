@@ -8,7 +8,7 @@ import org.netherald.quantium.data.ServerData
 import org.netherald.quantium.data.isBlocked
 import org.netherald.quantium.event.MiniGameConnectedEvent
 import org.netherald.quantium.event.MiniGameConnectingEvent
-import org.netherald.quantium.util.exception.NotFoundServerException
+import org.netherald.quantium.exception.NotFoundServerException
 
 fun ProxiedPlayer.connect(servers : List<ServerInfo>, algorithm : PlayerConnectionUtil.SelectionAlgorithm) {
     PlayerConnectionUtil.connect(this, servers, algorithm)
@@ -31,7 +31,7 @@ object PlayerConnectionUtil {
     fun connectToGame(player: ProxiedPlayer, game : MiniGameInfo) {
         val servers = game.servers.filter { !it.isBlocked }
         if (servers.isEmpty()) {
-            throw NotFoundServerException("Not found minigame server")
+            throw NotFoundServerException("Not found mini-game server")
         } else {
             if (
                 !ProxyServer.getInstance().pluginManager.callEvent(

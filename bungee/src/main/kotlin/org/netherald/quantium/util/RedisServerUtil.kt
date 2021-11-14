@@ -7,6 +7,7 @@ import io.lettuce.core.api.sync.multi
 import net.md_5.bungee.api.ProxyServer
 import net.md_5.bungee.api.config.ServerInfo
 import net.md_5.bungee.api.plugin.Event
+import org.netherald.quantium.MiniGameInstance
 import org.netherald.quantium.RedisKeyType
 import org.netherald.quantium.RedisMessageType
 import org.netherald.quantium.data.MiniGameData
@@ -15,14 +16,12 @@ import org.netherald.quantium.event.InstanceAddedEvent
 import org.netherald.quantium.event.InstanceDeletedEvent
 import org.netherald.quantium.event.ServerBlockedEvent
 import org.netherald.quantium.event.ServerUnBlockedEvent
+import java.util.*
 
 object RedisServerUtil {
 
     var client : RedisClient? = null
     var connection: StatefulRedisConnection<String, String>? = null
-
-    private var blocked : Boolean = false
-    val isBlocked: Boolean get() = blocked
 
     fun init(redisURI: RedisURI) {
 
@@ -30,7 +29,7 @@ object RedisServerUtil {
         connection = client!!.connect()
 
         val callEvent = fun (event : Event) = ProxyServer.getInstance().pluginManager.callEvent(event)
-        connection!!.addListener { message ->
+        client!!.connectPubSub().addListener { message ->
 
             if (message.type.split(":")[0] != RedisKeyType.SERVER) return@addListener
 
@@ -49,13 +48,26 @@ object RedisServerUtil {
                 }
                 RedisMessageType.ADDED_INSTANCE -> {
                     message.content[0]?.let {
-                        callEvent(InstanceAddedEvent(server, MiniGameData.minigames[it as String]!!))
+                        val uuid = UUID.fromString(message.content[1] as String)
+                        val instance = MiniGameInstance(
+                            uuid,
+                            server,
+                            MiniGameData.getMiniGameType(uuid)!!
+                        )
+                        callEvent(
+                            InstanceAddedEvent(instance)
+                        )
                     }
                 }
 
                 RedisMessageType.DELETED_INSTANCE -> {
                     message.content[0]?.let {
-                        callEvent(InstanceDeletedEvent(server, MiniGameData.minigames[it as String]!!))
+                        val uuid = UUID.fromString(message.content[1] as String)
+                        val instance = MiniGameData.instances[uuid]!!
+                        instance.delete()
+                        callEvent(
+                            InstanceDeletedEvent(MiniGameData.instances[uuid]!!)
+                        )
                     }
                 }
             }

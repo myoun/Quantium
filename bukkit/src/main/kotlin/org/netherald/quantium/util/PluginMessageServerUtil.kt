@@ -8,7 +8,7 @@ import org.netherald.quantium.Quantium
 import org.netherald.quantium.data.MiniGameData
 import java.util.*
 
-class PluginMessageServerUtil(val serverName : String) : ServerUtil {
+class PluginMessageServerUtil : ServerUtil {
 
     companion object {
         var instance : PluginMessageServerUtil? = null
@@ -26,6 +26,7 @@ class PluginMessageServerUtil(val serverName : String) : ServerUtil {
     init {
         Bukkit.getScheduler().runTaskTimer(Quantium.plugin, { _ ->
             requestMiniGames()
+            requestInstances()
         }, 0, 200)
     }
 
@@ -67,7 +68,7 @@ class PluginMessageServerUtil(val serverName : String) : ServerUtil {
 
     }
 
-    private fun sendPluginMessage(data : ByteArray) {
+    fun sendPluginMessage(data : ByteArray) {
         if (!sendPluginMessage0(data)) {
             queuedMessage.add(data)
         }

@@ -54,14 +54,17 @@ class QuantiumPlugin : JavaPlugin() {
                 ServerUtil.default = RedisServerUtil.instance!!
                 server.pluginManager.registerEvents(InstanceDataL(), this)
             } else {
-                ServerUtil.default = PluginMessageServerUtil(serverName)
+                ServerUtil.default = PluginMessageServerUtil()
                 server.pluginManager.registerEvents(PlayerJoinL(), this)
             }
             PlayerUtil.default = PluginMessagePlayerUtil()
             server.messenger.registerIncomingPluginChannel(this, Channels.MAIN_CHANNEL, PluginMessageL())
+            server.messenger.registerOutgoingPluginChannel(this, Channels.MAIN_CHANNEL)
         } else {
             PlayerUtil.default = QuantiumPlayerUtil()
         }
+
+
 
         val command = QuantiumCommand()
         getCommand("quantiumbukkit")!!.setExecutor(command)
@@ -83,6 +86,7 @@ class QuantiumPlugin : JavaPlugin() {
         Quantium.modules.forEach { (_, module) ->
             Quantium.moduleLoader.unloadModule(module)
         }
+        RedisServerUtil.client?.shutdown()
     }
 
     private fun loadConfig() {
@@ -120,7 +124,7 @@ class QuantiumPlugin : JavaPlugin() {
         }
     }
 
-    fun loadModules() {
+    private fun loadModules() {
 
         val directory = File(dataFolder, "modules")
 

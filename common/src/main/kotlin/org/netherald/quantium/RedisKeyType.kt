@@ -11,5 +11,4 @@ object RedisKeyType {
     const val MINI_GAMES = "mini-games"
     const val INSTANCES = "instances"
 
-    const val IS_LOBBY = "is-lobby"
 }

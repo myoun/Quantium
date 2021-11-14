@@ -10,6 +10,8 @@ object Channels {
             const val SET_BLOCK = "block"
             const val GAME = "game"
             const val LOBBY = "lobby"
+            const val ADDED_INSTANCE = "addedInstance"
+            const val DELETED_INSTANCE = "deletedInstance"
         }
 
         object Bungee {

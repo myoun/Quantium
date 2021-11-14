@@ -1,3 +1,3 @@
-package org.netherald.quantium.util.exception
+package org.netherald.quantium.exception
 
 class NotFoundServerException(override val message: String? = null) : Exception()

@@ -7,6 +7,7 @@ import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 import org.netherald.quantium.data.MiniGameData
+import org.netherald.quantium.util.PlayerUtil
 import org.netherald.quantium.util.ServerUtil
 
 class QuantiumCommand : CommandExecutor, TabCompleter {
@@ -57,12 +58,21 @@ class QuantiumCommand : CommandExecutor, TabCompleter {
                 when (args[0]) {
                     "join" -> {
                         if (sender is Player) {
-                            MiniGameData.miniGames[args[1]]?.let { miniGame ->
-                                miniGame.addPlayer(sender)
-                                return true
+                            ServerUtil.default?.let {
+                                if (it.miniGames.contains(args[1])) {
+                                    PlayerUtil.default.sendToMiniGame(sender, args[1])
+                                } else {
+                                    sender.notFountMiniGame()
+                                    return false
+                                }
                             } ?: run {
-                                sender.notFountMiniGame()
-                                return false
+                                MiniGameData.miniGames[args[1]]?.let { miniGame ->
+                                    miniGame.addPlayer(sender)
+                                    return true
+                                } ?: run {
+                                    sender.notFountMiniGame()
+                                    return false
+                                }
                             }
                         } else {
                             sender.notPlayer()
@@ -74,7 +84,19 @@ class QuantiumCommand : CommandExecutor, TabCompleter {
             3 -> {
                 when (args[0]) {
                     "join" -> {
-                        if (sender is Player) {
+                        Bukkit.getPlayer(args[2]) ?: run {
+                            sender.sendOfflinePlayerMessage()
+                            return false
+                        }
+                        val player = Bukkit.getPlayer(args[2])!!
+                        ServerUtil.default?.let {
+                            if (it.miniGames.contains(args[1])) {
+                                PlayerUtil.default.sendToMiniGame(player, args[1])
+                            } else {
+                                sender.notFountMiniGame()
+                                return false
+                            }
+                        } ?: run {
                             MiniGameData.miniGames[args[1]]?.let { miniGame ->
                                 Bukkit.getPlayer(args[2])?.let {
                                     miniGame.addPlayer(it)
@@ -86,8 +108,6 @@ class QuantiumCommand : CommandExecutor, TabCompleter {
                                 sender.notFountMiniGame()
                                 return false
                             }
-                        } else {
-                            sender.notPlayer()
                         }
                     }
                     else -> sender.sendHelpMessage()

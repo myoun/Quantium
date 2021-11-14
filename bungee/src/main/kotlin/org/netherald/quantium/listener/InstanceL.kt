@@ -8,15 +8,11 @@ import org.netherald.quantium.event.InstanceDeletedEvent
 class InstanceL : Listener {
     @EventHandler
     fun onAdded(event : InstanceAddedEvent) {
-        event.miniGameInfo.apply {
-            event.server.countInstanceCount()
-        }
+        event.miniGame.apply { event.instance.server.countInstanceCount() }
     }
 
     @EventHandler
     fun onDeleted(event : InstanceDeletedEvent) {
-        event.miniGameInfo.apply {
-            event.server.discountInstanceCount()
-        }
+        event.miniGame.apply { event.instance.server.discountInstanceCount() }
     }
 }
