@@ -11,6 +11,11 @@ import org.netherald.quantium.util.ServerUtil
 
 class QuantiumCommand : CommandExecutor, TabCompleter {
 
+    private val functions = ArrayList<String>().apply {
+        add("help")
+        add("join")
+    }
+
     private fun CommandSender.sendHelpMessage() {
         sendMessage("/qb help / print help message")
         joinHelpMessage()
@@ -104,11 +109,7 @@ class QuantiumCommand : CommandExecutor, TabCompleter {
         val out = ArrayList<String>()
         when (args.size) {
             1 -> {
-                when (args[0]) {
-                    "join" -> {
-                        MiniGameData.miniGames.forEach { (_, it) -> out.add(it.name) }
-                    }
-                }
+                functions.forEach { if (it.startsWith(args[0])) out.add(it) }
             }
             2 -> {
                 when (args[0]) {

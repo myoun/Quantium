@@ -6,7 +6,7 @@ import net.md_5.bungee.api.plugin.Plugin
 import net.md_5.bungee.config.Configuration
 import net.md_5.bungee.config.ConfigurationProvider
 import net.md_5.bungee.config.YamlConfiguration
-import org.netherald.quantium.data.addMiniGame
+import org.netherald.quantium.data.addMiniGameServer
 import org.netherald.quantium.data.setLobby
 import org.netherald.quantium.listener.InstanceL
 import org.netherald.quantium.listener.PluginMessageL
@@ -31,11 +31,6 @@ class Quantium : Plugin() {
         proxy.pluginManager.registerListener(this, PluginMessageL())
         proxy.pluginManager.registerListener(this, InstanceL())
 
-        config.getSection(ConfigPath.LOBBY)?.let {
-            it.keys.forEach { serverName ->
-                ProxyServer.getInstance().getServerInfo(serverName).setLobby()
-            }
-        }
         config.getSection(ConfigPath.REDIS).apply {
             val address = getString(ConfigPath.Redis.address)!!
             val port = getInt(ConfigPath.Redis.port)
@@ -55,6 +50,10 @@ class Quantium : Plugin() {
             }
         }
 
+        config.getStringList(ConfigPath.LOBBY)?.forEach { serverName ->
+            ProxyServer.getInstance().getServerInfo(serverName)!!.setLobby()
+        }
+
         config.getSection(ConfigPath.MINI_GAME)?.let { miniGameSection ->
             miniGameSection.keys.forEach { name ->
                 miniGameSection.getSection(name).apply {
@@ -65,8 +64,7 @@ class Quantium : Plugin() {
                     )
                     RedisServerUtil.addMiniGame(miniGame.name)
                     miniGameSection.getSection(ConfigPath.MiniGame.SERVERS).keys.forEach { serverName ->
-                        ProxyServer.getInstance().getServerInfo(serverName)?.addMiniGame(miniGame)
-                        RedisServerUtil.addMiniGame(serverName, miniGame.name)
+                        ProxyServer.getInstance().getServerInfo(serverName)?.addMiniGameServer(miniGame)
                     }
                 }
             }

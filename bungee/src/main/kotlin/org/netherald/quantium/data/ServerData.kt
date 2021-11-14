@@ -5,6 +5,7 @@ import net.md_5.bungee.api.config.ServerInfo
 import org.netherald.quantium.MiniGameInfo
 import org.netherald.quantium.event.ServerBlockedEvent
 import org.netherald.quantium.event.ServerUnBlockedEvent
+import org.netherald.quantium.util.RedisServerUtil
 import org.netherald.quantium.util.exception.NotFoundMiniGameException
 
 object ServerData {
@@ -38,21 +39,16 @@ object ServerData {
     }
 }
 
-val ServerInfo.minigames : Collection<MiniGameInfo>
-    get() {
-        return ServerData.miniGames(this)
-    }
+val ServerInfo.miniGames : Collection<MiniGameInfo> get() { return ServerData.miniGames(this) }
 
-fun ServerInfo.addMiniGame(name : String) {
-    ServerData.addMiniGame(this, name)
-}
-
-fun ServerInfo.addMiniGame(game : MiniGameInfo) {
+fun ServerInfo.addMiniGameServer(game : MiniGameInfo) {
     ServerData.addMiniGame(this, game)
+    RedisServerUtil.addMiniGameServer(this.name, game.name)
 }
 
 fun ServerInfo.setLobby() {
     ServerData.lobby.add(this)
+    RedisServerUtil.addLobby(this)
 }
 
 var ServerInfo.isBlocked : Boolean

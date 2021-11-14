@@ -5,6 +5,7 @@ import io.lettuce.core.RedisURI
 import io.lettuce.core.api.StatefulRedisConnection
 import io.lettuce.core.api.sync.multi
 import net.md_5.bungee.api.ProxyServer
+import net.md_5.bungee.api.config.ServerInfo
 import net.md_5.bungee.api.plugin.Event
 import org.netherald.quantium.RedisKeyType
 import org.netherald.quantium.RedisMessageType
@@ -68,35 +69,41 @@ object RedisServerUtil {
         }
     }
 
+    fun addLobby(serverInfo : ServerInfo) {
+        val sync = connection?.sync()
+        sync?.sadd(RedisKeyType.LOBBIES, serverInfo.name)
+    }
+
+    fun removeLobby(serverInfo: ServerInfo) {
+        val sync = connection?.sync()
+        sync?.srem(RedisKeyType.LOBBIES, serverInfo.name)
+    }
+
     fun addMiniGame(name : String) {
-        val sync = connection!!.sync()
-        sync.sadd(
-            RedisKeyType.MINI_GAMES,
-            name
-        )
+        val sync = connection?.sync()
+        sync?.sadd(RedisKeyType.MINI_GAMES, name)
     }
 
     fun removeMiniGame(name : String) {
-        val sync = connection!!.sync()
-        sync.multi {
+        val sync = connection?.sync()
+        sync?.multi {
             del("${RedisKeyType.MINI_GAME}:$name:${RedisKeyType.SERVERS}")
             srem(RedisKeyType.MINI_GAMES, name)
-
         }
     }
 
-    fun addMiniGame(serverName: String, gameName: String) {
-        val sync = connection!!.sync()
-        sync.multi {
+    fun addMiniGameServer(serverName: String, gameName: String) {
+        val sync = connection?.sync()
+        sync?.multi {
             sadd(RedisKeyType.MINI_GAMES, gameName)
             set("${RedisKeyType.SERVER}:$serverName:${RedisKeyType.MINI_GAMES}", gameName)
             sadd("${RedisKeyType.MINI_GAME}:${gameName}:${RedisKeyType.SERVERS}", serverName)
         }
     }
 
-    fun removeMiniGame(serverName: String, gameName: String) {
-        val sync = connection!!.sync()
-        sync.multi {
+    fun removeMiniGameServer(serverName: String, gameName: String) {
+        val sync = connection?.sync()
+        sync?.multi {
             del("${RedisKeyType.SERVER}:$serverName:${RedisKeyType.MINI_GAMES}")
             srem("${RedisKeyType.MINI_GAME}:${gameName}:${RedisKeyType.SERVERS}", serverName)
         }
