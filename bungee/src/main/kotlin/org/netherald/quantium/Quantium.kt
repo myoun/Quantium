@@ -2,10 +2,12 @@ package org.netherald.quantium
 
 import io.lettuce.core.RedisURI
 import net.md_5.bungee.api.ProxyServer
+import net.md_5.bungee.api.config.ServerInfo
 import net.md_5.bungee.api.plugin.Plugin
 import net.md_5.bungee.config.Configuration
 import net.md_5.bungee.config.ConfigurationProvider
 import net.md_5.bungee.config.YamlConfiguration
+import org.netherald.quantium.data.MiniGameData
 import org.netherald.quantium.data.addMiniGameServer
 import org.netherald.quantium.data.setLobby
 import org.netherald.quantium.listener.InstanceL
@@ -56,9 +58,15 @@ class Quantium : Plugin() {
                         getInt(ConfigPath.MiniGame.MIN_PLAYER_SIZE),
                         getInt(ConfigPath.MiniGame.MAX_PLAYER_SIZE)
                     )
+                    MiniGameData.miniGames[name] = miniGame
                     RedisServerUtil.addMiniGame(miniGame.name)
                     miniGameSection.getSection(ConfigPath.MiniGame.SERVERS).keys.forEach { serverName ->
-                        ProxyServer.getInstance().getServerInfo(serverName)?.addMiniGameServer(miniGame)
+                        val serverInfo = ProxyServer.getInstance().getServerInfo(serverName)!!
+                        serverInfo.addMiniGameServer(miniGame)
+                        getSection(serverName).apply {
+                            (miniGame.maxInstanceCount as MutableMap<ServerInfo, Int>)[serverInfo] =
+                                getInt(ConfigPath.MiniGame.MAX_INSTANCE_SIZE)
+                        }
                     }
                 }
             }

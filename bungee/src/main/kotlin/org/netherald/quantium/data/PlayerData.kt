@@ -10,17 +10,13 @@ object PlayerData {
     // im making graph data library
     // so..... data going to be changing to beautiful style
     val playerPlayingMap = HashMap<UUID, MiniGameInstance>()
+
+    fun setPlayingMiniGame(player: ProxiedPlayer, value : MiniGameInstance) {
+        val mutable = player.playingMiniGame?.players as MutableCollection<UUID>
+        mutable.remove(player.uniqueId)
+        playerPlayingMap[player.uniqueId] = value
+        (value.players as MutableCollection<UUID>).add(player.uniqueId)
+    }
 }
 
-var ProxiedPlayer.playingMiniGame : MiniGameInstance?
-    get() = PlayerData.playerPlayingMap[uniqueId]
-    set(value) {
-        value?.let {
-            val mutable =  PlayerData.playerPlayingMap[uniqueId]?.players as MutableCollection<UUID>
-            mutable.remove(uniqueId)
-            PlayerData.playerPlayingMap[uniqueId] = it
-            mutable.add(uniqueId)
-        } ?: run {
-            throw NullPointerException()
-        }
-    }
+val ProxiedPlayer.playingMiniGame : MiniGameInstance? get() = PlayerData.playerPlayingMap[uniqueId]

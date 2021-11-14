@@ -11,4 +11,7 @@ object RedisKeyType {
     const val MINI_GAMES = "mini-games"
     const val INSTANCES = "instances"
 
+    const val INSTANCE_STARTED = "is-started"
+    const val INSTANCE_STOPPED = "is-stopped"
+
 }

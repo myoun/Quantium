@@ -13,12 +13,4 @@ object MiniGameData {
     val miniGames = HashMap<String, MiniGameInfo>()
     val instances = HashMap<UUID, MiniGameInstance>()
 
-    fun getMiniGameType(uuid : UUID) : MiniGameInfo? {
-        return RedisServerUtil.connection?.sync()?.let {
-            miniGames[it.get("${RedisKeyType.INSTANCE}:$uuid:${RedisKeyType.MINI_GAME}")]
-        } ?: run {
-            PluginMessageL.miniGameTypeMap[uuid]
-        }
-    }
-
 }

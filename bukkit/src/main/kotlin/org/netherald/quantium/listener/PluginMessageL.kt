@@ -5,6 +5,7 @@ import org.bukkit.entity.Player
 import org.bukkit.plugin.messaging.PluginMessageListener
 import org.netherald.quantium.Channels
 import org.netherald.quantium.data.ConnectionType
+import org.netherald.quantium.data.MiniGameData
 import org.netherald.quantium.data.PlayerData
 import org.netherald.quantium.data.QuantiumConfig
 import org.netherald.quantium.util.PluginMessagePlayerUtil
@@ -33,7 +34,8 @@ class PluginMessageL : PluginMessageListener {
 
             Channels.SubChannels.Bungee.MINI_GAME_CONNECTION -> {
                 PlayerData.connectionType[player] = ConnectionType.MINIGAME
-                TODO()
+                val instance = MiniGameData.instances[UUID.fromString(data.readUTF())]!!
+                instance.addPlayer(player)
             }
 
             Channels.SubChannels.GET_MINI_GAMES_RESPONSE -> {

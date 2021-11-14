@@ -28,6 +28,7 @@ class MiniGameInstance(
     }
 
     var isStarted : Boolean = false
+    var isStopped : Boolean = false
     val players : Collection<UUID> = HashSet()
 
     fun addPlayer(player: ProxiedPlayer) {

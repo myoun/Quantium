@@ -13,6 +13,7 @@ import org.bukkit.event.player.*
 import org.bukkit.scheduler.BukkitTask
 import org.netherald.quantium.data.*
 import org.netherald.quantium.event.InstanceDeletedEvent
+import org.netherald.quantium.event.InstanceStartedEvent
 import org.netherald.quantium.exception.OutOfMaxPlayerSizeException
 import org.netherald.quantium.setting.AutomaticFunctionSetting
 import org.netherald.quantium.setting.IsolationSetting
@@ -42,60 +43,6 @@ class MiniGameInstance(
         var worldNether : World? = null
         var worldEnder : World? = null
         val otherWorlds = HashSet<World>()
-
-        fun start() {
-
-            finished = false
-
-            if (!worldSetting.enableOtherWorldTeleport) {
-                listener(PlayerTeleportEvent::class.java) {
-                    if (worlds.contains(event.from.world) != worlds.contains(event.to?.world)) {
-                        if (event.cause == PlayerTeleportEvent.TeleportCause.SPECTATE) {
-                            event.isCancelled = true
-                        }
-                    }
-                }
-            }
-
-            if (teamSetting.enable) {
-                team = teamSetting.teamMatcher.match(players)
-            }
-
-            if (worldSetting.linkPortal) {
-                val linker : PortalLinker = worldSetting.portalLinker
-                world?.let { world ->
-                    worldNether?.let { linker.linkNether(world, it) }
-                    worldEnder?.let { linker.linkEnder(world, it) }
-                }
-            }
-
-            if (isolationSetting.perChat) {
-                isolationSetting.perMiniGameChatUtil.applyPerChat(this@MiniGameInstance)
-            }
-
-            if (isolationSetting.perPlayerList) {
-                isolationSetting.perMiniGameTabListUtil.applyPerTabList(this@MiniGameInstance)
-            }
-
-            registerListeners()
-
-            players.forEach { player ->
-                PlayerData.UnSafe.addAllMiniGameData(player, this@MiniGameInstance)
-                worldSetting.spawn?.let { player.teleport(it) }
-            }
-
-            started = true
-
-            callStartListener()
-
-            println("""
-                ${miniGame.name} instance started
-                    world : ${world?.name}
-                    nether : ${worldNether?.name}
-                    ender : ${worldEnder?.name}
-            """.trimIndent())
-
-        }
 
         fun callPlayerAdded(player: Player) {
             addedPlayerListener.forEach {
@@ -221,29 +168,33 @@ class MiniGameInstance(
     var enableRejoin : Boolean = false
     var defaultGameMode : GameMode = GameMode.ADVENTURE
 
+    var startCountDownSize = 15
+
     private var startTask : BukkitTask? = null
 
     fun runStartTask() {
         startTask ?: run {
 
-            val sound = fun Player.() = playSound(location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 5.0f)
+            val sound = fun Player.() = playSound(location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f)
             val soundBroadCast = fun () = players.forEach { it.sound() }
 
-            startTask = MiniGameBuilderUtil(this).loopTask(15 downTo 0, 20, 20) { i ->
-                if (0 < i) {
-                    if (i == 15 || i <= 5) {
-                        broadcast("시작까지 ${i}초 전")
-                        soundBroadCast()
+            startTask = MiniGameBuilderUtil(this)
+                .loopTask(startCountDownSize downTo 0, 20, 20) { i ->
+                    if (0 < i) {
+                        if (i == startCountDownSize || i <= 5) {
+                            broadcast("시작까지 ${i}초 전")
+                            soundBroadCast()
+                        }
+                    } else {
+                        cancelStartTask()
+                        start()
                     }
-                } else {
-                    cancelStartTask()
-                    unSafe.start()
-                }
-            }.task
+                }.task
         }
     }
 
     fun cancelStartTask() {
+        broadcast { it.playSound(it.location, Sound.BLOCK_GLASS_BREAK, 0.5f, 1.0f) }
         startTask?.cancel()
         startTask = null
     }
@@ -329,15 +280,71 @@ class MiniGameInstance(
 
 
 
+    fun start() {
+
+        finished = false
+
+        if (!worldSetting.enableOtherWorldTeleport) {
+            listener(PlayerTeleportEvent::class.java) {
+                if (worlds.contains(event.from.world) != worlds.contains(event.to?.world)) {
+                    if (event.cause == PlayerTeleportEvent.TeleportCause.SPECTATE) {
+                        event.isCancelled = true
+                    }
+                }
+            }
+        }
+
+        if (teamSetting.enable) {
+            team = teamSetting.teamMatcher.match(players)
+        }
+
+        if (worldSetting.linkPortal) {
+            val linker : PortalLinker = worldSetting.portalLinker
+            world?.let { world ->
+                worldNether?.let { linker.linkNether(world, it) }
+                worldEnder?.let { linker.linkEnder(world, it) }
+            }
+        }
+
+        if (isolationSetting.perChat) {
+            isolationSetting.perMiniGameChatUtil.applyPerChat(this@MiniGameInstance)
+        }
+
+        if (isolationSetting.perPlayerList) {
+            isolationSetting.perMiniGameTabListUtil.applyPerTabList(this@MiniGameInstance)
+        }
+
+        registerListeners()
+
+        players.forEach { player ->
+            PlayerData.UnSafe.addAllMiniGameData(player, this@MiniGameInstance)
+            worldSetting.spawn?.let { player.teleport(it) }
+        }
+
+        started = true
+
+        unSafe.callStartListener()
+
+        Bukkit.getPluginManager().callEvent(InstanceStartedEvent(this))
+
+        println("""
+                ${miniGame.name} instance started
+                    world : ${world?.name}
+                    nether : ${worldNether?.name}
+                    ender : ${worldEnder?.name}
+            """.trimIndent()
+        )
+
+    }
 
     fun stopGame() {
         unregisterListeners()
         unregisterTasks()
         players.forEach { spectatorUtil.unApplySpectator(it) }
         unSafe.callStopListener()
-        if (automaticFunctionSetting.autoDelete) delete()
         finished = true
         println("${miniGame.name} instance is stopped")
+        if (automaticFunctionSetting.autoDelete) delete()
     }
 
     fun clearReJoinData() {

@@ -4,16 +4,28 @@ import com.google.common.io.ByteStreams
 import io.lettuce.core.api.sync.multi
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.netherald.quantium.MiniGameInstance
 import org.netherald.quantium.RedisKeyType
 import org.netherald.quantium.RedisMessageType
 import org.netherald.quantium.event.InstanceCreatedEvent
 import org.netherald.quantium.event.InstanceDeletedEvent
+import org.netherald.quantium.event.InstanceStartedEvent
+import org.netherald.quantium.event.InstanceStoppedEvent
 import org.netherald.quantium.util.PluginMessageServerUtil
 import org.netherald.quantium.util.RedisServerUtil
 
 class InstanceDataL : Listener {
 
-    private fun publish0(channel : String, value : String) {
+    private fun publish(instance : MiniGameInstance, channel : String, value : String) {
+        RedisServerUtil.sync?.apply {
+            publish(
+                "${RedisKeyType.INSTANCE}:${instance.uuid}:${channel}",
+                value
+            )
+        }
+    }
+
+    private fun serverPublish(channel : String, value : String) {
         RedisServerUtil.sync?.apply {
             publish(
                 "${RedisKeyType.SERVER}:${RedisServerUtil.instance!!.serverName}:${channel}",
@@ -37,7 +49,7 @@ class InstanceDataL : Listener {
                 "${RedisKeyType.INSTANCE}:${event.instance.uuid}:${RedisKeyType.MINI_GAME}",
                 event.instance.miniGame.name
             )
-            publish0(RedisMessageType.ADDED_INSTANCE, event.instance.uuid.toString())
+            serverPublish(RedisMessageType.ADDED_INSTANCE, event.instance.uuid.toString())
         } ?: run {
             @Suppress("UnstableApiUsage")
             val out = ByteStreams.newDataOutput()
@@ -59,12 +71,32 @@ class InstanceDataL : Listener {
                 event.instance.uuid.toString()
             )
             del("${RedisKeyType.INSTANCE}:${event.instance.uuid}:${RedisKeyType.MINI_GAME}")
-            publish0(RedisMessageType.DELETED_INSTANCE, event.instance.uuid.toString())
+            serverPublish(RedisMessageType.DELETED_INSTANCE, event.instance.uuid.toString())
         } ?: run {
             @Suppress("UnstableApiUsage")
             val out = ByteStreams.newDataOutput()
             out.writeUTF(event.instance.uuid.toString())
             PluginMessageServerUtil.instance!!.sendPluginMessage(out.toByteArray())
+        }
+    }
+
+    @EventHandler
+    fun onStarted(event : InstanceStartedEvent) {
+        RedisServerUtil.sync?.multi {
+            sadd(RedisKeyType.INSTANCE_STARTED, event.instance.uuid.toString())
+            publish(event.instance, RedisMessageType.STARTED_INSTANCE, event.instance.uuid.toString())
+        } ?: run {
+            TODO()
+        }
+    }
+
+    @EventHandler
+    fun onStopped(event : InstanceStoppedEvent) {
+        RedisServerUtil.sync?.multi {
+            sadd(RedisKeyType.INSTANCE_STOPPED, event.instance.uuid.toString())
+            publish(event.instance, RedisMessageType.STOPPED_INSTANCE, event.instance.uuid.toString())
+        } ?: run {
+            TODO()
         }
     }
 }

@@ -119,14 +119,17 @@ class MiniGame(
     }
 
     fun delete() {
+
         stopAll()
         MiniGameData.miniGames.remove(name, this)
         Bukkit.getPluginManager().callEvent(MiniGameDeletedEvent(this))
+
     }
 
     private fun addInstance(instance: MiniGameInstance) {
         instances as ArrayList
         instances.add(instance)
+        MiniGameData.instances[instance.uuid] = instance
     }
 
     override fun equals(other: Any?): Boolean {

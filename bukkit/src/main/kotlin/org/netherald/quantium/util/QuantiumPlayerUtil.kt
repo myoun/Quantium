@@ -20,7 +20,7 @@ class QuantiumPlayerUtil : PlayerUtil {
             }.random().addPlayer(player)
             PlayerData.connectionType[player] = ConnectionType.MINIGAME
         } ?: run {
-            throw IllegalStateException("not found minigame")
+            throw IllegalStateException("not found mini-game")
         }
     }
 

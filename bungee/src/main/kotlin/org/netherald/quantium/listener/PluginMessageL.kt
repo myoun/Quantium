@@ -17,7 +17,8 @@ import org.netherald.quantium.event.InstanceAddedEvent
 import org.netherald.quantium.event.InstanceDeletedEvent
 import org.netherald.quantium.event.MiniGameConnectingEvent
 import org.netherald.quantium.util.PlayerConnectionUtil
-import org.netherald.quantium.exception.NotFoundServerException
+import org.netherald.quantium.exception.NotFoundInstanceException
+import org.netherald.quantium.exception.NotFoundMiniGameException
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -33,6 +34,7 @@ class PluginMessageL : Listener {
             val callEvent = fun (event : Event) = ProxyServer.getInstance().pluginManager.callEvent(event)
             @Suppress("UnstableApiUsage")
             val data = ByteStreams.newDataInput(event.data)
+
             when (data.readUTF()) {
 
                 Channels.SubChannels.Bukkit.ADDED_INSTANCE -> {
@@ -72,11 +74,11 @@ class PluginMessageL : Listener {
                         ) {
                             try {
                                 PlayerConnectionUtil.connectToGame(player, it)
-                            } catch(e: NotFoundServerException) {
+                            } catch(e: NotFoundInstanceException) {
                                 it.queue.add(player)
                             }
                         }
-                    }
+                    } ?: throw NotFoundMiniGameException()
                 }
 
                 Channels.SubChannels.Bukkit.SET_BLOCK -> {

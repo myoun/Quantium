@@ -14,5 +14,7 @@ object ConfigPath {
         const val MIN_PLAYER_SIZE = "min-player-size"
         const val MAX_PLAYER_SIZE = "max-player-size"
         const val SERVERS = "servers"
+
+        const val MAX_INSTANCE_SIZE = "max-instance-size"
     }
 }

@@ -2,10 +2,8 @@ package org.netherald.quantium
 
 import net.md_5.bungee.api.config.ServerInfo
 import net.md_5.bungee.api.connection.ProxiedPlayer
-import org.netherald.quantium.data.instanceCount
 import org.netherald.quantium.data.isBlocked
-import org.netherald.quantium.data.maxInstanceCount
-import org.netherald.quantium.exception.NotFoundServerException
+import org.netherald.quantium.exception.NotFoundInstanceException
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -23,7 +21,7 @@ data class MiniGameInfo(
     val servers : Collection<ServerInfo> = HashSet()
     val maxInstanceCount : Map<ServerInfo, Int> = HashMap()
     val playerCount : Map<ServerInfo, Int> = HashMap()
-    val startedInstanceCount : Map<ServerInfo, Int> = HashMap()
+    val startedInstanceCount : Map<ServerInfo, Int> = HashMap() // TODO get data from redis
 
     fun ServerInfo.countInstanceCount() {
         val map = (startedInstanceCount as MutableMap<ServerInfo, Int>)
@@ -46,17 +44,15 @@ data class MiniGameInfo(
         return out
     }
 
-    val bestServer : ServerInfo
+    val recommendMatchingInstance : MiniGameInstance
     get() {
-        if (servers.none { !(
-                it.isBlocked ||
-                it.maxInstanceCount(this@MiniGameInfo) == it.instanceCount(this@MiniGameInfo)
-                    ) }) throw NotFoundServerException()
-        var server : ServerInfo? = null
-        servers.forEach {
-            server ?: run { server = it; return@forEach }
-            if (server!!.players.size < it.players.size) { server = it }
+        val instances = instances.filter { !(it.server.isBlocked || it.isStarted) }
+        if (instances.isEmpty()) throw NotFoundInstanceException()
+        var out : MiniGameInstance? = null
+        instances.forEach {
+            if (out == null) run { out = it; return@forEach }
+            if (out!!.players.size < it.players.size) out = it
         }
-        return server!!
+        return out!!
     }
 }
