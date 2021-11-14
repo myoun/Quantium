@@ -15,7 +15,7 @@ object QuantiumConfig {
 
     object Redis {
         var enable : Boolean = false
-        var password : String? = null
+        var password : String = ""
         var address: String? = null
         var port: Int = 0
     }

@@ -47,8 +47,8 @@ class QuantiumPlugin : JavaPlugin() {
             val serverName = QuantiumConfig.Bungee.serverName
             if (QuantiumConfig.Redis.enable) {
                 @Suppress("DEPRECATION")
-                val url : RedisURI = RedisURI.create(QuantiumConfig.Redis.address, QuantiumConfig.Redis.port).apply {
-                    setPassword(QuantiumConfig.Redis.password ?: "")
+                val url = RedisURI.create(QuantiumConfig.Redis.address, QuantiumConfig.Redis.port).apply {
+                    setPassword(QuantiumConfig.Redis.password)
                 }
                 RedisServerUtil.instance = RedisServerUtil(serverName, url)
                 ServerUtil.default = RedisServerUtil.instance!!
@@ -106,15 +106,15 @@ class QuantiumPlugin : JavaPlugin() {
         config.getConfigurationSection(ConfigPath.REDIS)?.apply {
 
             QuantiumConfig.Redis.enable = getBoolean(ConfigPath.ENABLE)
+            if (QuantiumConfig.Redis.enable) {
+                QuantiumConfig.Redis.address = getString(ConfigPath.Redis.ADDRESS)
+                    ?: throwException(ConfigPath.Redis.ADDRESS)
 
-            QuantiumConfig.Redis.address = getString(ConfigPath.Redis.ADDRESS)
-                ?: throwException(ConfigPath.Redis.ADDRESS)
+                QuantiumConfig.Redis.port = getInt(ConfigPath.Redis.PORT)
+                if (QuantiumConfig.Redis.port == 0) throwException(ConfigPath.Redis.PORT)
 
-            QuantiumConfig.Redis.port = getInt(ConfigPath.Redis.PORT)
-            if (QuantiumConfig.Redis.port == 0) throwException(ConfigPath.Redis.PORT)
-
-            QuantiumConfig.Redis.password = getString(ConfigPath.Redis.PASSWORD)
-                ?: throwException(ConfigPath.Redis.PASSWORD)
+                QuantiumConfig.Redis.password = getString(ConfigPath.Redis.PASSWORD, "")
+            }
 
         }
     }
