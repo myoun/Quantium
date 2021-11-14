@@ -52,6 +52,7 @@ class QuantiumPlugin : JavaPlugin() {
                 }
                 RedisServerUtil.instance = RedisServerUtil(serverName, url)
                 ServerUtil.default = RedisServerUtil.instance!!
+                server.pluginManager.registerEvents(InstanceDataL(), this)
             } else {
                 ServerUtil.default = PluginMessageServerUtil(serverName)
                 server.pluginManager.registerEvents(PlayerJoinL(), this)
@@ -113,7 +114,7 @@ class QuantiumPlugin : JavaPlugin() {
                 QuantiumConfig.Redis.port = getInt(ConfigPath.Redis.PORT)
                 if (QuantiumConfig.Redis.port == 0) throwException(ConfigPath.Redis.PORT)
 
-                QuantiumConfig.Redis.password = getString(ConfigPath.Redis.PASSWORD, "")
+                QuantiumConfig.Redis.password = getString(ConfigPath.Redis.PASSWORD, "")!!
             }
 
         }

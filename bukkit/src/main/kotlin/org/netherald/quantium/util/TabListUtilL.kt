@@ -1,4 +1,4 @@
-package org.netherald.quantium.listener
+package org.netherald.quantium.util
 
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -23,7 +23,7 @@ class TabListUtilL(private val plugin: JavaPlugin) : Listener {
             if (!targetMiniGame.contains(miniGame)) return
 
             val ignorePlayers = ArrayList<Player>(Bukkit.getOnlinePlayers())
-            ignorePlayers.removeAll(event.player.world.players)
+            ignorePlayers.removeAll(event.player.world.players.toSet())
             ignorePlayers.removeAll(miniGame.players)
 
             ignorePlayers.forEach { player ->

@@ -1,8 +1,7 @@
 package org.netherald.quantium.world
 
-import org.netherald.quantium.MiniGame
 import org.netherald.quantium.MiniGameInstance
-import org.netherald.quantium.listener.TabListUtilL
+import org.netherald.quantium.util.TabListUtilL
 
 class QuantiumPerMiniGameTabList : PerMiniGameTabList {
     override fun applyPerTabList(minigame: MiniGameInstance) {

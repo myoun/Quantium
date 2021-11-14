@@ -3,7 +3,6 @@ package org.netherald.quantium.listener
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
-import org.bukkit.event.player.PlayerJoinEvent
 import org.netherald.quantium.data.*
 import org.spigotmc.event.player.PlayerSpawnLocationEvent
 
