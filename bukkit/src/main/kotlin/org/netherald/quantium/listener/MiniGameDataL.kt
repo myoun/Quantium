@@ -45,7 +45,7 @@ class MiniGameDataL : Listener {
         RedisServerUtil.sync?.multi {
             serverPublish(RedisMessageType.MINI_GAME_ADDED, event.miniGame.name)
             sadd("${RedisKeyType.SERVER}:${serverName}:${RedisKeyType.MINI_GAMES}", event.miniGame.name)
-            sadd("${RedisKeyType.MINI_GAME}:${event.miniGame.name}:${RedisKeyType.SERVER}", serverName)
+            sadd("${RedisKeyType.MINI_GAME}:${event.miniGame.name}:${RedisKeyType.SERVERS}", serverName)
         }
     }
 
@@ -54,7 +54,7 @@ class MiniGameDataL : Listener {
         RedisServerUtil.sync?.multi {
             serverPublish(RedisMessageType.MINI_GAME_REMOVED, event.miniGame.name)
             srem("${RedisKeyType.SERVER}:${serverName}:${RedisKeyType.MINI_GAMES}", event.miniGame.name)
-            srem("${RedisKeyType.MINI_GAME}:${event.miniGame.name}:${RedisKeyType.SERVER}", serverName)
+            srem("${RedisKeyType.MINI_GAME}:${event.miniGame.name}:${RedisKeyType.SERVERS}", serverName)
         }
     }
 
@@ -73,6 +73,10 @@ class MiniGameDataL : Listener {
             set(
                 "${RedisKeyType.INSTANCE}:${event.instance.uuid}:${RedisKeyType.MINI_GAME}",
                 event.instance.miniGame.name
+            )
+            set(
+                "${RedisKeyType.INSTANCE}:$uuid:${RedisServerKey.SERVER",
+                serverName
             )
             serverPublish(RedisMessageType.ADDED_INSTANCE, event.instance.uuid.toString())
         } ?: run {
@@ -97,6 +101,7 @@ class MiniGameDataL : Listener {
                 event.instance.uuid.toString()
             )
             del("${RedisKeyType.INSTANCE}:${event.instance.uuid}:${RedisKeyType.MINI_GAME}")
+            del("${RedisKeyType.INSTANCE}:$uuid:${RedisServerKey.SERVER")
             serverPublish(RedisMessageType.DELETED_INSTANCE, event.instance.uuid.toString())
         } ?: run {
             @Suppress("UnstableApiUsage")
