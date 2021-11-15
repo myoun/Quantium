@@ -28,6 +28,7 @@
 #        max-instance-count: 1
 #      server2:
 #        max-instance-count: 1
+
 redis:
   enable: false
   password: nothing # if you don't use password you can remove this

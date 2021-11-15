@@ -4,17 +4,17 @@ import com.google.common.io.ByteStreams
 import io.lettuce.core.api.sync.multi
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.netherald.quantium.MiniGame
 import org.netherald.quantium.MiniGameInstance
 import org.netherald.quantium.RedisKeyType
 import org.netherald.quantium.RedisMessageType
-import org.netherald.quantium.event.InstanceCreatedEvent
-import org.netherald.quantium.event.InstanceDeletedEvent
-import org.netherald.quantium.event.InstanceStartedEvent
-import org.netherald.quantium.event.InstanceStoppedEvent
+import org.netherald.quantium.event.*
 import org.netherald.quantium.util.PluginMessageServerUtil
 import org.netherald.quantium.util.RedisServerUtil
 
-class InstanceDataL : Listener {
+class MiniGameDataL : Listener {
+
+    private val serverName = RedisServerUtil.instance!!.serverName
 
     private fun publish(instance : MiniGameInstance, channel : String, value : String) {
         RedisServerUtil.sync?.apply {
@@ -25,20 +25,45 @@ class InstanceDataL : Listener {
         }
     }
 
-    private fun serverPublish(channel : String, value : String) {
+    private fun miniGamePublish(miniGame : MiniGame, channel : String, value : String) {
         RedisServerUtil.sync?.apply {
             publish(
-                "${RedisKeyType.SERVER}:${RedisServerUtil.instance!!.serverName}:${channel}",
+                "${RedisKeyType.MINI_GAME}:${miniGame.name}:${channel}",
                 value
             )
+        }
+    }
+
+    private fun serverPublish(channel : String, value : String) {
+        RedisServerUtil.sync?.apply {
+            publish("${RedisKeyType.SERVER}:${serverName}:${channel}", value)
+        }
+    }
+
+    @EventHandler
+    fun onMiniGameCreated(event : MiniGameCreateEvent) {
+        RedisServerUtil.sync?.multi {
+            serverPublish(RedisMessageType.MINI_GAME_ADDED, event.miniGame.name)
+            sadd("${RedisKeyType.SERVER}:${serverName}:${RedisKeyType.MINI_GAMES}", event.miniGame.name)
+            sadd("${RedisKeyType.MINI_GAME}:${event.miniGame.name}:${RedisKeyType.SERVER}", serverName)
+        }
+    }
+
+    @EventHandler
+    fun onMiniGameDeleted(event : MiniGameDeletedEvent) {
+        RedisServerUtil.sync?.multi {
+            serverPublish(RedisMessageType.MINI_GAME_REMOVED, event.miniGame.name)
+            srem("${RedisKeyType.SERVER}:${serverName}:${RedisKeyType.MINI_GAMES}", event.miniGame.name)
+            srem("${RedisKeyType.MINI_GAME}:${event.miniGame.name}:${RedisKeyType.SERVER}", serverName)
         }
     }
 
     @EventHandler
     fun onCreated(event : InstanceCreatedEvent) {
         RedisServerUtil.sync?.multi {
+            set("${RedisKeyType.INSTANCE}:${event.instance.uuid}:${RedisKeyType.SERVER}", serverName)
             sadd(
-                "${RedisKeyType.SERVER}:${RedisServerUtil.instance!!.serverName}:${RedisKeyType.INSTANCES}",
+                "${RedisKeyType.SERVER}:${serverName}:${RedisKeyType.INSTANCES}",
                 event.instance.uuid.toString()
             )
             sadd(
@@ -62,12 +87,13 @@ class InstanceDataL : Listener {
     @EventHandler
     fun onDeleted(event : InstanceDeletedEvent) {
         RedisServerUtil.sync?.multi {
+            del("${RedisKeyType.INSTANCE}:${event.instance.uuid}:${RedisKeyType.SERVER}")
             srem(
-                "${RedisKeyType.SERVER}:${RedisServerUtil.instance!!.serverName}:${RedisKeyType.INSTANCES}",
+                "${RedisKeyType.SERVER}:${serverName}:${RedisKeyType.INSTANCES}",
                 event.instance.uuid.toString()
             )
             srem(
-                "${RedisKeyType.MINI_GAME}:${event.instance.miniGame.name}:${RedisKeyType.INSTANCE}",
+                "${RedisKeyType.MINI_GAME}:${event.instance.miniGame.name}:${RedisKeyType.INSTANCES}",
                 event.instance.uuid.toString()
             )
             del("${RedisKeyType.INSTANCE}:${event.instance.uuid}:${RedisKeyType.MINI_GAME}")

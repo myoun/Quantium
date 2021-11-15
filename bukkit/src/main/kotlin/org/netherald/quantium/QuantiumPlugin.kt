@@ -52,7 +52,7 @@ class QuantiumPlugin : JavaPlugin() {
                 }
                 RedisServerUtil.instance = RedisServerUtil(serverName, url)
                 ServerUtil.default = RedisServerUtil.instance!!
-                server.pluginManager.registerEvents(InstanceDataL(), this)
+                server.pluginManager.registerEvents(MiniGameDataL(), this)
             } else {
                 ServerUtil.default = PluginMessageServerUtil()
                 server.pluginManager.registerEvents(PlayerJoinL(), this)

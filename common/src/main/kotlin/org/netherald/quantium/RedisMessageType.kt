@@ -2,6 +2,9 @@ package org.netherald.quantium
 
 object RedisMessageType {
 
+    const val MINI_GAME_ADDED = "added-mini-game"
+    const val MINI_GAME_REMOVED = "removed-mini-game"
+
     const val ADDED_INSTANCE = "added-instance"
     const val DELETED_INSTANCE = "deleted-instance"
 

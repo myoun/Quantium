@@ -2,6 +2,7 @@ package org.netherald.quantium.data
 
 import net.md_5.bungee.api.ProxyServer
 import net.md_5.bungee.api.config.ServerInfo
+import org.netherald.quantium.ConfigPath
 import org.netherald.quantium.MiniGameInfo
 import org.netherald.quantium.event.ServerBlockedEvent
 import org.netherald.quantium.event.ServerUnBlockedEvent
@@ -41,9 +42,10 @@ object ServerData {
 
 val ServerInfo.miniGames : Collection<MiniGameInfo> get() { return ServerData.miniGames(this) }
 
-fun ServerInfo.addMiniGameServer(game : MiniGameInfo) {
+fun ServerInfo.addMiniGameServer(game : MiniGameInfo, maxInstanceCount : Int) {
     ServerData.addMiniGame(this, game)
     RedisServerUtil.addMiniGameServer(this.name, game.name)
+    (game.maxInstanceCount as MutableMap<ServerInfo, Int>)[this] = maxInstanceCount
 }
 
 fun ServerInfo.setLobby() {

@@ -5,7 +5,7 @@ object RedisKeyType {
 
     const val SERVER = "server"
     const val MINI_GAME = "mini-game"
-    const val INSTANCE = "instances"
+    const val INSTANCE = "instance"
 
     const val SERVERS = "servers"
     const val MINI_GAMES = "mini-games"

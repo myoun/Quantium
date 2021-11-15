@@ -33,8 +33,7 @@ object PlayerConnectionUtil {
                 MiniGameConnectingEvent(player, game)
             ).isCancelled
         ) {
-            game.recommendMatchingInstance.addPlayer(player)
-            ProxyServer.getInstance().pluginManager.callEvent(MiniGameConnectedEvent(player, game))
+            game.addPlayer(player)
         }
     }
 

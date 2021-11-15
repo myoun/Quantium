@@ -3,9 +3,12 @@ package org.netherald.quantium
 import net.md_5.bungee.api.ProxyServer
 import net.md_5.bungee.api.config.ServerInfo
 import net.md_5.bungee.api.connection.ProxiedPlayer
+import org.netherald.quantium.data.QuantiumConfig
 import org.netherald.quantium.data.playingMiniGame
+import org.netherald.quantium.event.MiniGameConnectedEvent
 import org.netherald.quantium.exception.AlreadyPlayingException
 import org.netherald.quantium.exception.AlreadyStartedException
+import org.netherald.quantium.util.RedisServerUtil
 import org.netherald.quantium.util.connectToLobby
 import java.util.*
 import kotlin.collections.HashSet
@@ -28,7 +31,23 @@ class MiniGameInstance(
     }
 
     var isStarted : Boolean = false
+    get() {
+        if (QuantiumConfig.isRedis) {
+            return RedisServerUtil.sync!!.get(
+                "${RedisKeyType.INSTANCE}:$uuid:${RedisKeyType.INSTANCE_STARTED}"
+            ).toBoolean()
+        }
+        return field
+    }
     var isStopped : Boolean = false
+    get() {
+        if (QuantiumConfig.isRedis) {
+            return RedisServerUtil.sync!!.get(
+                "${RedisKeyType.INSTANCE}:$uuid:${RedisKeyType.INSTANCE_STOPPED}"
+            ).toBoolean()
+        }
+        return field
+    }
     val players : Collection<UUID> = HashSet()
 
     fun addPlayer(player: ProxiedPlayer) {
@@ -36,6 +55,7 @@ class MiniGameInstance(
         if (isStarted) { throw AlreadyStartedException() }
         (players as MutableCollection<UUID>).add(player.uniqueId)
         player.connect(server)
+        ProxyServer.getInstance().pluginManager.callEvent(MiniGameConnectedEvent(player, this))
     }
 
     fun removePlayer(player: ProxiedPlayer) {

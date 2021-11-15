@@ -72,13 +72,9 @@ class PluginMessageL : Listener {
                         if (!ProxyServer.getInstance().pluginManager.callEvent(
                             MiniGameConnectingEvent(player, it)).isCancelled
                         ) {
-                            try {
-                                PlayerConnectionUtil.connectToGame(player, it)
-                            } catch(e: NotFoundInstanceException) {
-                                it.queue.add(player)
-                            }
+                            PlayerConnectionUtil.connectToGame(player, it)
                         }
-                    } ?: throw NotFoundMiniGameException()
+                    } ?: throw NotFoundMiniGameException(miniGame)
                 }
 
                 Channels.SubChannels.Bukkit.SET_BLOCK -> {
