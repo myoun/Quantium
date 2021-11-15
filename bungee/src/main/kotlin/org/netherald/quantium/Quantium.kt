@@ -101,7 +101,7 @@ class Quantium : Plugin() {
                 instances.forEach { uuid ->
                     val server = proxy.getServerInfo(
                         RedisServerUtil.sync!!.get(
-                            "${RedisKeyType.MINI_GAME}:$name:${RedisKeyType.SERVER}"
+                            "${RedisKeyType.INSTANCE}:$uuid:${RedisKeyType.SERVER}"
                         )
                     ) ?: run {
                         throw NullPointerException("Not found server of $uuid. $uuid is $name mini-game")
