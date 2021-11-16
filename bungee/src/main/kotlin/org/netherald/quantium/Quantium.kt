@@ -2,7 +2,6 @@ package org.netherald.quantium
 
 import io.lettuce.core.RedisURI
 import net.md_5.bungee.api.ProxyServer
-import net.md_5.bungee.api.config.ServerInfo
 import net.md_5.bungee.api.plugin.Plugin
 import net.md_5.bungee.config.Configuration
 import net.md_5.bungee.config.ConfigurationProvider
@@ -18,7 +17,6 @@ import org.netherald.quantium.listener.PluginMessageL
 import org.netherald.quantium.util.RedisServerUtil
 import java.io.File
 import java.io.IOException
-import java.lang.NullPointerException
 import java.nio.file.Files
 import java.util.*
 
@@ -118,10 +116,13 @@ class Quantium : Plugin() {
                         "${RedisKeyType.INSTANCE}:$uuid:${RedisKeyType.INSTANCE_STOPPED}"
                     )
                     RedisServerUtil.instanceConnection[instance] = connection
+                    MiniGameData.instances[instance.uuid] = instance
                     logger.info("Instance $uuid of $name is loaded")
                 }
             }
         }
+
+        proxy.pluginManager.registerCommand(this, QuantiumCommand())
     }
 
     override fun onDisable() {

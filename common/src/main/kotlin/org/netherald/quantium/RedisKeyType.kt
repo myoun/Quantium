@@ -14,4 +14,6 @@ object RedisKeyType {
     const val INSTANCE_STARTED = "is-started"
     const val INSTANCE_STOPPED = "is-stopped"
 
+    const val REJOIN_DATA = "rejoin-data"
+
 }

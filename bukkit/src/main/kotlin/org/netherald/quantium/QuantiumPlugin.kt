@@ -6,6 +6,8 @@ import io.lettuce.core.RedisURI
 import org.bukkit.plugin.java.JavaPlugin
 import org.netherald.quantium.data.MiniGameData
 import org.netherald.quantium.data.QuantiumConfig
+import org.netherald.quantium.event.InstanceDeletedEvent
+import org.netherald.quantium.event.MiniGameDeletedEvent
 import org.netherald.quantium.listener.*
 import org.netherald.quantium.module.ModuleLoader
 import org.netherald.quantium.util.*
@@ -15,6 +17,8 @@ import java.util.regex.Pattern
 
 
 class QuantiumPlugin : JavaPlugin() {
+
+    private var dataL : MiniGameDataL? = null
 
     override fun onEnable() {
 
@@ -52,7 +56,8 @@ class QuantiumPlugin : JavaPlugin() {
                 }
                 RedisServerUtil.instance = RedisServerUtil(serverName, url)
                 ServerUtil.default = RedisServerUtil.instance!!
-                server.pluginManager.registerEvents(MiniGameDataL(), this)
+                dataL = MiniGameDataL()
+                server.pluginManager.registerEvents(dataL!!, this)
             } else {
                 ServerUtil.default = PluginMessageServerUtil()
                 server.pluginManager.registerEvents(PlayerJoinL(), this)
@@ -63,7 +68,6 @@ class QuantiumPlugin : JavaPlugin() {
         } else {
             PlayerUtil.default = QuantiumPlayerUtil()
         }
-
 
 
         val command = QuantiumCommand()
@@ -81,7 +85,9 @@ class QuantiumPlugin : JavaPlugin() {
                 val instance = iterator.next()
                 iterator.remove()
                 instance.delete()
+                dataL?.onDeleted(InstanceDeletedEvent((instance)))
             }
+            dataL?.onMiniGameDeleted(MiniGameDeletedEvent(miniGame))
         }
         Quantium.modules.forEach { (_, module) ->
             Quantium.moduleLoader.unloadModule(module)

@@ -67,7 +67,7 @@ class MiniGameDataL : Listener {
                 event.instance.uuid.toString()
             )
             sadd(
-                "${RedisKeyType.MINI_GAME}:${event.instance.miniGame.name}:${RedisKeyType.INSTANCE}",
+                "${RedisKeyType.MINI_GAME}:${event.instance.miniGame.name}:${RedisKeyType.INSTANCES}",
                 event.instance.uuid.toString()
             )
             set(
@@ -75,7 +75,7 @@ class MiniGameDataL : Listener {
                 event.instance.miniGame.name
             )
             set(
-                "${RedisKeyType.INSTANCE}:$uuid:${RedisServerKey.SERVER",
+                "${RedisKeyType.INSTANCE}:${event.instance.uuid}:${RedisKeyType.SERVER}",
                 serverName
             )
             serverPublish(RedisMessageType.ADDED_INSTANCE, event.instance.uuid.toString())
@@ -101,7 +101,7 @@ class MiniGameDataL : Listener {
                 event.instance.uuid.toString()
             )
             del("${RedisKeyType.INSTANCE}:${event.instance.uuid}:${RedisKeyType.MINI_GAME}")
-            del("${RedisKeyType.INSTANCE}:$uuid:${RedisServerKey.SERVER")
+            del("${RedisKeyType.INSTANCE}:${event.instance.uuid}:${RedisKeyType.SERVER}")
             serverPublish(RedisMessageType.DELETED_INSTANCE, event.instance.uuid.toString())
         } ?: run {
             @Suppress("UnstableApiUsage")
@@ -126,6 +126,32 @@ class MiniGameDataL : Listener {
         RedisServerUtil.sync?.multi {
             sadd(RedisKeyType.INSTANCE_STOPPED, event.instance.uuid.toString())
             publish(event.instance, RedisMessageType.STOPPED_INSTANCE, event.instance.uuid.toString())
+        } ?: run {
+            TODO()
+        }
+    }
+
+    @EventHandler
+    fun onReJoinDataAdd(event : InstanceAddReJoinDataEvent) {
+        RedisServerUtil.sync?.multi {
+            sadd(
+                "${RedisKeyType.INSTANCE}:${event.instance.uuid}:${RedisKeyType.REJOIN_DATA}",
+                event.player.uniqueId.toString()
+            )
+            publish(event.instance, RedisMessageType.REJOIN_DATA_ADD, event.instance.uuid.toString())
+        } ?: run {
+            TODO()
+        }
+    }
+
+    @EventHandler
+    fun onReJoinDataRemove(event : InstanceRemoveReJoinDataEvent) {
+        RedisServerUtil.sync?.multi {
+            srem(
+                "${RedisKeyType.INSTANCE}:${event.instance.uuid}:${RedisKeyType.REJOIN_DATA}",
+                event.player.uniqueId.toString()
+            )
+            publish(event.instance, RedisMessageType.REJOIN_DATA_REMOVE, event.instance.uuid.toString())
         } ?: run {
             TODO()
         }

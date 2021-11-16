@@ -134,7 +134,7 @@ class MiniGameInstance(
     var worldSetting: WorldSetting = WorldSetting()
     var isolationSetting: IsolationSetting = IsolationSetting()
 
-    val reJoinData : MutableCollection<Player> = HashSet()
+    val reJoinData : MutableCollection<Player> = ReJoinPlayerSet(this)
 
     fun automaticFunctionSetting(init : AutomaticFunctionSetting.() -> Unit): AutomaticFunctionSetting {
         automaticFunctionSetting.init()

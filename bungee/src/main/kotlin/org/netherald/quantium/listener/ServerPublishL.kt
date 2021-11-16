@@ -31,10 +31,14 @@ class ServerPublishL : RedisPubSubAdapter<String, String>() {
             }
             RedisMessageType.ADDED_INSTANCE -> {
                 val uuid = UUID.fromString(message)
+                val minigameName = RedisServerUtil.sync!!.get(
+                    "${RedisKeyType.INSTANCE}:$uuid:${RedisKeyType.MINI_GAME}"
+                )
+
                 val instance = MiniGameInstance(
                     uuid,
                     server,
-                    MiniGameData.instances[uuid]!!.miniGame
+                    MiniGameData.miniGames[minigameName]!!
                 )
 
                 val connection = RedisServerUtil.client!!.connectPubSub()

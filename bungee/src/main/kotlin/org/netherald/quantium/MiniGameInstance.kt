@@ -3,6 +3,7 @@ package org.netherald.quantium
 import net.md_5.bungee.api.ProxyServer
 import net.md_5.bungee.api.config.ServerInfo
 import net.md_5.bungee.api.connection.ProxiedPlayer
+import org.netherald.quantium.data.PlayerData
 import org.netherald.quantium.data.QuantiumConfig
 import org.netherald.quantium.data.playingMiniGame
 import org.netherald.quantium.event.MiniGameConnectedEvent
@@ -54,6 +55,7 @@ class MiniGameInstance(
         player.playingMiniGame?.let { throw AlreadyPlayingException() }
         if (isStarted) { throw AlreadyStartedException() }
         (players as MutableCollection<UUID>).add(player.uniqueId)
+        PlayerData.playerPlayingMap[player.uniqueId] = this
         player.connect(server)
         ProxyServer.getInstance().pluginManager.callEvent(MiniGameConnectedEvent(player, this))
     }
@@ -63,6 +65,7 @@ class MiniGameInstance(
             throw IllegalArgumentException("This player is not playing this instance")
         }
         (players as MutableCollection<UUID>).remove(player.uniqueId)
+        PlayerData.playerPlayingMap -= player.uniqueId
         player.connectToLobby()
     }
 

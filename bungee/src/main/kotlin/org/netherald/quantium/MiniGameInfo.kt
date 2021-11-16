@@ -40,6 +40,7 @@ data class MiniGameInfo(
 
     fun ServerInfo.countInstanceCount() {
         val map = (startedInstanceCount as MutableMap<ServerInfo, Int>)
+        map[this] ?: run { map[this] = 0 }
         map[this] = map[this]!!+1
     }
 

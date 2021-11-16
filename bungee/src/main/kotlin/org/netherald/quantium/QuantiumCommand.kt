@@ -40,40 +40,37 @@ class QuantiumCommand : Command("quantiumproxy", "Quantium.command", "qp"), TabE
                         }
                         when (args[2].lowercase()) {
                             "info" -> {
-                                sender.sendMessage(
-                                    """
-                                    
-                                """.trimIndent()
-                                )
+                                sender.sendMessage("""
+                                    player-count: ${miniGame.players.size}
+                                """.trimIndent())
                             }
                             "instances" -> {
-                                TODO()
+                                sender.sendMessage("""
+                                    instances : ${miniGame.instances.map { it.uuid }}
+                                """.trimIndent())
                             }
                         }
                     }
                     "instance" -> {
                         lateinit var uuid: UUID
-                        kotlin.runCatching { uuid = UUID.fromString(args[2]) }.exceptionOrNull()?.let {
-                            if (it is IllegalArgumentException) {
-                                sender.wrongUUID()
-                            } else {
-                                throw it
-                            }
+                        try { uuid = UUID.fromString(args[2]) } catch (e : IllegalArgumentException) {
+                            sender.wrongUUID()
                             return
                         }
 
-                        val miniGame = MiniGameData.instances[uuid] ?: run {
+                        val instance = MiniGameData.instances[uuid] ?: run {
                             sender.notFoundInstance()
                             return
                         }
                         when (args[2].lowercase()) {
                             "info" -> {
-                                sender.sendMessage(
-                                    """
-                                    
+                                sender.sendMessage("""
+                                    uuid: $instance.uuid
+                                    mini-game: ${instance.miniGame}
+                                    is Started?: ${instance.isStarted}
+                                    is Stopped?: ${instance.isStopped}
                                 """.trimIndent()
                                 )
-                                TODO()
                             }
                         }
                     }
@@ -82,23 +79,47 @@ class QuantiumCommand : Command("quantiumproxy", "Quantium.command", "qp"), TabE
         }
     }
 
+    private val functions = ArrayList<String>().apply {
+        add("minigames")
+        add("info")
+        add("instance")
+        add("minigame")
+    }
+
+    private val miniGameFunctions = ArrayList<String>().apply {
+        add("info")
+        add("instances")
+    }
+
+    private val instanceFunctions = ArrayList<String>().apply {
+        add("info")
+    }
+
     override fun onTabComplete(sender: CommandSender, args: Array<out String>): MutableIterable<String> {
         val out = ArrayList<String>()
         when (args.size) {
             1 -> {
+                functions.forEach { if (it.startsWith(args[0].lowercase())) out.add(it) }
+            }
+            2 -> {
+                val args1 = args[1].lowercase()
                 when (args[0].lowercase()) {
-                    "minigames" -> {
-
+                    "minigame" -> {
+                        out.addAll(MiniGameData.miniGames.keys.filter { it.startsWith(args1) })
+                    }
+                    "instance" -> {
+                        out.addAll(MiniGameData.instances.keys.map { it.toString() }.filter { it.startsWith(args1) })
                     }
                 }
             }
-            2 -> {
+            3 -> {
+                val args2 = args[2].lowercase()
                 when (args[0].lowercase()) {
-                    "info" -> {
-
+                    "minigame" -> {
+                        out.addAll(miniGameFunctions.filter { it.startsWith(args2) })
                     }
-                    "instances" -> {
-
+                    "instance" -> {
+                        out.addAll(instanceFunctions.filter { it.startsWith(args2) })
                     }
                 }
             }

@@ -12,4 +12,7 @@ object RedisMessageType {
     const val STOPPED_INSTANCE = "stopped-instance"
 
     const val BLOCK = "block"
+
+    const val REJOIN_DATA_ADD = "rejoin-data-add"
+    const val REJOIN_DATA_REMOVE = "rejoin-data-remove"
 }

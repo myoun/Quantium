@@ -16,6 +16,7 @@ import kotlin.collections.HashSet
 
 class PluginMessageL : PluginMessageListener {
     override fun onPluginMessageReceived(channel: String, player: Player, message: ByteArray) {
+        if (channel != Channels.MAIN_CHANNEL) return
         @Suppress("UnstableApiUsage")
         val data = ByteStreams.newDataInput(message)
 
@@ -26,10 +27,8 @@ class PluginMessageL : PluginMessageListener {
             }
 
             Channels.SubChannels.Bungee.LOBBY_CONNECTION -> {
-                if (PlayerData.connectionType[player] != ConnectionType.LOBBY) {
-                    PlayerData.connectionType[player] = ConnectionType.LOBBY
-                    player.teleport(QuantiumConfig.lobbyLocation)
-                }
+                PlayerData.connectionType[player] = ConnectionType.LOBBY
+                player.teleport(QuantiumConfig.lobbyLocation)
             }
 
             Channels.SubChannels.Bungee.MINI_GAME_CONNECTION -> {

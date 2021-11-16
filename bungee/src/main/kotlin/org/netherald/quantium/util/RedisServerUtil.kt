@@ -28,11 +28,11 @@ object RedisServerUtil {
         sync = connection!!.sync()
 
         ProxyServer.getInstance().servers.forEach { (name, _) ->
-            serverPubSubRegister(name)
+            addServer(name)
         }
     }
 
-    fun serverPubSubRegister(name : String) {
+    fun addServer(name : String) {
         val connection = client!!.connectPubSub()
         connection.addListener(ServerPublishL())
         connection.sync().subscribe("${RedisKeyType.SERVER}:$name:${RedisMessageType.BLOCK}")
