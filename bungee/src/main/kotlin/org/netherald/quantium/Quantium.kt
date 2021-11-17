@@ -9,7 +9,7 @@ import net.md_5.bungee.config.YamlConfiguration
 import org.netherald.quantium.data.MiniGameData
 import org.netherald.quantium.data.QuantiumConfig
 import org.netherald.quantium.data.addMiniGameServer
-import org.netherald.quantium.data.setLobby
+import org.netherald.quantium.data.isLobby
 import org.netherald.quantium.listener.ConnectedL
 import org.netherald.quantium.listener.InstanceL
 import org.netherald.quantium.listener.InstancePublishL
@@ -20,6 +20,11 @@ import java.io.IOException
 import java.nio.file.Files
 import java.util.*
 
+fun debug(message : String) {
+    if (QuantiumConfig.isDebug) {
+        Quantium.instance.logger.info("Debug: $message")
+    }
+}
 
 class Quantium : Plugin() {
 
@@ -40,6 +45,7 @@ class Quantium : Plugin() {
         proxy.pluginManager.registerListener(this, InstanceL())
         proxy.pluginManager.registerListener(this, ConnectedL())
 
+        QuantiumConfig.isDebug = config.getBoolean(ConfigPath.IS_DEBUG)
 
         config.getSection(ConfigPath.REDIS).apply {
             val address = getString(ConfigPath.Redis.address)!!
@@ -56,7 +62,7 @@ class Quantium : Plugin() {
         }
 
         config.getStringList(ConfigPath.LOBBY)?.forEach { serverName ->
-            ProxyServer.getInstance().getServerInfo(serverName)!!.setLobby()
+            ProxyServer.getInstance().getServerInfo(serverName)!!.isLobby = true
         }
 
         if (config.getString(ConfigPath.QUEUE_SERVER).isEmpty()) {

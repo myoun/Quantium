@@ -27,17 +27,17 @@ object RedisServerUtil {
         connection = client!!.connect()
         sync = connection!!.sync()
 
-        ProxyServer.getInstance().servers.forEach { (name, _) ->
-            addServer(name)
+        ProxyServer.getInstance().servers.forEach { (_, server) ->
+            addServer(server)
         }
     }
 
-    fun addServer(name : String) {
+    fun addServer(server : ServerInfo) {
         val connection = client!!.connectPubSub()
-        connection.addListener(ServerPublishL())
-        connection.sync().subscribe("${RedisKeyType.SERVER}:$name:${RedisMessageType.BLOCK}")
-        connection.sync().subscribe("${RedisKeyType.SERVER}:$name:${RedisMessageType.ADDED_INSTANCE}")
-        connection.sync().subscribe("${RedisKeyType.SERVER}:$name:${RedisMessageType.DELETED_INSTANCE}")
+        connection.addListener(ServerPublishL(server))
+        connection.sync().subscribe("${RedisKeyType.SERVER}:${server.name}:${RedisMessageType.BLOCK}")
+        connection.sync().subscribe("${RedisKeyType.SERVER}:${server.name}:${RedisMessageType.ADDED_INSTANCE}")
+        connection.sync().subscribe("${RedisKeyType.SERVER}:${server.name}:${RedisMessageType.DELETED_INSTANCE}")
     }
 
     fun addLobby(serverInfo : ServerInfo) {

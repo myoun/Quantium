@@ -1,7 +1,10 @@
 package org.netherald.quantium
 
+import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 import org.netherald.quantium.data.ModuleData
+import org.netherald.quantium.event.BlockedServerEvent
+import org.netherald.quantium.event.UnBlockedServerEvent
 import org.netherald.quantium.module.ModuleLoader
 import org.netherald.quantium.module.ModuleManager
 import org.netherald.quantium.module.QuantiumModule
@@ -14,16 +17,15 @@ object Quantium {
     val moduleManager = ModuleManager()
     val scheduler = QuantiumScheduler()
 
-    val serverBlocked = true
-    val isServerBlocked : Boolean get() = serverBlocked
-
-    fun setServerBlocked(value: Boolean) {
-        if (isServerBlocked != value) {
-            if (value) {
-
-            } else {
-
+    var isServerBlocked = true
+        set(value) {
+            if (isServerBlocked != value) {
+                if (value) {
+                    Bukkit.getPluginManager().callEvent(BlockedServerEvent())
+                } else {
+                    Bukkit.getPluginManager().callEvent(UnBlockedServerEvent())
+                }
+                field = value
             }
         }
-    }
 }

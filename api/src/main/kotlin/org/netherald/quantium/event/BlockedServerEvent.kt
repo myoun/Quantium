@@ -3,7 +3,7 @@ package org.netherald.quantium.event
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
 
-class handlerListBlockedServerEvent : Event() {
+class BlockedServerEvent : Event() {
     companion object {
         @JvmStatic
         var handlerList = HandlerList()

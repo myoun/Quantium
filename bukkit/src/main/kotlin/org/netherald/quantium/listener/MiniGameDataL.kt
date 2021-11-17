@@ -43,7 +43,10 @@ class MiniGameDataL : Listener {
     @EventHandler
     fun onMiniGameCreated(event : MiniGameCreateEvent) {
         RedisServerUtil.sync?.multi {
-            serverPublish(RedisMessageType.MINI_GAME_ADDED, event.miniGame.name)
+            serverPublish(
+                RedisMessageType.MINI_GAME_ADDED,
+                "${event.miniGame.name}|${event.miniGame.maxInstanceSize}"
+            )
             sadd("${RedisKeyType.SERVER}:${serverName}:${RedisKeyType.MINI_GAMES}", event.miniGame.name)
             sadd("${RedisKeyType.MINI_GAME}:${event.miniGame.name}:${RedisKeyType.SERVERS}", serverName)
         }
@@ -91,6 +94,7 @@ class MiniGameDataL : Listener {
     @EventHandler
     fun onDeleted(event : InstanceDeletedEvent) {
         RedisServerUtil.sync?.multi {
+            serverPublish(RedisMessageType.DELETED_INSTANCE, event.instance.uuid.toString())
             del("${RedisKeyType.INSTANCE}:${event.instance.uuid}:${RedisKeyType.SERVER}")
             srem(
                 "${RedisKeyType.SERVER}:${serverName}:${RedisKeyType.INSTANCES}",
@@ -102,7 +106,6 @@ class MiniGameDataL : Listener {
             )
             del("${RedisKeyType.INSTANCE}:${event.instance.uuid}:${RedisKeyType.MINI_GAME}")
             del("${RedisKeyType.INSTANCE}:${event.instance.uuid}:${RedisKeyType.SERVER}")
-            serverPublish(RedisMessageType.DELETED_INSTANCE, event.instance.uuid.toString())
         } ?: run {
             @Suppress("UnstableApiUsage")
             val out = ByteStreams.newDataOutput()

@@ -17,7 +17,7 @@ include(":bukkit")
 include(":api")
 include(":common")
 include(":example:duel")
-include(":example:uhc")
+include(":example:test-minigame")
 include(":annotation-processor")
 include(":example:event-loagger")
 findProject(":example:event-loagger")?.name = "event-logger"

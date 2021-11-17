@@ -22,7 +22,7 @@ import org.netherald.quantium.setting.WorldSetting
 import org.netherald.quantium.util.MiniGameBuilderUtil
 import org.netherald.quantium.util.PlayerUtil
 import org.netherald.quantium.util.SpectatorUtil
-import org.netherald.quantium.world.PortalLinker
+import java.lang.IllegalStateException
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -87,7 +87,7 @@ class MiniGameInstance(
         }
 
         fun deleteAllWorld() {
-            worlds.forEach { worldSetting.worldEditor.deleteWorld(it) }
+            worlds.forEach { worldSetting.worldEditor!!.deleteWorld(it) }
             worlds.forEach { miniGame.worldInstanceMap -= it }
             unSafe.world = null
             unSafe.worldNether = null
@@ -299,10 +299,15 @@ class MiniGameInstance(
         }
 
         if (worldSetting.linkPortal) {
-            val linker : PortalLinker = worldSetting.portalLinker
-            world?.let { world ->
-                worldNether?.let { linker.linkNether(world, it) }
-                worldEnder?.let { linker.linkEnder(world, it) }
+            worldSetting.portalLinker?.let { linker ->
+                world?.let { world ->
+                    worldNether?.let { linker.linkNether(world, it) }
+                    worldEnder?.let { linker.linkEnder(world, it) }
+                }
+            } ?: run {
+                if (worldNether != null || worldEnder != null) {
+                    throw IllegalStateException("Not found world linker")
+                }
             }
         }
 
@@ -328,7 +333,7 @@ class MiniGameInstance(
         Bukkit.getPluginManager().callEvent(InstanceStartedEvent(this))
 
         println("""
-                ${miniGame.name} instance started
+                ${miniGame.name}'s instance $uuid is started
                     world : ${world?.name}
                     nether : ${worldNether?.name}
                     ender : ${worldEnder?.name}
@@ -340,7 +345,6 @@ class MiniGameInstance(
     fun stopGame() {
         unregisterListeners()
         unregisterTasks()
-        players.forEach { spectatorUtil.unApplySpectator(it) }
         unSafe.callStopListener()
         finished = true
         println("${miniGame.name} instance is stopped")
@@ -363,11 +367,14 @@ class MiniGameInstance(
 
     fun delete() {
 
+        unSafe.callDeleteListener()
+
         miniGame.instances as MutableList
         miniGame.instances.remove(this@MiniGameInstance)
 
         unSafe.deleteAllWorld()
 
+        players.forEach { spectatorUtil.unApplySpectator(it) }
         if (automaticFunctionSetting.autoSendToLobby) {
             broadcast {
                 PlayerUtil.default.sendToLobby(it)
@@ -375,7 +382,6 @@ class MiniGameInstance(
         }
 
         unSafe.clearPlayersData()
-        unSafe.callDeleteListener()
 
         Bukkit.getPluginManager().callEvent(InstanceDeletedEvent(this))
 

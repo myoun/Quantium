@@ -1,6 +1,7 @@
 package org.netherald.quantium
 
 import net.md_5.bungee.api.CommandSender
+import net.md_5.bungee.api.connection.ProxiedPlayer
 import net.md_5.bungee.api.plugin.Command
 import net.md_5.bungee.api.plugin.TabExecutor
 import org.netherald.quantium.data.MiniGameData
@@ -49,6 +50,11 @@ class QuantiumCommand : Command("quantiumproxy", "Quantium.command", "qp"), TabE
                                     instances : ${miniGame.instances.map { it.uuid }}
                                 """.trimIndent())
                             }
+                            "join" -> {
+                                if (sender is ProxiedPlayer) {
+                                    miniGame.addPlayer(sender)
+                                }
+                            }
                         }
                     }
                     "instance" -> {
@@ -72,6 +78,11 @@ class QuantiumCommand : Command("quantiumproxy", "Quantium.command", "qp"), TabE
                                 """.trimIndent()
                                 )
                             }
+                            "join" -> {
+                                if (sender is ProxiedPlayer) {
+                                    instance.addPlayer(sender)
+                                }
+                            }
                         }
                     }
                 }
@@ -89,10 +100,12 @@ class QuantiumCommand : Command("quantiumproxy", "Quantium.command", "qp"), TabE
     private val miniGameFunctions = ArrayList<String>().apply {
         add("info")
         add("instances")
+        add("join")
     }
 
     private val instanceFunctions = ArrayList<String>().apply {
         add("info")
+        add("join")
     }
 
     override fun onTabComplete(sender: CommandSender, args: Array<out String>): MutableIterable<String> {

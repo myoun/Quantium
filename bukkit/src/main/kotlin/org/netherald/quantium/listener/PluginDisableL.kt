@@ -21,10 +21,10 @@ class PluginDisableL : Listener {
                     
                     Plugin ${event.plugin.name} is disabled.
                     That plugin has MiniGame :(
-                    So, shutdown this server
+                    So, delete minigame
                     
                 """.trimIndent())
-                Bukkit.shutdown()
+                miniGame.delete()
             }
         }
     }

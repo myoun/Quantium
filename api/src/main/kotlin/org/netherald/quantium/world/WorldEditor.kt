@@ -4,7 +4,7 @@ import org.bukkit.World
 
 interface WorldEditor {
     companion object {
-        lateinit var default : WorldEditor
+        var default : WorldEditor? = null
     }
 
     fun cloneWorld(baseWorld : World, newWorld : String) : World

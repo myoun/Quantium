@@ -65,6 +65,7 @@ class QuantiumPlugin : JavaPlugin() {
             PlayerUtil.default = PluginMessagePlayerUtil()
             server.messenger.registerIncomingPluginChannel(this, Channels.MAIN_CHANNEL, PluginMessageL())
             server.messenger.registerOutgoingPluginChannel(this, Channels.MAIN_CHANNEL)
+            server.messenger.registerOutgoingPluginChannel(this, "bungeecord:main")
         } else {
             PlayerUtil.default = QuantiumPlayerUtil()
         }
@@ -80,10 +81,9 @@ class QuantiumPlugin : JavaPlugin() {
     override fun onDisable() {
         MiniGameData.miniGames.forEach { (_, miniGame) ->
             miniGame.defaultInstanceSize = 0
-            val iterator = miniGame.instances.iterator() as MutableIterator
+            val iterator = miniGame.instances.iterator()
             while (iterator.hasNext()) {
                 val instance = iterator.next()
-                iterator.remove()
                 instance.delete()
                 dataL?.onDeleted(InstanceDeletedEvent((instance)))
             }

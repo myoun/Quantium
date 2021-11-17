@@ -12,7 +12,7 @@ data class WorldSetting(
     val otherBaseWorlds : List<World> = ArrayList(),
     var linkPortal : Boolean = true,
     var enableOtherWorldTeleport : Boolean = false,
-    var portalLinker : PortalLinker = PortalLinker.default,
-    var worldEditor: WorldEditor = WorldEditor.default,
+    var portalLinker : PortalLinker? = PortalLinker.default,
+    var worldEditor: WorldEditor? = WorldEditor.default,
     var spawn : Location? = null,
 )

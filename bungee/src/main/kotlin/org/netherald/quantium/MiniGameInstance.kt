@@ -26,7 +26,7 @@ class MiniGameInstance(
 
     fun delete() {
         players.forEach {
-            ProxyServer.getInstance().getPlayer(it)?.connectToLobby()
+            PlayerData.playerPlayingMap -= it
         }
         (miniGame.instances as MutableCollection<MiniGameInstance>) -= this
     }

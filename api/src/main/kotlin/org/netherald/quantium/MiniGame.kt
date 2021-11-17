@@ -8,6 +8,7 @@ import org.netherald.quantium.data.MiniGameData
 import org.netherald.quantium.event.InstanceCreatedEvent
 import org.netherald.quantium.event.MiniGameCreateEvent
 import org.netherald.quantium.event.MiniGameDeletedEvent
+import java.lang.IllegalStateException
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -87,7 +88,10 @@ class MiniGame(
             this,
         ).apply(instanceSettingValue)
 
-        val clone = fun (world : World, name : String) = instance.worldSetting.worldEditor.cloneWorld(world, name)
+        val clone = fun (world : World, name : String) : World {
+            instance.worldSetting.worldEditor ?: run { throw IllegalStateException("Not found worldEditor") }
+            return instance.worldSetting.worldEditor!!.cloneWorld(world, name)
+        }
         val addWorld = fun (base : World, addWorldType : MiniGameInstance.AddWorldType) =
             instance.addWorld(clone(base, "${instance.uuid}_${base.name}"), addWorldType)
 

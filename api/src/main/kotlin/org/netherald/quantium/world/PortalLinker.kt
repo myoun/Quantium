@@ -4,7 +4,7 @@ import org.bukkit.World
 
 interface PortalLinker {
     companion object {
-        lateinit var default: PortalLinker
+        var default: PortalLinker? = null
     }
     fun linkNether(world : World, nether : World)
     fun linkEnder(world : World, ender : World)

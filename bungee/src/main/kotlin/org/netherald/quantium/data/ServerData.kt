@@ -2,16 +2,20 @@ package org.netherald.quantium.data
 
 import net.md_5.bungee.api.ProxyServer
 import net.md_5.bungee.api.config.ServerInfo
-import org.netherald.quantium.ConfigPath
+import net.md_5.bungee.api.connection.ProxiedPlayer
 import org.netherald.quantium.MiniGameInfo
 import org.netherald.quantium.event.ServerBlockedEvent
 import org.netherald.quantium.event.ServerUnBlockedEvent
 import org.netherald.quantium.util.RedisServerUtil
 import org.netherald.quantium.exception.NotFoundMiniGameException
+import java.util.*
+import kotlin.collections.HashMap
+import kotlin.collections.HashSet
 
 object ServerData {
-    val lobby = ArrayList<ServerInfo>()
+    val lobbies = HashSet<ServerInfo>()
     val blockedServers = HashSet<ServerInfo>()
+    val lobbyQueue : Queue<ProxiedPlayer> = LinkedList()
     private val serverMiniGameData = HashMap<ServerInfo, HashSet<MiniGameInfo>>()
 
     fun miniGames(serverInfo: ServerInfo) : Collection<MiniGameInfo> {
@@ -42,15 +46,30 @@ object ServerData {
 
 val ServerInfo.miniGames : Collection<MiniGameInfo> get() { return ServerData.miniGames(this) }
 
+fun ServerInfo.removeMiniGameServer(game : MiniGameInfo) {
+    ServerData.removeMiniGame(this, game)
+    RedisServerUtil.removeMiniGameServer(this.name, game.name)
+    (game.maxInstanceCount as MutableMap<ServerInfo, Int>) -= this
+}
+
 fun ServerInfo.addMiniGameServer(game : MiniGameInfo, maxInstanceCount : Int) {
     ServerData.addMiniGame(this, game)
     RedisServerUtil.addMiniGameServer(this.name, game.name)
     (game.maxInstanceCount as MutableMap<ServerInfo, Int>)[this] = maxInstanceCount
 }
 
-fun ServerInfo.setLobby() {
-    ServerData.lobby.add(this)
-    RedisServerUtil.addLobby(this)
+var ServerInfo.isLobby
+get() = ServerData.lobbies.contains(this)
+set(value) {
+    if (isLobby != value) {
+        if (value) {
+            ServerData.lobbies.add(this)
+            RedisServerUtil.addLobby(this)
+        } else {
+            ServerData.lobbies.remove(this)
+            RedisServerUtil.removeLobby(this)
+        }
+    }
 }
 
 var ServerInfo.isBlocked : Boolean

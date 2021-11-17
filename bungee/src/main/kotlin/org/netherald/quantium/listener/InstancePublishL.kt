@@ -13,6 +13,8 @@ class InstancePublishL(
 ) : RedisPubSubAdapter<String, String>() {
     override fun message(channel: String, message: String) {
         val callEvent = fun (event : Event) = ProxyServer.getInstance().pluginManager.callEvent(event)
+        if (RedisKeyType.INSTANCE != channel.split(":")[0] ||
+            instance.uuid.toString() != channel.split(":")[1]) return
         when (channel.split(":")[2]) {
             RedisKeyType.INSTANCE_STARTED -> {
                 callEvent(InstanceStartedEvent(instance))

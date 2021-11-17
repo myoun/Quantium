@@ -4,9 +4,10 @@ import net.md_5.bungee.api.ProxyServer
 import net.md_5.bungee.api.config.ServerInfo
 import net.md_5.bungee.api.connection.ProxiedPlayer
 import org.netherald.quantium.MiniGameInfo
+import org.netherald.quantium.data.QuantiumConfig
 import org.netherald.quantium.data.ServerData
 import org.netherald.quantium.data.isBlocked
-import org.netherald.quantium.event.MiniGameConnectedEvent
+import org.netherald.quantium.debug
 import org.netherald.quantium.event.MiniGameConnectingEvent
 
 fun ProxiedPlayer.connect(servers : List<ServerInfo>, algorithm : PlayerConnectionUtil.SelectionAlgorithm) {
@@ -24,7 +25,16 @@ fun ProxiedPlayer.connectToGame(miniGameInfo: MiniGameInfo) {
 object PlayerConnectionUtil {
 
     fun connectToLobby(player: ProxiedPlayer) {
-        connect(player, ServerData.lobby.filter { !it.isBlocked }, SelectionAlgorithm.PLAYER_COUNT_LOWER)
+        debug("connect to lobby ${player.name}")
+        val lobbies = ServerData.lobbies.filter { !it.isBlocked }
+        debug("Is empty : ${lobbies.isEmpty()}")
+        if (lobbies.isEmpty()) {
+            ServerData.lobbyQueue.add(player)
+            player.connect(QuantiumConfig.queueServer)
+            return
+        } else {
+            connect(player, lobbies, SelectionAlgorithm.PLAYER_COUNT_LOWER)
+        }
     }
 
     fun connectToGame(player: ProxiedPlayer, game : MiniGameInfo) {
@@ -39,15 +49,17 @@ object PlayerConnectionUtil {
 
     // server name
     fun connect(player: ProxiedPlayer, servers: List<ServerInfo>, algorithm: SelectionAlgorithm) {
+        if (servers.isEmpty()) throw IllegalArgumentException("Empty list!")
         when (algorithm) {
             SelectionAlgorithm.RANDOM -> {
                 player.connect(servers.random())
             }
 
             SelectionAlgorithm.PLAYER_COUNT_HIGHER -> {
-                lateinit var nowServer : ServerInfo
-                servers.filter { !it.isBlocked }.forEach {
-                    if (nowServer.players.size < it.players.size) {
+                var nowServer : ServerInfo? = null
+                servers.forEach {
+                    nowServer ?: kotlin.run { nowServer = it; return@forEach }
+                    if (nowServer!!.players.size < it.players.size) {
                         nowServer = it
                     }
                 }
@@ -55,9 +67,10 @@ object PlayerConnectionUtil {
             }
 
             SelectionAlgorithm.PLAYER_COUNT_LOWER -> {
-                lateinit var nowServer : ServerInfo
-                servers.filter { !it.isBlocked }.forEach {
-                    if (it.players.size < nowServer.players.size) {
+                var nowServer : ServerInfo? = null
+                servers.forEach {
+                    nowServer ?: run { nowServer = it; return@forEach }
+                    if (it.players.size < nowServer!!.players.size) {
                         nowServer = it
                     }
                 }

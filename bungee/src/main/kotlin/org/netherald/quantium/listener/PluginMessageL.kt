@@ -13,6 +13,7 @@ import org.netherald.quantium.MiniGameInfo
 import org.netherald.quantium.MiniGameInstance
 import org.netherald.quantium.data.MiniGameData
 import org.netherald.quantium.data.isBlocked
+import org.netherald.quantium.debug
 import org.netherald.quantium.event.InstanceAddedEvent
 import org.netherald.quantium.event.InstanceDeletedEvent
 import org.netherald.quantium.event.MiniGameConnectingEvent
@@ -34,8 +35,9 @@ class PluginMessageL : Listener {
             val callEvent = fun (event : Event) = ProxyServer.getInstance().pluginManager.callEvent(event)
             @Suppress("UnstableApiUsage")
             val data = ByteStreams.newDataInput(event.data)
-
-            when (data.readUTF()) {
+            val subChannel = data.readUTF()
+            debug("plugin-message subChannel : $subChannel")
+            when (subChannel) {
 
                 Channels.SubChannels.Bukkit.ADDED_INSTANCE -> {
                     MiniGameData.miniGames[data.readUTF()]?.let {
@@ -54,6 +56,7 @@ class PluginMessageL : Listener {
 
                 Channels.SubChannels.Bukkit.DELETED_INSTANCE -> {
                     val uuid = UUID.fromString(data.readUTF())
+                    debug(uuid.toString())
                     miniGameTypeMap[uuid]?.let {
                         val instance = MiniGameData.instances[uuid]!!
                         (it.instances as MutableCollection<MiniGameInstance>) -= instance
@@ -68,6 +71,7 @@ class PluginMessageL : Listener {
 
                 Channels.SubChannels.Bukkit.GAME -> {
                     val miniGame = data.readUTF()
+                    debug(miniGame)
                     MiniGameData.miniGames[miniGame]?.let {
                         if (!ProxyServer.getInstance().pluginManager.callEvent(
                             MiniGameConnectingEvent(player, it)).isCancelled
@@ -78,7 +82,9 @@ class PluginMessageL : Listener {
                 }
 
                 Channels.SubChannels.Bukkit.SET_BLOCK -> {
-                    server.info.isBlocked = data.readBoolean()
+                    val value = data.readBoolean()
+                    debug("value : $value")
+                    server.info.isBlocked = value
                 }
 
                 Channels.SubChannels.GET_MINI_GAME_PLAYER_COUNT -> {

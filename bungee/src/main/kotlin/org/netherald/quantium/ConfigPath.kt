@@ -5,6 +5,7 @@ object ConfigPath {
     const val LOBBY = "lobby"
     const val MINI_GAME = "minigame"
     const val REDIS = "redis"
+    const val IS_DEBUG = "debug"
 
     const val QUEUE_SERVER = "queue-server"
 
