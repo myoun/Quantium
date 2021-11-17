@@ -27,7 +27,16 @@ class TestPlugin : JavaPlugin() {
                 disable()
             }
 
+            applyScoreBoard("TestMiniGame") {
+                "Hello" to 2
+                "World" to 1
+            }
+
             onStart {
+                applyScoreBoard("TestMiniGame2") {
+                    "GoodBye" to 2
+                    "World" to 1
+                }
                 runTaskLater(200) {
                     stopGame()
                 }

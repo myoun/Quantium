@@ -19,6 +19,7 @@ import org.bukkit.plugin.RegisteredListener
 import org.bukkit.plugin.TimedRegisteredListener
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scheduler.BukkitRunnable
+import org.bukkit.scoreboard.Scoreboard
 import org.netherald.quantium.*
 import org.netherald.quantium.event.AllServerEvent
 import java.lang.reflect.InvocationTargetException
@@ -48,6 +49,9 @@ open class MiniGameBuilderUtil(private val miniGameInstance : MiniGameInstance) 
         miniGameInstance.addWorld(world, addWorldType)
 
     fun removeWorld(world: World) = miniGameInstance.removeWorld(world)
+
+    fun applyScoreBoard(displayName : String, init : ScoreBoardBuilder.() -> Unit) =
+        miniGameInstance.applyScoreBoard(displayName, init)
 
     var spectatorUtil : SpectatorUtil
         get() = miniGameInstance.spectatorUtil

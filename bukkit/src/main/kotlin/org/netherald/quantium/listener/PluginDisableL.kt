@@ -15,7 +15,7 @@ class PluginDisableL : Listener {
                 module.setEnabled(false)
             }
         }
-        MiniGameData.miniGames.forEach { (_, miniGame) ->
+        MiniGameData.miniGames.iterator().forEach { (_, miniGame) ->
             if (miniGame.owner == event.plugin) {
                 println("""
                     
@@ -24,7 +24,10 @@ class PluginDisableL : Listener {
                     So, delete minigame
                     
                 """.trimIndent())
-                miniGame.delete()
+                miniGame.maxInstanceSize = 0
+                miniGame.instances.iterator().forEach {
+                    it.delete()
+                }
             }
         }
     }

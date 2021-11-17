@@ -1,4 +1,4 @@
-name: UHC
+name: TestMiniGamePlugin
 main: org.netherald.quantium.testplugin.TestPlugin
 version: 1.0.0
 depend:

@@ -117,7 +117,7 @@ class MiniGame(
 
     fun stopAll() {
         defaultInstanceSize = 0
-        instances.forEach { instance ->
+        instances.iterator().forEach { instance ->
             instance.stopGame()
         }
     }

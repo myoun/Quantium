@@ -11,6 +11,8 @@ import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
 import org.bukkit.event.player.*
 import org.bukkit.scheduler.BukkitTask
+import org.bukkit.scoreboard.DisplaySlot
+import org.bukkit.scoreboard.Scoreboard
 import org.netherald.quantium.data.*
 import org.netherald.quantium.event.InstanceDeletedEvent
 import org.netherald.quantium.event.InstanceStartedEvent
@@ -172,24 +174,27 @@ class MiniGameInstance(
 
     private var startTask : BukkitTask? = null
 
+    var startTaskFunction = {
+        val sound = fun Player.() = playSound(location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f)
+        val soundBroadCast = fun () = players.forEach { it.sound() }
+
+        startTask = MiniGameBuilderUtil(this)
+            .loopTask(startCountDownSize downTo 0, 20, 20) { i ->
+                if (0 < i) {
+                    if (i == startCountDownSize || i <= 5) {
+                        broadcast("시작까지 ${i}초 전")
+                        soundBroadCast()
+                    }
+                } else {
+                    cancelStartTask()
+                    start()
+                }
+            }.task
+    }
+
     fun runStartTask() {
         startTask ?: run {
-
-            val sound = fun Player.() = playSound(location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f)
-            val soundBroadCast = fun () = players.forEach { it.sound() }
-
-            startTask = MiniGameBuilderUtil(this)
-                .loopTask(startCountDownSize downTo 0, 20, 20) { i ->
-                    if (0 < i) {
-                        if (i == startCountDownSize || i <= 5) {
-                            broadcast("시작까지 ${i}초 전")
-                            soundBroadCast()
-                        }
-                    } else {
-                        cancelStartTask()
-                        start()
-                    }
-                }.task
+            startTaskFunction()
         }
     }
 
@@ -204,6 +209,7 @@ class MiniGameInstance(
         if (miniGame.maxPlayerSize < players.size+1) throw OutOfMaxPlayerSizeException()
 
         PlayerData.UnSafe.addAllMiniGameData(player, this)
+        scoreBoard?.let { player.scoreboard = it }
         unSafe.callPlayerAdded(player)
         if (automaticFunctionSetting.autoStart && miniGame.minPlayerSize <= players.size) {
             runStartTask()
@@ -215,6 +221,7 @@ class MiniGameInstance(
      */
     fun removePlayer(player: Player) {
 
+        player.scoreboard = Bukkit.getScoreboardManager()!!.newScoreboard
         PlayerData.UnSafe.clearData(player)
         unSafe.callPlayerRemoved(player)
 
@@ -265,7 +272,16 @@ class MiniGameInstance(
 
 
 
-
+    var scoreBoard : Scoreboard? = null
+    fun applyScoreBoard(displayName : String, init : ScoreBoardBuilder.() -> Unit) : Scoreboard {
+        val name = uuid.toString()
+        val scoreboard = ScoreBoardBuilder(name.substring(0, 16), displayName)
+        scoreboard.init()
+        scoreboard.objective.displaySlot = DisplaySlot.SIDEBAR
+        this.scoreBoard = scoreboard.board
+        broadcast { it.scoreboard = scoreboard.board }
+        return scoreboard.board
+    }
 
     fun broadcast(message : String) {
         println("[${miniGame.name}] broadcast : $message")
