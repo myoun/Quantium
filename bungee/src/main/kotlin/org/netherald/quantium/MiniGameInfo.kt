@@ -33,22 +33,24 @@ data class MiniGameInfo(
         if (miniGameInstance.miniGame != this) throw IllegalArgumentException("Wrong miniGameInstance")
         (instances as MutableCollection<MiniGameInstance>).add(miniGameInstance)
         MiniGameData.instances[miniGameInstance.uuid] = miniGameInstance
-        debug("$name added instance ${miniGameInstance.uuid}")
+        debug("$name's instance ${miniGameInstance.uuid} is added")
     }
 
     fun addPlayer(player : ProxiedPlayer) {
         debug("$name add player ${player.name}")
-        recommendMatchingInstance?.addPlayer(player) ?: run {
-            if (queue.contains(player)) throw IllegalStateException("Already in queue!")
-            debug("$name add player ${player.name} ")
-            if (!ProxyServer.getInstance().pluginManager
-                    .callEvent(PlayerJoinQueueEvent(player, this)).isCancelled) {
-                (queue as LinkedList<ProxiedPlayer>).add(player)
-                queue.add(player)
-                PlayerData.playerQueueMiniGame[player] = this
-                player.connect(QuantiumConfig.queueServer)
-            }
-        }
+        recommendMatchingInstance?.addPlayer(player) ?: run { queuePlayer(player) }
+    }
+
+    fun queuePlayer(player: ProxiedPlayer) {
+        if (queue.contains(player)) throw IllegalStateException("Already in queue!")
+        debug("Queue player ${player.name}")
+        if (!ProxyServer.getInstance().pluginManager
+                .callEvent(PlayerJoinQueueEvent(player, this)).isCancelled) {
+            debug("Not cancelled")
+            queue.add(player)
+            PlayerData.playerQueueMiniGame[player] = this
+            player.connect(QuantiumConfig.queueServer)
+        } else debug("Cancelled")
     }
 
     fun ServerInfo.countInstanceCount() {
@@ -62,17 +64,27 @@ data class MiniGameInfo(
         map[this] ?: run { map[this] = 0 }
         map[this] = map[this]!!-1
     }
+
+    fun poolPlayer() : ProxiedPlayer? {
+        debug("$name pool player")
+        val player = queue.poll()
+        player?.let {
+            debug(it.name)
+            PlayerData.playerQueueMiniGame -= player
+            return player
+        }
+        debug("null")
+        return null
+    }
+
     /*
         player value can be null
      */
     fun poolPlayersInQueue(count : Int) : List<ProxiedPlayer> {
         val size = if (queue.size < count) queue.size else count
+        debug("$name pool $size. Input: $count")
         val out = ArrayList<ProxiedPlayer>(size)
-        for (i in 0 until size) {
-            val player = queue.poll()
-            out.add(player)
-            PlayerData.playerQueueMiniGame -= player
-        }
+        for (i in 0 until size) { out.add(poolPlayer()!!) }
         return out
     }
 

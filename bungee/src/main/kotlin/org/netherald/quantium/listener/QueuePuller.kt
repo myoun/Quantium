@@ -3,17 +3,21 @@ package org.netherald.quantium.listener
 import net.md_5.bungee.api.plugin.Listener
 import net.md_5.bungee.event.EventHandler
 import org.netherald.quantium.data.ServerData
+import org.netherald.quantium.data.isBlocked
 import org.netherald.quantium.data.isLobby
+import org.netherald.quantium.debug
 import org.netherald.quantium.event.InstanceAddedEvent
 import org.netherald.quantium.event.ServerLobbyAddedEvent
 import org.netherald.quantium.event.ServerUnBlockedEvent
 
 class QueuePuller : Listener {
     @EventHandler
-    fun onMiniGameCreated(event : InstanceAddedEvent) {
+    fun onInstanceAdded(event : InstanceAddedEvent) {
         val miniGame = event.miniGame
-        miniGame.poolPlayersInQueue(miniGame.maxPlayerSize).forEach {
-            event.instance.addPlayer(it)
+        if (!event.instance.server.isBlocked) {
+            miniGame.poolPlayersInQueue(miniGame.maxPlayerSize).forEach {
+                event.instance.addPlayer(it)
+            }
         }
     }
 
@@ -26,6 +30,8 @@ class QueuePuller : Listener {
 
     @EventHandler
     fun onServerLobbyAdded(event: ServerLobbyAddedEvent) {
-        ServerData.lobbyQueue.forEach { it.connect(event.serverInfo) }
+        if (!event.serverInfo.isBlocked) {
+            ServerData.lobbyQueue.forEach { it.connect(event.serverInfo) }
+        }
     }
 }

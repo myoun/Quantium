@@ -11,5 +11,5 @@ class PlayerJoinQueueEvent(
 ) : Event(), Cancellable {
     private var cancelled = false
     override fun isCancelled(): Boolean = cancelled
-    override fun setCancelled(cancel: Boolean) { cancelled = true }
+    override fun setCancelled(cancel: Boolean) { cancelled = cancel }
 }

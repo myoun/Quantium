@@ -86,6 +86,7 @@ class QuantiumPlugin : JavaPlugin() {
             val iterator = (miniGame.instances as MutableList<MiniGameInstance>).iterator()
             while (iterator.hasNext()) {
                 val instance = iterator.next()
+                instance.automaticFunctionSetting.autoCreateInstance = false
                 iterator.remove()
                 instance.delete()
                 dataL?.onDeleted(InstanceDeletedEvent((instance)))

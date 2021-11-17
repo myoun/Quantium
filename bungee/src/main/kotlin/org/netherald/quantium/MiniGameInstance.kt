@@ -27,6 +27,7 @@ class MiniGameInstance(
     fun delete() {
         players.forEach { PlayerData.playerPlayingMap -= it }
         (miniGame.instances as MutableCollection<MiniGameInstance>) -= this
+        debug("${miniGame.name}'s instance $uuid is deleted")
     }
 
     var isStarted : Boolean = false

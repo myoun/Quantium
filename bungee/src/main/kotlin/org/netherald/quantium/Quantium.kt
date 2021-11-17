@@ -10,10 +10,7 @@ import org.netherald.quantium.data.MiniGameData
 import org.netherald.quantium.data.QuantiumConfig
 import org.netherald.quantium.data.addMiniGameServer
 import org.netherald.quantium.data.isLobby
-import org.netherald.quantium.listener.ConnectedL
-import org.netherald.quantium.listener.InstanceL
-import org.netherald.quantium.listener.InstancePublishL
-import org.netherald.quantium.listener.PluginMessageL
+import org.netherald.quantium.listener.*
 import org.netherald.quantium.util.RedisServerUtil
 import java.io.File
 import java.io.IOException
@@ -44,6 +41,7 @@ class Quantium : Plugin() {
         proxy.pluginManager.registerListener(this, PluginMessageL())
         proxy.pluginManager.registerListener(this, InstanceL())
         proxy.pluginManager.registerListener(this, ConnectedL())
+        proxy.pluginManager.registerListener(this, QueuePuller())
 
         QuantiumConfig.isDebug = config.getBoolean(ConfigPath.IS_DEBUG)
 
@@ -77,9 +75,15 @@ class Quantium : Plugin() {
                 miniGameSection.getSection(name).apply {
                     val miniGame = MiniGameInfo(
                         name,
-                        getInt(ConfigPath.MiniGame.MIN_PLAYER_SIZE),
-                        getInt(ConfigPath.MiniGame.MAX_PLAYER_SIZE)
+                        getInt(ConfigPath.MiniGame.MIN_PLAYER_SIZE, -2),
+                        getInt(ConfigPath.MiniGame.MAX_PLAYER_SIZE, -2)
                     )
+                    if (miniGame.minPlayerSize == -2) {
+                        throw NullPointerException("Not found ${ConfigPath.MiniGame.MIN_PLAYER_SIZE} value")
+                    }
+                    if (miniGame.maxPlayerSize == -2) {
+                        throw NullPointerException("Not found ${ConfigPath.MiniGame.MAX_PLAYER_SIZE} value")
+                    }
                     MiniGameData.miniGames[name] = miniGame
                     RedisServerUtil.addMiniGame(miniGame.name)
                     logger.info("Mini-game ${miniGame.name} is added")

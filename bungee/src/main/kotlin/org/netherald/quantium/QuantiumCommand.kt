@@ -24,10 +24,11 @@ class QuantiumCommand : Command("quantiumproxy", "Quantium.command", "qp"), TabE
     }
 
     fun CommandSender.alreadyInQueue() {
-        sendMessage("Wrong UUID!")
+        sendMessage("Already in queue!")
     }
 
     override fun execute(sender: CommandSender, args: Array<out String>) {
+        debug("${sender.name} commanded ${args.toList()}")
         when (args.size) {
             1 -> {
                 when (args[0].lowercase()) {
