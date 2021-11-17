@@ -9,6 +9,7 @@ import org.netherald.quantium.data.QuantiumConfig
 import org.netherald.quantium.data.isBlocked
 import org.netherald.quantium.event.PlayerJoinQueueEvent
 import org.netherald.quantium.exception.NotFoundInstanceException
+import java.lang.IllegalStateException
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -38,10 +39,12 @@ data class MiniGameInfo(
     fun addPlayer(player : ProxiedPlayer) {
         debug("$name add player ${player.name}")
         recommendMatchingInstance?.addPlayer(player) ?: run {
-            debug("$name add player ${player.name} to lobby-queue")
+            if (queue.contains(player)) throw IllegalStateException("Already in queue!")
+            debug("$name add player ${player.name} ")
             if (!ProxyServer.getInstance().pluginManager
                     .callEvent(PlayerJoinQueueEvent(player, this)).isCancelled) {
                 (queue as LinkedList<ProxiedPlayer>).add(player)
+                queue.add(player)
                 PlayerData.playerQueueMiniGame[player] = this
                 player.connect(QuantiumConfig.queueServer)
             }
@@ -66,7 +69,9 @@ data class MiniGameInfo(
         val size = if (queue.size < count) queue.size else count
         val out = ArrayList<ProxiedPlayer>(size)
         for (i in 0 until size) {
-            out.add(queue.poll())
+            val player = queue.poll()
+            out.add(player)
+            PlayerData.playerQueueMiniGame -= player
         }
         return out
     }

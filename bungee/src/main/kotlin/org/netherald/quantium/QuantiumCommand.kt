@@ -23,6 +23,10 @@ class QuantiumCommand : Command("quantiumproxy", "Quantium.command", "qp"), TabE
         sendMessage("Wrong UUID!")
     }
 
+    fun CommandSender.alreadyInQueue() {
+        sendMessage("Wrong UUID!")
+    }
+
     override fun execute(sender: CommandSender, args: Array<out String>) {
         when (args.size) {
             1 -> {
@@ -52,7 +56,11 @@ class QuantiumCommand : Command("quantiumproxy", "Quantium.command", "qp"), TabE
                             }
                             "join" -> {
                                 if (sender is ProxiedPlayer) {
-                                    miniGame.addPlayer(sender)
+                                    try {
+                                        miniGame.addPlayer(sender)
+                                    } catch(e : IllegalStateException) {
+                                        sender.alreadyInQueue()
+                                    }
                                 }
                             }
                         }

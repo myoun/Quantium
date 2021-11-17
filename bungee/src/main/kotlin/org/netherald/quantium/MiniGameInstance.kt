@@ -25,9 +25,7 @@ class MiniGameInstance(
     }
 
     fun delete() {
-        players.forEach {
-            PlayerData.playerPlayingMap -= it
-        }
+        players.forEach { PlayerData.playerPlayingMap -= it }
         (miniGame.instances as MutableCollection<MiniGameInstance>) -= this
     }
 

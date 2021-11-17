@@ -79,15 +79,19 @@ class QuantiumPlugin : JavaPlugin() {
     }
 
     override fun onDisable() {
-        MiniGameData.miniGames.iterator().forEach { (_, miniGame) ->
+        val miniGameIterator = MiniGameData.miniGames.iterator()
+        while (miniGameIterator.hasNext()) {
+            val miniGame = miniGameIterator.next().value
             miniGame.defaultInstanceSize = 0
-            val iterator = miniGame.instances.iterator()
+            val iterator = (miniGame.instances as MutableList<MiniGameInstance>).iterator()
             while (iterator.hasNext()) {
                 val instance = iterator.next()
+                iterator.remove()
                 instance.delete()
                 dataL?.onDeleted(InstanceDeletedEvent((instance)))
             }
             dataL?.onMiniGameDeleted(MiniGameDeletedEvent(miniGame))
+            miniGameIterator.remove()
             miniGame.delete()
         }
         Quantium.modules.forEach { (_, module) ->
