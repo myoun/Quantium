@@ -59,6 +59,7 @@ object PlayerConnectionUtil {
 
     fun getServer(servers: Collection<ServerInfo>, algorithm: SelectionAlgorithm) : ServerInfo? {
         if (servers.isEmpty()) return null
+        if (servers.size == 1) return servers.iterator().next()
         when (algorithm) {
             SelectionAlgorithm.RANDOM -> {
                 return servers.random()
@@ -67,7 +68,7 @@ object PlayerConnectionUtil {
             SelectionAlgorithm.PLAYER_COUNT_HIGHER -> {
                 var nowServer : ServerInfo? = null
                 servers.forEach {
-                    nowServer ?: kotlin.run { nowServer = it; return@forEach }
+                    nowServer ?: run { nowServer = it; return@forEach }
                     if (nowServer!!.players.size < it.players.size) {
                         nowServer = it
                     }

@@ -62,9 +62,10 @@ class QuantiumPlugin : Plugin() {
         if (config.getStringList(ConfigPath.QUEUE_SERVER).isEmpty()) {
             throw NullPointerException("Not found queue server data in config")
         } else {
-            QuantiumConfig.queueServers.addAll(config.getStringList(config.getString(ConfigPath.QUEUE_SERVER)).map {
+            QuantiumConfig.queueServers.addAll(config.getStringList(ConfigPath.QUEUE_SERVER).map {
                 proxy.getServerInfo(it) ?: throw NullPointerException("Not found queue server data in bungee")
             })
+            debug("Queue-servers: ${QuantiumConfig.queueServers}")
 
         }
 
