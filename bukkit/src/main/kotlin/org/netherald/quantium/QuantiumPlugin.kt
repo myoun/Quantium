@@ -21,6 +21,8 @@ class QuantiumPlugin : JavaPlugin() {
     override fun onEnable() {
 
         saveDefaultConfig()
+        Quantium.test = config.getBoolean(ConfigPath.TEST)
+
         Quantium.plugin = this
         Quantium.moduleLoader = ModuleLoader(this)
 
@@ -44,7 +46,6 @@ class QuantiumPlugin : JavaPlugin() {
         }
 
         loadConfig()
-
         if (QuantiumConfig.Bungee.enable) {
             val serverName = QuantiumConfig.Bungee.serverName
             if (QuantiumConfig.Redis.enable) {

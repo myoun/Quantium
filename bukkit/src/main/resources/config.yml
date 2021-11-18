@@ -1,4 +1,4 @@
-
+test: true
 bungeecord:
   enable: false
   server-name: server1

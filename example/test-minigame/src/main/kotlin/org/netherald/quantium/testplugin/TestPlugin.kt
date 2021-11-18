@@ -39,6 +39,18 @@ class TestPlugin : JavaPlugin() {
                     }
                     2 to "GoodBye"
                 }
+                test("start") {
+                    now("applied scoreboard") {
+                        then("display should be changed") {
+                            scoreBoard?.scores?.get(2)?.get(0)?.entry shouldBe "GoodBye"
+                        }
+                    }
+                }
+                test("test") {
+                    now("Intentionally bug") {
+                        true shouldBe false
+                    }
+                }
                 runTaskLater(200) {
                     stopGame()
                 }

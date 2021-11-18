@@ -5,7 +5,7 @@ import org.bukkit.scoreboard.Score
 
 class QuantiumBoard(name : String, displayName : String) {
 
-    private val scores = HashMap<Int, ArrayList<Score>>()
+    val scores = HashMap<Int, ArrayList<Score>>()
     private val manager = Bukkit.getScoreboardManager()!!
     val board = manager.newScoreboard
     var objective = board.registerNewObjective(name, "dummy", displayName)

@@ -130,6 +130,12 @@ class MiniGameInstance(
     fun Player.applySpectator() = spectatorUtil.applySpectator(this)
     fun Player.unApplySpectator() = spectatorUtil.unApplySpectator(this)
 
+    fun test(description : String, function : QuantiumTest.() -> Unit) {
+        if (Quantium.test) {
+            QuantiumTest(description, this, QuantiumTest.TestType.TEST).function()
+        }
+    }
+
     var automaticFunctionSetting : AutomaticFunctionSetting = AutomaticFunctionSetting()
     var teamSetting : TeamSetting = TeamSetting()
     var worldSetting: WorldSetting = WorldSetting()

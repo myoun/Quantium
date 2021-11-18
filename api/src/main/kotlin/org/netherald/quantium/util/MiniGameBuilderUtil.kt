@@ -49,6 +49,10 @@ open class MiniGameBuilderUtil(private val miniGameInstance : MiniGameInstance) 
 
     fun removeWorld(world: World) = miniGameInstance.removeWorld(world)
 
+    var scoreBoard : QuantiumBoard?
+    get() = miniGameInstance.scoreBoard
+    set(value) {miniGameInstance.scoreBoard = value}
+
     fun applyNewScoreBoard(displayName : String, init : QuantiumBoard.() -> Unit) =
         miniGameInstance.applyNewScoreBoard(displayName, init)
     fun applyScoreBoard(add : QuantiumBoard.() -> Unit) = miniGameInstance.applyScoreBoard(add)
@@ -56,6 +60,9 @@ open class MiniGameBuilderUtil(private val miniGameInstance : MiniGameInstance) 
     var spectatorUtil : SpectatorUtil
         get() = miniGameInstance.spectatorUtil
         set(value) { miniGameInstance.spectatorUtil = value }
+
+    fun test(description : String, function : QuantiumTest.() -> Unit) =
+        miniGameInstance.test(description, function)
 
     fun stopGame() = miniGameInstance.stopGame()
     fun delete() = miniGameInstance.delete()

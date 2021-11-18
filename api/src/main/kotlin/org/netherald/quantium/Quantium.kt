@@ -11,6 +11,7 @@ import org.netherald.quantium.module.QuantiumModule
 import org.netherald.quantium.module.scheduler.QuantiumScheduler
 
 object Quantium {
+    var test = false
     lateinit var plugin : JavaPlugin
     val modules : Map<String, QuantiumModule> get() = ModuleData.modules
     lateinit var moduleLoader : ModuleLoader
