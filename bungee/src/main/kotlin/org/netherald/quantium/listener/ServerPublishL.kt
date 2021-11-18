@@ -11,10 +11,7 @@ import org.netherald.quantium.data.MiniGameData
 import org.netherald.quantium.data.addMiniGameServer
 import org.netherald.quantium.data.isBlocked
 import org.netherald.quantium.data.removeMiniGameServer
-import org.netherald.quantium.event.InstanceAddedEvent
-import org.netherald.quantium.event.InstanceDeletedEvent
-import org.netherald.quantium.event.ServerMiniGameAddedEvent
-import org.netherald.quantium.event.ServerMiniGameRemovedEvent
+import org.netherald.quantium.event.*
 import org.netherald.quantium.util.RedisServerUtil
 import java.util.*
 

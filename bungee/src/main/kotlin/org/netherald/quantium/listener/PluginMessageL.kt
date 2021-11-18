@@ -107,6 +107,31 @@ class PluginMessageL : Listener {
                     (event.receiver as ProxiedPlayer).server.sendData(Channels.MAIN_CHANNEL, out.toByteArray())
 
                 }
+
+                Channels.SubChannels.Bukkit.STARTED_INSTANCE -> {
+                    val uuid = UUID.fromString(data.readUTF())
+                    val instance = MiniGameData.instances[uuid]!!
+                    instance.isStarted = true
+                }
+
+                Channels.SubChannels.Bukkit.STOPPED_INSTANCE -> {
+                    val uuid = UUID.fromString(data.readUTF())
+                    val instance = MiniGameData.instances[uuid]!!
+                    instance.isStopped = true
+                }
+
+                Channels.SubChannels.Bukkit.ADDED_REJOIN_DATA -> {
+                    val uuid = UUID.fromString(data.readUTF())
+                    val instance = MiniGameData.instances[uuid]!!
+                    TODO()
+                }
+
+                Channels.SubChannels.Bukkit.REMOVED_REJOIN_DATA -> {
+                    val uuid = UUID.fromString(data.readUTF())
+                    val instance = MiniGameData.instances[uuid]!!
+                    TODO()
+                }
+
             }
         }
     }

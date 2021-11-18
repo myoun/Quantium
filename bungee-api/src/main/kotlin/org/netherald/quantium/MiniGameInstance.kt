@@ -4,7 +4,6 @@ import net.md_5.bungee.api.ProxyServer
 import net.md_5.bungee.api.config.ServerInfo
 import net.md_5.bungee.api.connection.ProxiedPlayer
 import org.netherald.quantium.data.PlayerData
-import org.netherald.quantium.data.QuantiumConfig
 import org.netherald.quantium.data.playingMiniGame
 import org.netherald.quantium.event.MiniGameConnectedEvent
 import org.netherald.quantium.exception.AlreadyPlayingException
@@ -32,6 +31,7 @@ class MiniGameInstance(
     var isStarted : Boolean = false
     var isStopped : Boolean = false
     val players : Collection<UUID> = HashSet()
+    val reJoinData : HashSet<UUID> = HashSet()
 
     fun addPlayer(player: ProxiedPlayer) {
         player.playingMiniGame?.let { throw AlreadyPlayingException() }

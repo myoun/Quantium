@@ -12,6 +12,12 @@ object Channels {
             const val LOBBY = "lobby"
             const val ADDED_INSTANCE = "addedInstance"
             const val DELETED_INSTANCE = "deletedInstance"
+
+            const val STARTED_INSTANCE = "addedInstance"
+            const val STOPPED_INSTANCE = "deletedInstance"
+
+            const val ADDED_REJOIN_DATA = "addedReJoinData"
+            const val REMOVED_REJOIN_DATA = "removedReJoinData"
         }
 
         object Bungee {

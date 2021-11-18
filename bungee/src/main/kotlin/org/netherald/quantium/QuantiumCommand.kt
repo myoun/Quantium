@@ -6,8 +6,8 @@ import net.md_5.bungee.api.connection.ProxiedPlayer
 import net.md_5.bungee.api.plugin.Command
 import net.md_5.bungee.api.plugin.TabExecutor
 import org.netherald.quantium.data.MiniGameData
-import org.netherald.quantium.data.playerQueueMiniGame
 import org.netherald.quantium.data.playingMiniGame
+import org.netherald.quantium.data.queueMiniGame
 import java.lang.IllegalArgumentException
 import java.util.*
 import kotlin.collections.ArrayList
@@ -110,7 +110,7 @@ class QuantiumCommand : Command("quantiumproxy", "Quantium.command", "qp"), TabE
                             "info" -> {
                                 sender.sendMessage("""
                                     playing: ${player.playingMiniGame}
-                                    queue-minigame: ${player.playerQueueMiniGame}
+                                    queue-minigame: ${player.queueMiniGame}
                                 """.trimIndent())
                             }
                         }

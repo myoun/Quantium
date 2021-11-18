@@ -9,6 +9,7 @@ import kotlin.collections.HashMap
 object PlayerData {
     val playerPlayingMap = HashMap<UUID, MiniGameInstance>()
     val playerQueueMiniGame = HashMap<ProxiedPlayer, MiniGameInfo>()
+    val playerReJoinInstance = HashMap<UUID, MiniGameInstance>()
 
     fun setPlayingMiniGame(player: ProxiedPlayer, value : MiniGameInstance) {
         val mutable = player.playingMiniGame?.players as MutableCollection<UUID>
@@ -20,7 +21,9 @@ object PlayerData {
 
 val ProxiedPlayer.playingMiniGame : MiniGameInstance? get() = PlayerData.playerPlayingMap[uniqueId]
 
-val ProxiedPlayer.playerQueueMiniGame : MiniGameInfo? get() = PlayerData.playerQueueMiniGame[this]
+val ProxiedPlayer.queueMiniGame : MiniGameInfo? get() = PlayerData.playerQueueMiniGame[this]
+
+val ProxiedPlayer.reJoinInstance : MiniGameInstance? get() = PlayerData.playerReJoinInstance[this.uniqueId]
 
 fun ProxiedPlayer.clearData() {
     PlayerData.playerPlayingMap -= this.uniqueId

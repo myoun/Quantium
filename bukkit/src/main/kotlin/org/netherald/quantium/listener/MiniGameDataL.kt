@@ -4,11 +4,8 @@ import com.google.common.io.ByteStreams
 import io.lettuce.core.api.sync.multi
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
-import org.netherald.quantium.MiniGame
-import org.netherald.quantium.MiniGameInstance
-import org.netherald.quantium.RedisKeyType
-import org.netherald.quantium.RedisMessageType
 import event.*
+import org.netherald.quantium.*
 import org.netherald.quantium.util.PluginMessageServerUtil
 import org.netherald.quantium.util.RedisServerUtil
 
@@ -120,7 +117,11 @@ class MiniGameDataL : Listener {
             sadd(RedisKeyType.INSTANCE_STARTED, event.instance.uuid.toString())
             publish(event.instance, RedisMessageType.STARTED_INSTANCE, event.instance.uuid.toString())
         } ?: run {
-            TODO()
+            @Suppress("UnstableApiUsage")
+            val out = ByteStreams.newDataOutput()
+            out.writeUTF(Channels.SubChannels.Bukkit.STARTED_INSTANCE)
+            out.writeUTF(event.instance.uuid.toString())
+            PluginMessageServerUtil.instance!!.sendPluginMessage(out.toByteArray())
         }
     }
 
@@ -130,7 +131,11 @@ class MiniGameDataL : Listener {
             sadd(RedisKeyType.INSTANCE_STOPPED, event.instance.uuid.toString())
             publish(event.instance, RedisMessageType.STOPPED_INSTANCE, event.instance.uuid.toString())
         } ?: run {
-            TODO()
+            @Suppress("UnstableApiUsage")
+            val out = ByteStreams.newDataOutput()
+            out.writeUTF(Channels.SubChannels.Bukkit.STOPPED_INSTANCE)
+            out.writeUTF(event.instance.uuid.toString())
+            PluginMessageServerUtil.instance!!.sendPluginMessage(out.toByteArray())
         }
     }
 
@@ -141,9 +146,14 @@ class MiniGameDataL : Listener {
                 "${RedisKeyType.INSTANCE}:${event.instance.uuid}:${RedisKeyType.REJOIN_DATA}",
                 event.player.uniqueId.toString()
             )
-            publish(event.instance, RedisMessageType.REJOIN_DATA_ADD, event.instance.uuid.toString())
+            publish(event.instance, RedisMessageType.REJOIN_DATA_ADD, event.player.uniqueId.toString())
         } ?: run {
-            TODO()
+            @Suppress("UnstableApiUsage")
+            val out = ByteStreams.newDataOutput()
+            out.writeUTF(Channels.SubChannels.Bukkit.ADDED_REJOIN_DATA)
+            out.writeUTF(event.instance.uuid.toString())
+            out.writeUTF(event.player.name)
+            PluginMessageServerUtil.instance!!.sendPluginMessage(out.toByteArray())
         }
     }
 
@@ -154,9 +164,14 @@ class MiniGameDataL : Listener {
                 "${RedisKeyType.INSTANCE}:${event.instance.uuid}:${RedisKeyType.REJOIN_DATA}",
                 event.player.uniqueId.toString()
             )
-            publish(event.instance, RedisMessageType.REJOIN_DATA_REMOVE, event.instance.uuid.toString())
+            publish(event.instance, RedisMessageType.REJOIN_DATA_REMOVE, event.player.uniqueId.toString())
         } ?: run {
-            TODO()
+            @Suppress("UnstableApiUsage")
+            val out = ByteStreams.newDataOutput()
+            out.writeUTF(Channels.SubChannels.Bukkit.REMOVED_REJOIN_DATA)
+            out.writeUTF(event.instance.uuid.toString())
+            out.writeUTF(event.player.name)
+            PluginMessageServerUtil.instance!!.sendPluginMessage(out.toByteArray())
         }
     }
 }

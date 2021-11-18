@@ -5,8 +5,13 @@ import net.md_5.bungee.api.ProxyServer
 import net.md_5.bungee.api.plugin.Event
 import org.netherald.quantium.MiniGameInstance
 import org.netherald.quantium.RedisKeyType
+import org.netherald.quantium.RedisMessageType
+import org.netherald.quantium.data.PlayerData
+import org.netherald.quantium.event.InstanceReJoinDataAddedEvent
+import org.netherald.quantium.event.InstanceReJoinDataRemovedEvent
 import org.netherald.quantium.event.InstanceStartedEvent
 import org.netherald.quantium.event.InstanceStoppedEvent
+import java.util.*
 
 class InstancePublishL(
     val instance : MiniGameInstance
@@ -23,6 +28,20 @@ class InstancePublishL(
             RedisKeyType.INSTANCE_STOPPED -> {
                 instance.isStopped = true
                 callEvent(InstanceStoppedEvent(instance))
+            }
+
+            RedisMessageType.REJOIN_DATA_ADD -> {
+                val uuid = UUID.fromString(message)
+                PlayerData.playerReJoinInstance[uuid] = instance
+                instance.reJoinData += uuid
+                callEvent(InstanceReJoinDataAddedEvent(instance, uuid))
+            }
+
+            RedisMessageType.REJOIN_DATA_REMOVE -> {
+                val uuid = UUID.fromString(message)
+                PlayerData.playerReJoinInstance.remove(uuid, instance)
+                instance.reJoinData -= uuid
+                callEvent(InstanceReJoinDataRemovedEvent(instance, uuid))
             }
         }
     }
