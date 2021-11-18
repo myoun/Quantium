@@ -33,6 +33,10 @@ class MiniGameInstance(
     val players : Collection<UUID> = HashSet()
     val reJoinData : HashSet<UUID> = HashSet()
 
+    fun addReJoinData(player: ProxiedPlayer) {
+        PlayerData.addReJoinData(player.uniqueId, this)
+    }
+
     fun addPlayer(player: ProxiedPlayer) {
         player.playingMiniGame?.let { throw AlreadyPlayingException() }
         if (isStarted) { throw AlreadyStartedException() }

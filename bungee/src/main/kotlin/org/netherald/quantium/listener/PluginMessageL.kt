@@ -12,11 +12,10 @@ import org.netherald.quantium.Channels
 import org.netherald.quantium.MiniGameInfo
 import org.netherald.quantium.MiniGameInstance
 import org.netherald.quantium.data.MiniGameData
+import org.netherald.quantium.data.PlayerData
 import org.netherald.quantium.data.isBlocked
 import org.netherald.quantium.debug
-import org.netherald.quantium.event.InstanceAddedEvent
-import org.netherald.quantium.event.InstanceDeletedEvent
-import org.netherald.quantium.event.MiniGameConnectingEvent
+import org.netherald.quantium.event.*
 import org.netherald.quantium.exception.AlreadyPlayingException
 import org.netherald.quantium.util.PlayerConnectionUtil
 import org.netherald.quantium.exception.NotFoundMiniGameException
@@ -112,24 +111,28 @@ class PluginMessageL : Listener {
                     val uuid = UUID.fromString(data.readUTF())
                     val instance = MiniGameData.instances[uuid]!!
                     instance.isStarted = true
+                    callEvent(InstanceStartedEvent(instance))
                 }
 
                 Channels.SubChannels.Bukkit.STOPPED_INSTANCE -> {
                     val uuid = UUID.fromString(data.readUTF())
                     val instance = MiniGameData.instances[uuid]!!
                     instance.isStopped = true
+                    callEvent(InstanceStoppedEvent(instance))
                 }
 
                 Channels.SubChannels.Bukkit.ADDED_REJOIN_DATA -> {
                     val uuid = UUID.fromString(data.readUTF())
                     val instance = MiniGameData.instances[uuid]!!
-                    TODO()
+                    PlayerData.addReJoinData(uuid, instance)
+                    callEvent(InstanceReJoinDataAddedEvent(instance, uuid))
                 }
 
                 Channels.SubChannels.Bukkit.REMOVED_REJOIN_DATA -> {
                     val uuid = UUID.fromString(data.readUTF())
                     val instance = MiniGameData.instances[uuid]!!
-                    TODO()
+                    PlayerData.removeReJoinData(uuid)
+                    callEvent(InstanceReJoinDataRemovedEvent(instance, uuid))
                 }
 
             }

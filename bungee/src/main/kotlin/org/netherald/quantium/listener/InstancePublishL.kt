@@ -32,15 +32,13 @@ class InstancePublishL(
 
             RedisMessageType.REJOIN_DATA_ADD -> {
                 val uuid = UUID.fromString(message)
-                PlayerData.playerReJoinInstance[uuid] = instance
-                instance.reJoinData += uuid
+                PlayerData.addReJoinData(uuid, instance)
                 callEvent(InstanceReJoinDataAddedEvent(instance, uuid))
             }
 
             RedisMessageType.REJOIN_DATA_REMOVE -> {
                 val uuid = UUID.fromString(message)
-                PlayerData.playerReJoinInstance.remove(uuid, instance)
-                instance.reJoinData -= uuid
+                PlayerData.removeReJoinData(uuid)
                 callEvent(InstanceReJoinDataRemovedEvent(instance, uuid))
             }
         }

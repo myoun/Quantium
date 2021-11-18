@@ -17,6 +17,16 @@ object PlayerData {
         playerPlayingMap[player.uniqueId] = value
         (value.players as MutableCollection<UUID>).add(player.uniqueId)
     }
+
+    fun addReJoinData(uuid: UUID, instance: MiniGameInstance) {
+        instance.reJoinData += uuid
+        playerReJoinInstance[uuid] = instance
+    }
+
+    fun removeReJoinData(uuid: UUID) {
+        playerReJoinInstance[uuid]?.reJoinData?.remove(uuid)
+        playerReJoinInstance -= uuid
+    }
 }
 
 val ProxiedPlayer.playingMiniGame : MiniGameInstance? get() = PlayerData.playerPlayingMap[uniqueId]
