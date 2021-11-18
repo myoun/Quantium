@@ -47,8 +47,10 @@ class TestPlugin : JavaPlugin() {
                     }
                 }
                 test("test") {
-                    now("Intentionally bug") {
-                        true shouldBe false
+                    now("Intentionally error") {
+                        then("should be make error") {
+                            true shouldBe false
+                        }
                     }
                 }
                 runTaskLater(200) {

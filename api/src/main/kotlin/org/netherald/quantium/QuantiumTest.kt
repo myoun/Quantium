@@ -35,6 +35,7 @@ class QuantiumTest(
         }
         val tests = LinkedList<QuantiumTest>()
         var now : QuantiumTest = parent!!
+        tests.add(now)
         while (now.parent != null) {
             now = now.parent!!
             tests.add(now)
