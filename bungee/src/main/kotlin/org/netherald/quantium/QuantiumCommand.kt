@@ -1,10 +1,13 @@
 package org.netherald.quantium
 
 import net.md_5.bungee.api.CommandSender
+import net.md_5.bungee.api.ProxyServer
 import net.md_5.bungee.api.connection.ProxiedPlayer
 import net.md_5.bungee.api.plugin.Command
 import net.md_5.bungee.api.plugin.TabExecutor
 import org.netherald.quantium.data.MiniGameData
+import org.netherald.quantium.data.playerQueueMiniGame
+import org.netherald.quantium.data.playingMiniGame
 import java.lang.IllegalArgumentException
 import java.util.*
 import kotlin.collections.ArrayList
@@ -17,6 +20,10 @@ class QuantiumCommand : Command("quantiumproxy", "Quantium.command", "qp"), TabE
 
     fun CommandSender.notFoundInstance() {
         sendMessage("Not found instance!")
+    }
+
+    fun CommandSender.notFoundPlayer() {
+        sendMessage("Not found Player!")
     }
 
     fun CommandSender.wrongUUID() {
@@ -68,7 +75,7 @@ class QuantiumCommand : Command("quantiumproxy", "Quantium.command", "qp"), TabE
                     }
                     "instance" -> {
                         lateinit var uuid: UUID
-                        try { uuid = UUID.fromString(args[2]) } catch (e : IllegalArgumentException) {
+                        try { uuid = UUID.fromString(args[1]) } catch (e : IllegalArgumentException) {
                             sender.wrongUUID()
                             return
                         }
@@ -94,6 +101,20 @@ class QuantiumCommand : Command("quantiumproxy", "Quantium.command", "qp"), TabE
                             }
                         }
                     }
+                    "player" -> {
+                        val player = ProxyServer.getInstance().getPlayer(args[1]) ?: run {
+                            sender.notFoundPlayer()
+                            return
+                        }
+                        when (args[2].lowercase()) {
+                            "info" -> {
+                                sender.sendMessage("""
+                                    playing: ${player.playingMiniGame}
+                                    queue-minigame: ${player.playerQueueMiniGame}
+                                """.trimIndent())
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -106,15 +127,19 @@ class QuantiumCommand : Command("quantiumproxy", "Quantium.command", "qp"), TabE
         add("minigame")
     }
 
-    private val miniGameFunctions = ArrayList<String>().apply {
-        add("info")
-        add("instances")
-        add("join")
-    }
-
-    private val instanceFunctions = ArrayList<String>().apply {
-        add("info")
-        add("join")
+    private val functionMap = HashMap<String, ArrayList<String>>().apply {
+        this["minigame"] = ArrayList<String>().apply {
+            add("info")
+            add("instances")
+            add("join")
+        }
+        this["instance"] = ArrayList<String>().apply {
+            add("info")
+            add("join")
+        }
+        this["player"] = ArrayList<String>().apply {
+            add("info")
+        }
     }
 
     override fun onTabComplete(sender: CommandSender, args: Array<out String>): MutableIterable<String> {
@@ -124,25 +149,22 @@ class QuantiumCommand : Command("quantiumproxy", "Quantium.command", "qp"), TabE
                 functions.forEach { if (it.startsWith(args[0].lowercase())) out.add(it) }
             }
             2 -> {
-                val args1 = args[1].lowercase()
+                val arg1 = args[1].lowercase()
                 when (args[0].lowercase()) {
                     "minigame" -> {
-                        out.addAll(MiniGameData.miniGames.keys.filter { it.startsWith(args1) })
+                        out.addAll(MiniGameData.miniGames.keys.filter { it.startsWith(arg1) })
                     }
                     "instance" -> {
-                        out.addAll(MiniGameData.instances.keys.map { it.toString() }.filter { it.startsWith(args1) })
+                        out.addAll(MiniGameData.instances.keys.map { it.toString() }.filter { it.startsWith(arg1) })
+                    }
+                    "player" -> {
+                        out.addAll(ProxyServer.getInstance().players.map { it.name }.filter { it.startsWith(arg1) })
                     }
                 }
             }
             3 -> {
-                val args2 = args[2].lowercase()
-                when (args[0].lowercase()) {
-                    "minigame" -> {
-                        out.addAll(miniGameFunctions.filter { it.startsWith(args2) })
-                    }
-                    "instance" -> {
-                        out.addAll(instanceFunctions.filter { it.startsWith(args2) })
-                    }
+                functionMap[args[0].lowercase()]?.let { functionName ->
+                    out.addAll(functionName.filter { it.startsWith(args[2]) })
                 }
             }
         }

@@ -6,8 +6,6 @@ import io.lettuce.core.RedisURI
 import org.bukkit.plugin.java.JavaPlugin
 import org.netherald.quantium.data.MiniGameData
 import org.netherald.quantium.data.QuantiumConfig
-import org.netherald.quantium.event.InstanceDeletedEvent
-import org.netherald.quantium.event.MiniGameDeletedEvent
 import org.netherald.quantium.listener.*
 import org.netherald.quantium.module.ModuleLoader
 import org.netherald.quantium.util.*
@@ -82,16 +80,6 @@ class QuantiumPlugin : JavaPlugin() {
         val miniGameIterator = MiniGameData.miniGames.iterator()
         while (miniGameIterator.hasNext()) {
             val miniGame = miniGameIterator.next().value
-            miniGame.defaultInstanceSize = 0
-            val iterator = (miniGame.instances as MutableList<MiniGameInstance>).iterator()
-            while (iterator.hasNext()) {
-                val instance = iterator.next()
-                instance.automaticFunctionSetting.autoCreateInstance = false
-                iterator.remove()
-                instance.delete()
-                dataL?.onDeleted(InstanceDeletedEvent((instance)))
-            }
-            dataL?.onMiniGameDeleted(MiniGameDeletedEvent(miniGame))
             miniGameIterator.remove()
             miniGame.delete()
         }

@@ -14,25 +14,32 @@ import org.netherald.quantium.RedisMessageType
 import org.netherald.quantium.listener.ServerPublishL
 import java.util.*
 
-object RedisServerUtil {
+class RedisServerUtil : ServerUtil {
 
-    var client : RedisClient? = null
-    var connection: StatefulRedisConnection<String, String>? = null
-    var sync : RedisCommands<String, String>? = null
-    val instanceConnection = HashMap<MiniGameInstance, StatefulRedisPubSubConnection<String, String>>()
+    companion object {
 
-    fun init(redisURI: RedisURI) {
+        var client : RedisClient? = null
+        var connection: StatefulRedisConnection<String, String>? = null
+        var sync : RedisCommands<String, String>? = null
+        val instanceConnection = HashMap<MiniGameInstance, StatefulRedisPubSubConnection<String, String>>()
 
-        client = RedisClient.create(redisURI)!!
-        connection = client!!.connect()
-        sync = connection!!.sync()
+        fun init(redisURI: RedisURI) {
 
-        ProxyServer.getInstance().servers.forEach { (_, server) ->
-            addServer(server)
+            val redisServerUtil = RedisServerUtil()
+
+            ServerUtil.default = redisServerUtil
+
+            client = RedisClient.create(redisURI)!!
+            connection = client!!.connect()
+            sync = connection!!.sync()
+
+            ProxyServer.getInstance().servers.forEach { (_, server) ->
+                redisServerUtil.addServer(server)
+            }
         }
     }
 
-    fun addServer(server : ServerInfo) {
+    override fun addServer(server : ServerInfo) {
         val connection = client!!.connectPubSub()
         connection.addListener(ServerPublishL(server))
         connection.sync().subscribe("${RedisKeyType.SERVER}:${server.name}:${RedisMessageType.BLOCK}")
@@ -40,22 +47,22 @@ object RedisServerUtil {
         connection.sync().subscribe("${RedisKeyType.SERVER}:${server.name}:${RedisMessageType.DELETED_INSTANCE}")
     }
 
-    fun addLobby(serverInfo : ServerInfo) {
+    override fun addLobby(serverInfo : ServerInfo) {
         val sync = connection?.sync()
         sync?.sadd(RedisKeyType.LOBBIES, serverInfo.name)
     }
 
-    fun removeLobby(serverInfo: ServerInfo) {
+    override fun removeLobby(serverInfo: ServerInfo) {
         val sync = connection?.sync()
         sync?.srem(RedisKeyType.LOBBIES, serverInfo.name)
     }
 
-    fun addMiniGame(name : String) {
+    override fun addMiniGame(name : String) {
         val sync = connection?.sync()
         sync?.sadd(RedisKeyType.MINI_GAMES, name)
     }
 
-    fun removeMiniGame(name : String) {
+    override fun removeMiniGame(name : String) {
         val sync = connection?.sync()
         sync?.multi {
             del("${RedisKeyType.MINI_GAME}:$name:${RedisKeyType.SERVERS}")
@@ -63,7 +70,7 @@ object RedisServerUtil {
         }
     }
 
-    fun addMiniGameServer(serverName: String, gameName: String) {
+    override fun addMiniGameServer(serverName: String, gameName: String) {
         val sync = connection?.sync()
         sync?.multi {
             sadd(RedisKeyType.MINI_GAMES, gameName)
@@ -72,7 +79,7 @@ object RedisServerUtil {
         }
     }
 
-    fun removeMiniGameServer(serverName: String, gameName: String) {
+    override fun removeMiniGameServer(serverName: String, gameName: String) {
         val sync = connection?.sync()
         sync?.multi {
             del("${RedisKeyType.SERVER}:$serverName:${RedisKeyType.MINI_GAMES}")

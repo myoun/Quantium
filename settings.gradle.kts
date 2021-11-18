@@ -21,3 +21,4 @@ include(":example:test-minigame")
 include(":annotation-processor")
 include(":example:event-loagger")
 findProject(":example:event-loagger")?.name = "event-logger"
+include("bungee-api")

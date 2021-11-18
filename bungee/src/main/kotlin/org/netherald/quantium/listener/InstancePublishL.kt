@@ -17,9 +17,11 @@ class InstancePublishL(
             instance.uuid.toString() != channel.split(":")[1]) return
         when (channel.split(":")[2]) {
             RedisKeyType.INSTANCE_STARTED -> {
+                instance.isStarted = true
                 callEvent(InstanceStartedEvent(instance))
             }
             RedisKeyType.INSTANCE_STOPPED -> {
+                instance.isStopped = true
                 callEvent(InstanceStoppedEvent(instance))
             }
         }

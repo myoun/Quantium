@@ -11,8 +11,10 @@ import org.netherald.quantium.data.MiniGameData
 import org.netherald.quantium.data.addMiniGameServer
 import org.netherald.quantium.data.isBlocked
 import org.netherald.quantium.data.removeMiniGameServer
-import org.netherald.quantium.debug
-import org.netherald.quantium.event.*
+import org.netherald.quantium.event.InstanceAddedEvent
+import org.netherald.quantium.event.InstanceDeletedEvent
+import org.netherald.quantium.event.ServerMiniGameAddedEvent
+import org.netherald.quantium.event.ServerMiniGameRemovedEvent
 import org.netherald.quantium.util.RedisServerUtil
 import java.util.*
 
@@ -34,7 +36,7 @@ class ServerPublishL(val server : ServerInfo) : RedisPubSubAdapter<String, Strin
                 val minigameName = RedisServerUtil.sync!!.get(
                     "${RedisKeyType.INSTANCE}:$uuid:${RedisKeyType.MINI_GAME}"
                 )
-                val miniGame = MiniGameData.miniGames[minigameName]!!
+                val miniGame = MiniGameData.miniGames[minigameName] ?: throw NullPointerException(minigameName)
                 val instance = MiniGameInstance(uuid, server, miniGame)
 
                 val connection = RedisServerUtil.client!!.connectPubSub()

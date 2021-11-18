@@ -4,7 +4,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.netherald.quantium.RedisKeyType
 import org.netherald.quantium.RedisMessageType
-import org.netherald.quantium.event.BlockedServerEvent
+import event.BlockedServerEvent
 import org.netherald.quantium.util.RedisServerUtil
 
 class BlockedL : Listener {

@@ -17,8 +17,8 @@ import org.netherald.quantium.debug
 import org.netherald.quantium.event.InstanceAddedEvent
 import org.netherald.quantium.event.InstanceDeletedEvent
 import org.netherald.quantium.event.MiniGameConnectingEvent
+import org.netherald.quantium.exception.AlreadyPlayingException
 import org.netherald.quantium.util.PlayerConnectionUtil
-import org.netherald.quantium.exception.NotFoundInstanceException
 import org.netherald.quantium.exception.NotFoundMiniGameException
 import java.util.*
 import kotlin.collections.HashMap
@@ -74,9 +74,12 @@ class PluginMessageL : Listener {
                     debug(miniGame)
                     MiniGameData.miniGames[miniGame]?.let {
                         if (!ProxyServer.getInstance().pluginManager.callEvent(
-                            MiniGameConnectingEvent(player, it)).isCancelled
+                            MiniGameConnectingEvent(player, it)
+                            ).isCancelled
                         ) {
-                            PlayerConnectionUtil.connectToGame(player, it)
+                            try {
+                                PlayerConnectionUtil.connectToGame(player, it)
+                            } catch (e : AlreadyPlayingException) {}
                         }
                     } ?: throw NotFoundMiniGameException(miniGame)
                 }

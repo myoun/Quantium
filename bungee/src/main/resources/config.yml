@@ -17,8 +17,6 @@
 # 하지만 플레이어가 있어야만 가능합니다
 
 # example
-#lobby:
-#  - server1
 #minigame:
 #  BedWars-1:
 #    min-player-size: 12
@@ -28,6 +26,13 @@
 #        max-instance-count: 1
 #      server2:
 #        max-instance-count: 1
+
+lobby:
+  - server1
+  - server3
+
+queue-server:
+  - server4
 
 redis:
   enable: false

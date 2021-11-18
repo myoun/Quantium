@@ -12,11 +12,10 @@ import org.bukkit.event.Listener
 import org.bukkit.event.player.*
 import org.bukkit.scheduler.BukkitTask
 import org.bukkit.scoreboard.DisplaySlot
-import org.bukkit.scoreboard.Scoreboard
 import org.netherald.quantium.data.*
-import org.netherald.quantium.event.InstanceDeletedEvent
-import org.netherald.quantium.event.InstanceStartedEvent
-import org.netherald.quantium.exception.OutOfMaxPlayerSizeException
+import event.InstanceDeletedEvent
+import event.InstanceStartedEvent
+import exception.OutOfMaxPlayerSizeException
 import org.netherald.quantium.setting.AutomaticFunctionSetting
 import org.netherald.quantium.setting.IsolationSetting
 import org.netherald.quantium.setting.TeamSetting
@@ -209,7 +208,7 @@ class MiniGameInstance(
         if (miniGame.maxPlayerSize < players.size+1) throw OutOfMaxPlayerSizeException()
 
         PlayerData.UnSafe.addAllMiniGameData(player, this)
-        scoreBoard?.let { player.scoreboard = it }
+        scoreBoard?.let { player.scoreboard = it.board }
         unSafe.callPlayerAdded(player)
         if (automaticFunctionSetting.autoStart && miniGame.minPlayerSize <= players.size) {
             runStartTask()
@@ -272,19 +271,22 @@ class MiniGameInstance(
 
 
 
-    var scoreBoard : Scoreboard? = null
-    fun applyScoreBoard(displayName : String, init : ScoreBoardBuilder.() -> Unit) : Scoreboard {
+    var scoreBoard : QuantiumBoard? = null
+
+    fun applyScoreBoard(add : QuantiumBoard.() -> Unit) = scoreBoard?.add()
+
+    fun applyNewScoreBoard(displayName : String, init : QuantiumBoard.() -> Unit) : QuantiumBoard {
         val name = uuid.toString()
-        val scoreboard = ScoreBoardBuilder(name.substring(0, 16), displayName)
+        val scoreboard = QuantiumBoard(name.substring(0, 16), displayName)
         scoreboard.init()
         scoreboard.objective.displaySlot = DisplaySlot.SIDEBAR
-        this.scoreBoard = scoreboard.board
+        this.scoreBoard = scoreboard
         broadcast { it.scoreboard = scoreboard.board }
-        return scoreboard.board
+        return scoreboard
     }
 
     fun broadcast(message : String) {
-        println("[${miniGame.name}] broadcast : $message")
+        println("[${miniGame.name}] $uuid broadcast : $message")
         players.forEach { it.sendMessage(message) }
     }
 
@@ -372,13 +374,19 @@ class MiniGameInstance(
     }
 
     fun unregisterListeners() {
-        listeners.forEach { HandlerList.unregisterAll(it) }
-        listeners.clear()
+        val iterator = listeners.iterator()
+        while (iterator.hasNext()) {
+            HandlerList.unregisterAll(iterator.next())
+            iterator.remove()
+        }
     }
 
     fun unregisterTasks() {
-        tasks.forEach { it.cancel() }
-        tasks.clear()
+        val iterator = tasks.iterator()
+        while (iterator.hasNext()) {
+            iterator.next().task.cancel()
+            iterator.remove()
+        }
     }
 
     fun delete() {

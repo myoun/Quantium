@@ -5,7 +5,6 @@ import net.md_5.bungee.event.EventHandler
 import org.netherald.quantium.data.ServerData
 import org.netherald.quantium.data.isBlocked
 import org.netherald.quantium.data.isLobby
-import org.netherald.quantium.debug
 import org.netherald.quantium.event.InstanceAddedEvent
 import org.netherald.quantium.event.ServerLobbyAddedEvent
 import org.netherald.quantium.event.ServerUnBlockedEvent

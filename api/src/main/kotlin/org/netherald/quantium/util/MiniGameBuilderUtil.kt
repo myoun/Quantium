@@ -19,9 +19,8 @@ import org.bukkit.plugin.RegisteredListener
 import org.bukkit.plugin.TimedRegisteredListener
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scheduler.BukkitRunnable
-import org.bukkit.scoreboard.Scoreboard
 import org.netherald.quantium.*
-import org.netherald.quantium.event.AllServerEvent
+import event.AllServerEvent
 import java.lang.reflect.InvocationTargetException
 
 @QuantiumMarker
@@ -50,8 +49,9 @@ open class MiniGameBuilderUtil(private val miniGameInstance : MiniGameInstance) 
 
     fun removeWorld(world: World) = miniGameInstance.removeWorld(world)
 
-    fun applyScoreBoard(displayName : String, init : ScoreBoardBuilder.() -> Unit) =
-        miniGameInstance.applyScoreBoard(displayName, init)
+    fun applyNewScoreBoard(displayName : String, init : QuantiumBoard.() -> Unit) =
+        miniGameInstance.applyNewScoreBoard(displayName, init)
+    fun applyScoreBoard(add : QuantiumBoard.() -> Unit) = miniGameInstance.applyScoreBoard(add)
 
     var spectatorUtil : SpectatorUtil
         get() = miniGameInstance.spectatorUtil
@@ -71,21 +71,15 @@ open class MiniGameBuilderUtil(private val miniGameInstance : MiniGameInstance) 
 
     fun <T> loopTask(
         range: Iterable<T>, delay : Long = 1, period : Long = 1, task : MiniGameInstanceTask.(T) -> Unit
-    ) : MiniGameInstanceTask {
-        return loopTask(delay, period, range.iterator(), task)
-    }
+    ) = loopTask(delay, period, range.iterator(), task)
 
     fun <T> loopTask(
         delay : Long = 1, period : Long = 1, collection: Collection<T>, task : MiniGameInstanceTask.(T) -> Unit
-    ) : MiniGameInstanceTask {
-        return loopTask(delay, period, collection.iterator(), task)
-    }
+    ) = loopTask(delay, period, collection.iterator(), task)
 
     fun <T> loopTask(
         delay : Long = 1, period : Long = 1, iterator: Iterator<T>, task : MiniGameInstanceTask.(T) -> Unit
-    ) : MiniGameInstanceTask {
-        return loopTask(delay, period) { if (iterator.hasNext()) task(iterator.next()) else cancel() }
-    }
+    ) = loopTask(delay, period) { if (iterator.hasNext()) task(iterator.next()) else cancel() }
 
     fun loopTask(
         delay : Long = 1, period : Long = 1, task : MiniGameInstanceTask.() -> Unit

@@ -25,9 +25,7 @@ class PluginDisableL : Listener {
                     
                 """.trimIndent())
                 miniGame.maxInstanceSize = 0
-                miniGame.instances.iterator().forEach {
-                    it.delete()
-                }
+                miniGame.delete()
             }
         }
     }

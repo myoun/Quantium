@@ -27,15 +27,17 @@ class TestPlugin : JavaPlugin() {
                 disable()
             }
 
-            applyScoreBoard("TestMiniGame") {
+            applyNewScoreBoard("TestMiniGame") {
                 "Hello" to 2
                 "World" to 1
             }
 
             onStart {
-                applyScoreBoard("TestMiniGame2") {
-                    "GoodBye" to 2
-                    "World" to 1
+                applyScoreBoard() {
+                    loopTask(10 downTo 1, 1, 20) { i ->
+                        displayName = "It'll turn off in $i second"
+                    }
+                    2 to "GoodBye"
                 }
                 runTaskLater(200) {
                     stopGame()

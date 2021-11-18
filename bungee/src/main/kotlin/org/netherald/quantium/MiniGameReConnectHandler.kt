@@ -3,26 +3,34 @@ package org.netherald.quantium
 import net.md_5.bungee.api.ReconnectHandler
 import net.md_5.bungee.api.config.ServerInfo
 import net.md_5.bungee.api.connection.ProxiedPlayer
-import org.netherald.quantium.data.PlayerData
+import org.netherald.quantium.data.*
+import org.netherald.quantium.util.PlayerConnectionUtil
+import org.netherald.quantium.util.bestServer
+import org.netherald.quantium.util.connectToLobby
 import java.util.*
 import kotlin.collections.HashMap
 
 class MiniGameReConnectHandler : ReconnectHandler {
 
-    // last MiniGame server connection
-    val lastServer = HashMap<UUID, ServerInfo>()
-
     override fun getServer(player: ProxiedPlayer): ServerInfo? {
-        return lastServer[player.uniqueId]
-    }
-
-    override fun setServer(player: ProxiedPlayer) {
-        PlayerData.playerPlayingMap[player.uniqueId]?.let {
-            lastServer[player.uniqueId] = player.server.info
+        player.playingMiniGame?.server?.let {
+            return it
+        } ?: run {
+            val servers = ServerData.lobbies.filter { !it.isBlocked }
+            if (servers.isEmpty()) {
+                return QuantiumConfig.queueServers.bestServer
+            }
+             return PlayerConnectionUtil.getServer(
+                 servers,
+                 PlayerConnectionUtil.SelectionAlgorithm.PLAYER_COUNT_LOWER
+             )
         }
     }
+
+    override fun setServer(player: ProxiedPlayer) {}
 
     override fun save() {}
 
     override fun close() {}
+
 }

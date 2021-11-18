@@ -8,7 +8,7 @@ import org.netherald.quantium.MiniGame
 import org.netherald.quantium.MiniGameInstance
 import org.netherald.quantium.RedisKeyType
 import org.netherald.quantium.RedisMessageType
-import org.netherald.quantium.event.*
+import event.*
 import org.netherald.quantium.util.PluginMessageServerUtil
 import org.netherald.quantium.util.RedisServerUtil
 

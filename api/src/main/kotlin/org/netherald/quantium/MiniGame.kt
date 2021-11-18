@@ -5,9 +5,9 @@ import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 import org.netherald.quantium.data.MiniGameData
-import org.netherald.quantium.event.InstanceCreatedEvent
-import org.netherald.quantium.event.MiniGameCreateEvent
-import org.netherald.quantium.event.MiniGameDeletedEvent
+import event.InstanceCreatedEvent
+import event.MiniGameCreateEvent
+import event.MiniGameDeletedEvent
 import java.lang.IllegalStateException
 import java.util.*
 import kotlin.collections.ArrayList
@@ -117,7 +117,10 @@ class MiniGame(
 
     fun stopAll() {
         defaultInstanceSize = 0
-        instances.iterator().forEach { instance ->
+        val iterator = (instances as MutableList<MiniGameInstance>).iterator()
+        while (iterator.hasNext()) {
+            val instance = iterator.next()
+            iterator.remove()
             instance.stopGame()
         }
     }
