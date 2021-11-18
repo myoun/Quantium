@@ -47,43 +47,59 @@ class MiniGameInstance(
 
         fun callPlayerAdded(player: Player) {
             addedPlayerListener.forEach {
-                it(MiniGameBuilderUtil(this@MiniGameInstance), player)
+                kotlin.runCatching {
+                    it(MiniGameBuilderUtil(this@MiniGameInstance), player)
+                }.exceptionOrNull()?.printStackTrace()
             }
         }
 
         fun callPlayerRemoved(player: Player) {
             removedPlayerListener.forEach {
+                kotlin.runCatching {
+                    it(MiniGameBuilderUtil(this@MiniGameInstance), player)
+                }.exceptionOrNull()?.printStackTrace()
                 it(MiniGameBuilderUtil(this@MiniGameInstance), player)
             }
         }
 
         fun callMiniGameCreatedListener() {
             miniGameCreatedListener.forEach {
+                kotlin.runCatching {
+                    it(MiniGameBuilderUtil(this@MiniGameInstance))
+                }.exceptionOrNull()?.printStackTrace()
                 it(MiniGameBuilderUtil(this@MiniGameInstance))
             }
         }
 
         fun callInstanceCreatedListener() {
             instanceCreatedListener.forEach {
-                it(MiniGameBuilderUtil(this@MiniGameInstance))
+                kotlin.runCatching {
+                    it(MiniGameBuilderUtil(this@MiniGameInstance))
+                }.exceptionOrNull()?.printStackTrace()
             }
         }
 
         fun callStartListener() {
             startListener.forEach {
-                it(MiniGameBuilderUtil(this@MiniGameInstance))
+                kotlin.runCatching {
+                    it(MiniGameBuilderUtil(this@MiniGameInstance))
+                }.exceptionOrNull()?.printStackTrace()
             }
         }
 
         fun callStopListener() {
             stopListener.forEach {
-                it(MiniGameBuilderUtil(this@MiniGameInstance))
+                kotlin.runCatching {
+                    it(MiniGameBuilderUtil(this@MiniGameInstance))
+                }.exceptionOrNull()?.printStackTrace()
             }
         }
 
         fun callDeleteListener() {
             deleteListener.forEach {
-                it(MiniGameBuilderUtil(this@MiniGameInstance))
+                kotlin.runCatching {
+                    it(MiniGameBuilderUtil(this@MiniGameInstance))
+                }.exceptionOrNull()?.printStackTrace()
             }
         }
 
