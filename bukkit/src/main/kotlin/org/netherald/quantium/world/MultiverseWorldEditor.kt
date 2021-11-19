@@ -3,7 +3,7 @@ package org.netherald.quantium.world
 import com.onarandombox.MultiverseCore.api.MVWorldManager
 import org.bukkit.Bukkit
 import org.bukkit.World
-import exception.WorldCloneFailedException
+import org.netherald.quantium.exception.WorldCloneFailedException
 
 class MultiverseWorldEditor(private val worldManager : MVWorldManager) : WorldEditor {
     override fun cloneWorld(baseWorld: World, newWorld: String) : World {

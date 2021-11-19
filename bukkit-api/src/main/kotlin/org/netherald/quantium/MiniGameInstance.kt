@@ -15,7 +15,7 @@ import org.bukkit.scoreboard.DisplaySlot
 import org.netherald.quantium.data.*
 import event.InstanceDeletedEvent
 import event.InstanceStartedEvent
-import exception.OutOfMaxPlayerSizeException
+import org.netherald.quantium.exception.OutOfMaxPlayerSizeException
 import org.netherald.quantium.setting.AutomaticFunctionSetting
 import org.netherald.quantium.setting.IsolationSetting
 import org.netherald.quantium.setting.TeamSetting
