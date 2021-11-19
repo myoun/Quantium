@@ -12,4 +12,5 @@ interface ServerUtil {
     val miniGames : Collection<String>
 
     fun getInstances(game : String) : Collection<UUID>?
+    val instances : Collection<UUID>
 }

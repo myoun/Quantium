@@ -6,16 +6,13 @@ import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
-import org.netherald.quantium.data.MiniGameData
-import org.netherald.quantium.util.PlayerUtil
-import org.netherald.quantium.util.ServerUtil
+import org.netherald.quantium.data.*
+import java.lang.IllegalArgumentException
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 class QuantiumCommand : CommandExecutor, TabCompleter {
-
-    private val functions = ArrayList<String>().apply {
-        add("help")
-        add("join")
-    }
 
     private fun CommandSender.sendHelpMessage() {
         sendMessage("/qb help / print help message")
@@ -34,10 +31,18 @@ class QuantiumCommand : CommandExecutor, TabCompleter {
         sendMessage("Not found mini-game")
     }
 
+    private fun CommandSender.notFountModule() {
+        sendMessage("Not found module")
+    }
+
     private fun CommandSender.notPlayer() {
         if (this !is Player) {
             sendMessage("야 ㅡㅡ")
         }
+    }
+
+    private fun CommandSender.notUUID() {
+        sendMessage("Not UUID!")
     }
 
     override fun onCommand(
@@ -48,65 +53,116 @@ class QuantiumCommand : CommandExecutor, TabCompleter {
     ): Boolean {
         when (args.size) {
             1 -> {
-                when (args[0].lowercase()) {
-                    "help" -> sender.sendHelpMessage()
-                    "queue" -> sender.joinHelpMessage()
-                    else -> sender.sendHelpMessage()
+                when (args[0]) {
+                    "minigames" -> {
+                        sender.sendMessage("""
+                            minigames : ${MiniGameData.miniGames.map { it.key }}
+                        """.trimIndent())
+                    }
+                    "modules" -> {
+                        sender.sendMessage("""
+                            modules : ${Quantium.modules.map { it.key }}
+                        """.trimIndent())
+                    }
+                    "instances" -> {
+                        sender.sendMessage("""
+                            instances : ${MiniGameData.instances.map { it.key }}
+                        """.trimIndent())
+                    }
                 }
             }
-            2 -> {
-                when (args[0]) {
-                    "join" -> {
-                        if (sender is Player) {
-                            ServerUtil.default?.let {
-                                if (it.miniGames.contains(args[1])) {
-                                    PlayerUtil.default.sendToMiniGame(sender, args[1])
-                                } else {
-                                    sender.notFountMiniGame()
+
+            3 -> {
+                when (args[0].lowercase()) {
+                    "minigame" -> {
+                        val miniGame = MiniGameData.miniGames[args[1]] ?: run {
+                            sender.notFountMiniGame()
+                            return false
+                        }
+                        when (args[2].lowercase()) {
+                            "join" -> {
+                                if (sender !is Player) {
+                                    sender.notPlayer()
                                     return false
                                 }
-                            } ?: run {
-                                MiniGameData.miniGames[args[1]]?.let { miniGame ->
-                                    miniGame.addPlayer(sender)
-                                    return true
-                                } ?: run {
-                                    sender.notFountMiniGame()
-                                    return false
-                                }
+                                miniGame.addPlayer(sender)
                             }
-                        } else {
-                            sender.notPlayer()
+                            "info" -> {
+                                sender.sendMessage("""
+                                    name : ${miniGame.name}
+                                    player-count : ${miniGame.players.size}
+                                    queue-size : ${miniGame.queue.size}
+                                """.trimIndent())
+                            }
+                            "instances" -> {
+                                sender.sendMessage("""
+                                    instances : ${miniGame.instances}
+                                """.trimIndent())
+                            }
                         }
                     }
-                    else -> sender.sendHelpMessage()
-                }
-            }
-            3 -> {
-                when (args[0]) {
-                    "join" -> {
-                        Bukkit.getPlayer(args[2]) ?: run {
+                    "instance" -> {
+                        try {
+                            UUID.fromString(args[1])
+                        } catch (e : IllegalArgumentException) {
+                            sender.notUUID()
+                            return false
+                        }
+                        val instance = MiniGameData.instances[UUID.fromString(args[1])] ?: run {
+                            sender.notFountMiniGame()
+                            return false
+                        }
+
+                        when(args[2].lowercase()) {
+                            "join" -> {
+                                if (sender !is Player) {
+                                    sender.notPlayer()
+                                    return false
+                                }
+                                instance.addPlayer(sender)
+                            }
+                            "info" -> {
+                                sender.sendMessage("""
+                                    uuid : ${instance.uuid}
+                                    player-count : ${instance.players.size}
+                                    is-started : ${instance.isStarted}
+                                    is-finished : ${instance.isFinished}
+                                """.trimIndent())
+                            }
+                            "players" -> {
+                                sender.sendMessage("""
+                                    players : ${instance.players}
+                                """.trimIndent())
+                            }
+                        }
+                    }
+                    "player" -> {
+                        val player = Bukkit.getPlayer(args[1]) ?: run {
                             sender.sendOfflinePlayerMessage()
                             return false
                         }
-                        val player = Bukkit.getPlayer(args[2])!!
-                        ServerUtil.default?.let {
-                            if (it.miniGames.contains(args[1])) {
-                                PlayerUtil.default.sendToMiniGame(player, args[1])
-                            } else {
-                                sender.notFountMiniGame()
-                                return false
+                        when(args[2].lowercase()) {
+                            "info" -> {
+                                sender.sendMessage("""
+                                    connection-type : ${player.connectionType}
+                                    playing-instance : ${player.playingGame}
+                                    instance-minigame : ${player.playingGame?.miniGame}
+                                    rejoin-data : ${player.reJoinData}
+                                """.trimIndent())
                             }
-                        } ?: run {
-                            MiniGameData.miniGames[args[1]]?.let { miniGame ->
-                                Bukkit.getPlayer(args[2])?.let {
-                                    miniGame.addPlayer(it)
-                                } ?: run {
-                                    sender.sendOfflinePlayerMessage()
-                                }
-                                return true
-                            } ?: run {
-                                sender.notFountMiniGame()
-                                return false
+                        }
+                    }
+                    "module" -> {
+                        val module = Quantium.modules[args[1]] ?: run {
+                            sender.notFountModule()
+                            return false
+                        }
+                        when(args[2].lowercase()) {
+                            "info" -> {
+                                sender.sendMessage("""
+                                    name : ${module.name}
+                                    enabled : ${module.isEnabled}
+                                """.trimIndent())
                             }
                         }
                     }
@@ -120,6 +176,35 @@ class QuantiumCommand : CommandExecutor, TabCompleter {
         return false
     }
 
+    private val types = ArrayList<String>().apply {
+        add("minigames")
+        add("modules")
+        add("instances")
+        add("minigame")
+        add("instance")
+        add("player")
+        add("module")
+    }
+
+    private val functions = HashMap<String, List<String>>().apply {
+        this["minigame"] = ArrayList<String>().apply {
+            add("info")
+            add("instances")
+            add("join")
+        }
+        this["instance"] = ArrayList<String>().apply {
+            add("info")
+            add("join")
+            add("players")
+        }
+        this["module"] = ArrayList<String>().apply {
+            add("info")
+        }
+        this["player"] = ArrayList<String>().apply {
+            add("info")
+        }
+    }
+
     override fun onTabComplete(
         sender: CommandSender,
         command: Command,
@@ -129,38 +214,38 @@ class QuantiumCommand : CommandExecutor, TabCompleter {
         val out = ArrayList<String>()
         when (args.size) {
             1 -> {
-                functions.forEach { if (it.startsWith(args[0])) out.add(it) }
+                types.forEach { if (it.startsWith(args[0])) out.add(it) }
             }
             2 -> {
-                when (args[0]) {
-                    "join" -> {
-                        ServerUtil.default?.let { serverUtil ->
-                            out.addAll(serverUtil.miniGames.filter {
-                                it.startsWith(args[1])
-                            })
-                        } ?: run {
-                            MiniGameData.miniGames.forEach { (_, it) ->
-                                if (it.name.startsWith(args[1])) {
-                                    out.add(it.name)
-                                }
+                when (args[0].lowercase()) {
+                    "minigame" -> {
+                        MiniGameData.miniGames.forEach { (_, it) ->
+                            if (it.name.startsWith(args[1])) {
+                                out.add(it.name)
                             }
                         }
+                    }
+                    "instance" -> {
+                        MiniGameData.miniGames.forEach { (_, it) ->
+                            if (it.name.startsWith(args[1])) {
+                                out.add(it.name)
+                            }
+                        }
+                    }
+                    "module" -> {
+                        out.addAll(Quantium.modules.map { it.key }.filter {
+                            it.startsWith(args[1])
+                        })
+                    }
+                    "player" -> {
+                        out.addAll(Bukkit.getOnlinePlayers().map{ it.name }.filter { it.startsWith(args[1]) }.toList())
                     }
                 }
             }
             3 -> {
-                when (args[0]) {
-                    "join" -> {
-                        Bukkit.getOnlinePlayers().filter {
-                            it.name.startsWith(args[1])
-                        }.forEach {
-                            out.add(it.name)
-                        }
-                    }
+                functions[args[1].lowercase()]?.let { list ->
+                    out.addAll(list.filter { it.startsWith(args[2].lowercase()) })
                 }
-            }
-            else -> {
-
             }
         }
         return out

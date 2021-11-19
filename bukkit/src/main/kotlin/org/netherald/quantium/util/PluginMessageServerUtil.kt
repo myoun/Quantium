@@ -18,7 +18,9 @@ class PluginMessageServerUtil : ServerUtil {
     override val miniGames: Collection<String>
         get() = games
 
-    override fun getInstances(game: String): Collection<UUID>? = instances[game]
+    override val instances: Collection<UUID> = TODO()
+
+    override fun getInstances(game: String): Collection<UUID>? = instances0[game]
 
     private val blocked = true
     override val isBlocked: Boolean get() = blocked
@@ -31,7 +33,7 @@ class PluginMessageServerUtil : ServerUtil {
     }
 
     var games: Collection<String> = MiniGameData.miniGames.map { it.key }
-    var instances : Map<String, Collection<UUID>> = instancesInit()
+    var instances0 : Map<String, Collection<UUID>> = instancesInit()
 
     private fun instancesInit() : Map<String, Collection<UUID>> {
         val out = HashMap<String, Collection<UUID>>()

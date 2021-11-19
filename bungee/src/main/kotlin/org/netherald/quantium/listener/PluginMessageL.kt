@@ -38,6 +38,69 @@ class PluginMessageL : Listener {
             debug("plugin-message subChannel : $subChannel")
             when (subChannel) {
 
+                Channels.SubChannels.Bukkit.LOBBY -> {
+                    PlayerConnectionUtil.connectToLobby(player)
+                }
+
+                Channels.SubChannels.Bukkit.MINI_GAME -> {
+                    val miniGame = data.readUTF()
+                    debug(miniGame)
+                    MiniGameData.miniGames[miniGame]?.let {
+                        if (!ProxyServer.getInstance().pluginManager.callEvent(
+                            MiniGameConnectingEvent(player, it)
+                            ).isCancelled
+                        ) {
+                            try {
+                                PlayerConnectionUtil.connectToGame(player, it)
+                            } catch (e : AlreadyPlayingException) {}
+                        }
+                    } ?: throw NotFoundMiniGameException(miniGame)
+                }
+
+                Channels.SubChannels.Bukkit.INSTANCE -> {
+                    val instance = UUID.fromString(data.readUTF())
+                    debug(instance.toString())
+                    MiniGameData.instances[instance]?.let {
+                        if (!ProxyServer.getInstance().pluginManager.callEvent(
+                                InstanceConnectingEvent(player, it)
+                            ).isCancelled
+                        ) {
+                            it.addPlayer(player)
+                        }
+                    } ?: throw NotFoundMiniGameException(instance.toString())
+                }
+
+
+
+
+
+
+                Channels.SubChannels.Bukkit.SET_BLOCK -> {
+                    val value = data.readBoolean()
+                    debug("value : $value")
+                    server.info.isBlocked = value
+                }
+
+                Channels.SubChannels.GET_MINI_GAME_PLAYER_COUNT -> {
+
+                    @Suppress("UnstableApiUsage")
+                    val out = ByteStreams.newDataOutput()
+
+                    out.writeUTF(Channels.SubChannels.GET_MINI_GAME_PLAYER_COUNT_RESPONSE)
+                    out.writeLong(data.readLong())
+
+                    MiniGameData.miniGames[data.readUTF()]?.let {
+                        out.writeInt(it.players.size)
+                    } ?: run {
+                        out.writeInt(-1)
+                    }
+
+                    (event.receiver as ProxiedPlayer).server.sendData(Channels.MAIN_CHANNEL, out.toByteArray())
+
+                }
+
+
+
                 Channels.SubChannels.Bukkit.ADDED_INSTANCE -> {
                     MiniGameData.miniGames[data.readUTF()]?.let {
                         val uuid = UUID.fromString(data.readUTF())
@@ -62,49 +125,6 @@ class PluginMessageL : Listener {
                         miniGameTypeMap -= uuid
                         callEvent(InstanceDeletedEvent(instance))
                     }
-                }
-
-                Channels.SubChannels.Bukkit.LOBBY -> {
-                    PlayerConnectionUtil.connectToLobby(player)
-                }
-
-                Channels.SubChannels.Bukkit.GAME -> {
-                    val miniGame = data.readUTF()
-                    debug(miniGame)
-                    MiniGameData.miniGames[miniGame]?.let {
-                        if (!ProxyServer.getInstance().pluginManager.callEvent(
-                            MiniGameConnectingEvent(player, it)
-                            ).isCancelled
-                        ) {
-                            try {
-                                PlayerConnectionUtil.connectToGame(player, it)
-                            } catch (e : AlreadyPlayingException) {}
-                        }
-                    } ?: throw NotFoundMiniGameException(miniGame)
-                }
-
-                Channels.SubChannels.Bukkit.SET_BLOCK -> {
-                    val value = data.readBoolean()
-                    debug("value : $value")
-                    server.info.isBlocked = value
-                }
-
-                Channels.SubChannels.GET_MINI_GAME_PLAYER_COUNT -> {
-
-                    @Suppress("UnstableApiUsage")
-                    val out = ByteStreams.newDataOutput()
-
-                    out.writeUTF(Channels.SubChannels.GET_MINI_GAME_PLAYER_COUNT_RESPONSE)
-                    out.writeLong(data.readLong())
-
-                    MiniGameData.miniGames[data.readUTF()]?.let {
-                        out.writeInt(it.players.size)
-                    } ?: run {
-                        out.writeInt(-1)
-                    }
-
-                    (event.receiver as ProxiedPlayer).server.sendData(Channels.MAIN_CHANNEL, out.toByteArray())
-
                 }
 
                 Channels.SubChannels.Bukkit.STARTED_INSTANCE -> {

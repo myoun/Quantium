@@ -54,7 +54,7 @@ class PluginMessageL : PluginMessageListener {
                     instances.add(UUID(data.readLong(), data.readLong()))
                 }
                 PluginMessageServerUtil.instance?.let {
-                    (it.instances as MutableMap<String, Collection<UUID>>)[miniGame] = instances
+                    (it.instances0 as MutableMap<String, Collection<UUID>>)[miniGame] = instances
                 }
             }
         }

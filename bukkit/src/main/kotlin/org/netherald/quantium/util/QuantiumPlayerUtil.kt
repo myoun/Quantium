@@ -2,6 +2,7 @@ package org.netherald.quantium.util
 
 import org.bukkit.entity.Player
 import org.netherald.quantium.data.*
+import java.util.*
 
 class QuantiumPlayerUtil : PlayerUtil {
 
@@ -18,6 +19,15 @@ class QuantiumPlayerUtil : PlayerUtil {
                 else if (!it.isFinished) false
                 else false
             }.random().addPlayer(player)
+            PlayerData.connectionType[player] = ConnectionType.MINIGAME
+        } ?: run {
+            throw IllegalStateException("not found mini-game")
+        }
+    }
+
+    override fun sendToInstance(player: Player, instance: UUID) {
+        MiniGameData.instances[instance]?.let {
+            it.addPlayer(player)
             PlayerData.connectionType[player] = ConnectionType.MINIGAME
         } ?: run {
             throw IllegalStateException("not found mini-game")

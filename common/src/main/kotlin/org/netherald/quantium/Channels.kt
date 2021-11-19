@@ -8,7 +8,8 @@ object Channels {
 
         object Bukkit {
             const val SET_BLOCK = "block"
-            const val GAME = "game"
+            const val MINI_GAME = "miniGame"
+            const val INSTANCE = "instance"
             const val LOBBY = "lobby"
             const val ADDED_INSTANCE = "addedInstance"
             const val DELETED_INSTANCE = "deletedInstance"

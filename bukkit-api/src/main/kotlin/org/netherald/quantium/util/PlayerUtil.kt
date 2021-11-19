@@ -1,6 +1,7 @@
 package org.netherald.quantium.util
 
 import org.bukkit.entity.Player
+import java.util.*
 
 fun Player.connectToLobby() {
     PlayerUtil.default.sendToLobby(this)
@@ -23,6 +24,8 @@ interface PlayerUtil {
     fun sendToLobby(player: Player)
 
     fun sendToMiniGame(player: Player, miniGame : String)
+
+    fun sendToInstance(player: Player, instance : UUID)
 
     fun sendToServer(player: Player, serverName : String)
 
