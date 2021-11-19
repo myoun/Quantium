@@ -21,6 +21,7 @@ import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scheduler.BukkitRunnable
 import org.netherald.quantium.*
 import event.AllServerEvent
+import event.InstanceThrownEvent
 import java.lang.reflect.InvocationTargetException
 
 @QuantiumMarker
@@ -178,26 +179,26 @@ open class MiniGameBuilderUtil(private val miniGameInstance : MiniGameInstance) 
     }
 
     fun registerEvents(listener: Listener) {
-        listener.javaClass.methods.forEach {
-            val clazz = it.javaClass
-            if (it.isBridge || it.isSynthetic) return@forEach
-            val handler = it.getAnnotation(EventHandler::class.java) ?: return@forEach
+        listener.javaClass.methods.forEach { method ->
+            val clazz = method.javaClass
+            if (method.isBridge || method.isSynthetic) return@forEach
+            val handler = method.getAnnotation(EventHandler::class.java) ?: return@forEach
             if (clazz.typeParameters.size != 1) {
                 owner.logger.severe(
                     owner.description
                         .fullName + " attempted to register an invalid EventHandler method signature \""
-                            + it.toGenericString() + "\" in " + listener.javaClass
+                            + method.toGenericString() + "\" in " + listener.javaClass
                 )
                 return@forEach
             }
             val classAsEvent = clazz.typeParameters[0].javaClass.asSubclass(Event::class.java)
             lateinit var eventExecutor : EventExecutor
-            it.getAnnotation(AllServerEvent::class.java)?.let { _ ->
-                eventExecutor = eventExecutor(classAsEvent) { listener, event -> it.invoke(listener, event) }
+            method.getAnnotation(AllServerEvent::class.java)?.let { _ ->
+                eventExecutor = eventExecutor(classAsEvent) { listener, event -> method.invoke(listener, event) }
             } ?: run {
                 eventExecutor = eventExecutor(classAsEvent) { listener, event ->
                     listenerFilter(event) {
-                        it.invoke(listener, event)
+                        method.invoke(listener, event)
                     }
                 }
             }
@@ -258,7 +259,7 @@ open class MiniGameBuilderUtil(private val miniGameInstance : MiniGameInstance) 
                 listenerData(listener, event)
             }.exceptionOrNull()?.let {
                 if (it is InvocationTargetException) throw EventException(it.cause)
-                throw EventException(it)
+                Bukkit.getPluginManager().callEvent(InstanceThrownEvent(miniGameInstance, it))
             }
         }
     }
@@ -338,6 +339,10 @@ open class MiniGameBuilderUtil(private val miniGameInstance : MiniGameInstance) 
             val input = this as BlockEvent
             this.miniGameInstance.worlds.contains(input.block.world)
         } else if (HangingEvent::class.java.isAssignableFrom(clazz)) {
+            @Suppress("CAST_NEVER_SUCCEEDS")
+            val input = this as HangingEvent
+            this.miniGameInstance.worlds.contains(input.entity.world)
+        } else if (VehicleEvent::class.java.isAssignableFrom(clazz)) {
             @Suppress("CAST_NEVER_SUCCEEDS")
             val input = this as HangingEvent
             this.miniGameInstance.worlds.contains(input.entity.world)

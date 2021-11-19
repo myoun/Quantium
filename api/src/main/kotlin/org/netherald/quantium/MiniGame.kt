@@ -8,6 +8,7 @@ import org.netherald.quantium.data.MiniGameData
 import event.InstanceCreatedEvent
 import event.MiniGameCreateEvent
 import event.MiniGameDeletedEvent
+import event.MiniGameThrownEvent
 import java.lang.IllegalStateException
 import java.util.*
 import kotlin.collections.ArrayList
@@ -83,36 +84,37 @@ class MiniGame(
         }
 
     fun createInstance() {
+        kotlin.runCatching {
+            val instance = MiniGameInstance(
+                this,
+            ).apply(instanceSettingValue)
 
-        val instance = MiniGameInstance(
-            this,
-        ).apply(instanceSettingValue)
-
-        val clone = fun (world : World, name : String) : World {
-            instance.worldSetting.worldEditor ?: run { throw IllegalStateException("Not found worldEditor") }
-            return instance.worldSetting.worldEditor!!.cloneWorld(world, name)
-        }
-        val addWorld = fun (base : World, addWorldType : MiniGameInstance.AddWorldType) =
-            instance.addWorld(clone(base, "${instance.uuid}_${base.name}"), addWorldType)
-
-        instance.worldSetting.baseWorld?.let { addWorld(it, MiniGameInstance.AddWorldType.NORMAL) }
-        instance.worldSetting.baseWorldNether?.let { addWorld(it, MiniGameInstance.AddWorldType.NETHER) }
-        instance.worldSetting.baseWorldEnder?.let { addWorld(it, MiniGameInstance.AddWorldType.ENDER) }
-        instance.worldSetting.otherBaseWorlds.forEach { addWorld(it, MiniGameInstance.AddWorldType.OTHER) }
-
-        addInstance(instance)
-
-        instance.unSafe.callInstanceCreatedListener()
-
-        Bukkit.getServer().pluginManager.callEvent(InstanceCreatedEvent(instance))
-
-        if (instance.automaticFunctionSetting.autoPlayerPool) {
-            pollQueuePlayers(maxPlayerSize - instance.players.size).forEach { player ->
-                instance.addPlayer(player)
+            val clone = fun(world: World, name: String): World {
+                instance.worldSetting.worldEditor ?: run { throw IllegalStateException("Not found worldEditor") }
+                return instance.worldSetting.worldEditor!!.cloneWorld(world, name)
             }
-        }
+            val addWorld = fun(base: World, addWorldType: MiniGameInstance.AddWorldType) =
+                instance.addWorld(clone(base, "${instance.uuid}_${base.name}"), addWorldType)
 
-        println("$name's instance is added")
+            instance.worldSetting.baseWorld?.let { addWorld(it, MiniGameInstance.AddWorldType.NORMAL) }
+            instance.worldSetting.baseWorldNether?.let { addWorld(it, MiniGameInstance.AddWorldType.NETHER) }
+            instance.worldSetting.baseWorldEnder?.let { addWorld(it, MiniGameInstance.AddWorldType.ENDER) }
+            instance.worldSetting.otherBaseWorlds.forEach { addWorld(it, MiniGameInstance.AddWorldType.OTHER) }
+
+            addInstance(instance)
+
+            instance.unSafe.callInstanceCreatedListener()
+
+            Bukkit.getServer().pluginManager.callEvent(InstanceCreatedEvent(instance))
+
+            if (instance.automaticFunctionSetting.autoPlayerPool) {
+                pollQueuePlayers(maxPlayerSize - instance.players.size).forEach { player ->
+                    instance.addPlayer(player)
+                }
+            }
+
+            println("$name's instance is added")
+        }.exceptionOrNull()?.let { Bukkit.getPluginManager().callEvent(MiniGameThrownEvent(this, it)) }
     }
 
     fun stopAll() {

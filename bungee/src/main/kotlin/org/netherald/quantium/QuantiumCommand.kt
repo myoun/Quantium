@@ -6,6 +6,7 @@ import net.md_5.bungee.api.connection.ProxiedPlayer
 import net.md_5.bungee.api.plugin.Command
 import net.md_5.bungee.api.plugin.TabExecutor
 import org.netherald.quantium.data.MiniGameData
+import org.netherald.quantium.data.isBlocked
 import org.netherald.quantium.data.playingMiniGame
 import org.netherald.quantium.data.queueMiniGame
 import java.lang.IllegalArgumentException
@@ -14,23 +15,31 @@ import kotlin.collections.ArrayList
 
 class QuantiumCommand : Command("quantiumproxy", "Quantium.command", "qp"), TabExecutor {
 
-    fun CommandSender.notFoundMiniGame() {
+    private fun CommandSender.notFoundMiniGame() {
         sendMessage("Not found mini-game!")
     }
 
-    fun CommandSender.notFoundInstance() {
+    private fun CommandSender.notFoundInstance() {
         sendMessage("Not found instance!")
     }
 
-    fun CommandSender.notFoundPlayer() {
+    private fun CommandSender.notFoundPlayer() {
         sendMessage("Not found Player!")
     }
 
-    fun CommandSender.wrongUUID() {
-        sendMessage("Wrong UUID!")
+    private fun CommandSender.notFoundServer() {
+        sendMessage("Not found Server!")
     }
 
-    fun CommandSender.alreadyInQueue() {
+    private fun CommandSender.notUUID() {
+        sendMessage("Not UUID!")
+    }
+
+    fun CommandSender.notBoolean() {
+        sendMessage("Not Boolean!")
+    }
+
+    private fun CommandSender.alreadyInQueue() {
         sendMessage("Already in queue!")
     }
 
@@ -76,7 +85,7 @@ class QuantiumCommand : Command("quantiumproxy", "Quantium.command", "qp"), TabE
                     "instance" -> {
                         lateinit var uuid: UUID
                         try { uuid = UUID.fromString(args[1]) } catch (e : IllegalArgumentException) {
-                            sender.wrongUUID()
+                            sender.notUUID()
                             return
                         }
 
@@ -115,6 +124,47 @@ class QuantiumCommand : Command("quantiumproxy", "Quantium.command", "qp"), TabE
                             }
                         }
                     }
+                    "server" -> {
+                        val server = ProxyServer.getInstance().getServerInfo(args[1])
+                        server ?: run {
+                            sender.notFoundServer()
+                        }
+
+                        when (args[2].lowercase()) {
+                            "block" -> {
+                                val server = ProxyServer.getInstance().getServerInfo(args[1])
+                                server ?: run {
+                                    sender.notFoundServer()
+                                    return
+                                }
+                                server.isBlocked = !server.isBlocked
+                            }
+                        }
+                    }
+                }
+            }
+            4 -> {
+                when (args[0].lowercase()) {
+                    "server" -> {
+                        val server = ProxyServer.getInstance().getServerInfo(args[1])
+                        server ?: run {
+                            sender.notFoundServer()
+                            return
+                        }
+
+                        when (args[2].lowercase()) {
+                            "block" -> {
+                                if (args[3].equals("true", true)
+                                    || args[3].equals("false", true)
+                                ) {
+                                    val value = args[3].toBoolean()
+                                    server.isBlocked = value
+                                } else {
+                                    sender.notBoolean()
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -125,6 +175,7 @@ class QuantiumCommand : Command("quantiumproxy", "Quantium.command", "qp"), TabE
         add("info")
         add("instance")
         add("minigame")
+        add("server")
     }
 
     private val functionMap = HashMap<String, ArrayList<String>>().apply {

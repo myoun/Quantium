@@ -1,10 +1,12 @@
 package event
 
-import org.bukkit.entity.Player
 import org.bukkit.event.HandlerList
 import org.netherald.quantium.MiniGameInstance
 
-class InstanceRemoveReJoinDataEvent(override val instance: MiniGameInstance, val player : Player) : InstanceEvent() {
+class InstanceThrownEvent(
+    override val instance: MiniGameInstance,
+    val throwable : Throwable,
+) : InstanceEvent() {
     companion object { @JvmStatic val handlerList =  HandlerList() }
     override fun getHandlers(): HandlerList = handlerList
 }

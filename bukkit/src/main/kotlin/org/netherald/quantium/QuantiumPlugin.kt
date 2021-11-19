@@ -32,6 +32,7 @@ class QuantiumPlugin : JavaPlugin() {
         PerMiniGameTabList.default = QuantiumPerMiniGameTabList()
         PerMiniGameChat.default = QuantiumPerMiniGameChat()
 
+        server.pluginManager.registerEvents(BlockedL(), this)
         server.pluginManager.registerEvents(PluginDisableL(), this)
         server.pluginManager.registerEvents(TabListUtilL(this), this)
         server.pluginManager.registerEvents(MiniGameChatL(), this)
