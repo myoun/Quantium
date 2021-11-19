@@ -15,6 +15,7 @@ import org.bukkit.scoreboard.DisplaySlot
 import org.netherald.quantium.data.*
 import org.netherald.quantium.event.InstanceDeletedEvent
 import org.netherald.quantium.event.InstanceStartedEvent
+import org.netherald.quantium.event.InstanceThrownEvent
 import org.netherald.quantium.exception.OutOfMaxPlayerSizeException
 import org.netherald.quantium.setting.AutomaticFunctionSetting
 import org.netherald.quantium.setting.IsolationSetting
@@ -40,6 +41,8 @@ class MiniGameInstance(
 
     inner class UnSafe {
 
+        private fun callEvent(event : Event) = Bukkit.getPluginManager().callEvent(event)
+
         var world : World? = null
         var worldNether : World? = null
         var worldEnder : World? = null
@@ -49,7 +52,10 @@ class MiniGameInstance(
             addedPlayerListener.forEach {
                 kotlin.runCatching {
                     it(MiniGameBuilderUtil(this@MiniGameInstance), player)
-                }.exceptionOrNull()?.printStackTrace()
+                }.exceptionOrNull()?.let {
+                    callEvent(InstanceThrownEvent(this@MiniGameInstance, it))
+                    it.printStackTrace()
+                }
             }
         }
 
@@ -57,8 +63,10 @@ class MiniGameInstance(
             removedPlayerListener.forEach {
                 kotlin.runCatching {
                     it(MiniGameBuilderUtil(this@MiniGameInstance), player)
-                }.exceptionOrNull()?.printStackTrace()
-                it(MiniGameBuilderUtil(this@MiniGameInstance), player)
+                }.exceptionOrNull()?.let {
+                    callEvent(InstanceThrownEvent(this@MiniGameInstance, it))
+                    it.printStackTrace()
+                }
             }
         }
 
@@ -66,8 +74,10 @@ class MiniGameInstance(
             miniGameCreatedListener.forEach {
                 kotlin.runCatching {
                     it(MiniGameBuilderUtil(this@MiniGameInstance))
-                }.exceptionOrNull()?.printStackTrace()
-                it(MiniGameBuilderUtil(this@MiniGameInstance))
+                }.exceptionOrNull()?.let {
+                    callEvent(InstanceThrownEvent(this@MiniGameInstance, it))
+                    it.printStackTrace()
+                }
             }
         }
 
@@ -75,7 +85,10 @@ class MiniGameInstance(
             instanceCreatedListener.forEach {
                 kotlin.runCatching {
                     it(MiniGameBuilderUtil(this@MiniGameInstance))
-                }.exceptionOrNull()?.printStackTrace()
+                }.exceptionOrNull()?.let {
+                    callEvent(InstanceThrownEvent(this@MiniGameInstance, it))
+                    it.printStackTrace()
+                }
             }
         }
 
@@ -83,7 +96,10 @@ class MiniGameInstance(
             startListener.forEach {
                 kotlin.runCatching {
                     it(MiniGameBuilderUtil(this@MiniGameInstance))
-                }.exceptionOrNull()?.printStackTrace()
+                }.exceptionOrNull()?.let {
+                    callEvent(InstanceThrownEvent(this@MiniGameInstance, it))
+                    it.printStackTrace()
+                }
             }
         }
 
@@ -91,7 +107,10 @@ class MiniGameInstance(
             stopListener.forEach {
                 kotlin.runCatching {
                     it(MiniGameBuilderUtil(this@MiniGameInstance))
-                }.exceptionOrNull()?.printStackTrace()
+                }.exceptionOrNull()?.let {
+                    callEvent(InstanceThrownEvent(this@MiniGameInstance, it))
+                    it.printStackTrace()
+                }
             }
         }
 
@@ -99,7 +118,10 @@ class MiniGameInstance(
             deleteListener.forEach {
                 kotlin.runCatching {
                     it(MiniGameBuilderUtil(this@MiniGameInstance))
-                }.exceptionOrNull()?.printStackTrace()
+                }.exceptionOrNull()?.let {
+                    callEvent(InstanceThrownEvent(this@MiniGameInstance, it))
+                    it.printStackTrace()
+                }
             }
         }
 
