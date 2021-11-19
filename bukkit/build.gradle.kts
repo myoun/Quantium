@@ -11,6 +11,6 @@ dependencies {
     compileOnly("com.onarandombox.multiversecore:Multiverse-Core:4.2.2")
     compileOnly("com.onarandombox.multiversenetherportals:Multiverse-NetherPortals:4.2.1")
     compileOnly("io.lettuce:lettuce-core:6.1.5.RELEASE")
-    implementation(project(":api"))
+    implementation(project(":bukkit-api"))
     implementation(project(":common"))
 }
