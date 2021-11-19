@@ -14,7 +14,7 @@ pluginManagement {
 rootProject.name = "Quantium"
 include(":bungee")
 include(":bukkit")
-include(":api")
+include(":bukkit-api")
 include(":common")
 include(":example:duel")
 include(":example:test-minigame")
