@@ -3,8 +3,8 @@ package org.netherald.quantium
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 import org.netherald.quantium.data.ModuleData
-import event.BlockedServerEvent
-import event.UnBlockedServerEvent
+import org.netherald.quantium.event.BlockedServerEvent
+import org.netherald.quantium.event.UnBlockedServerEvent
 import org.netherald.quantium.module.ModuleLoader
 import org.netherald.quantium.module.ModuleManager
 import org.netherald.quantium.module.QuantiumModule

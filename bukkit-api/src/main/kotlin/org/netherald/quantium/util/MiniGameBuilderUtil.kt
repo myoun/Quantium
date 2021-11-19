@@ -20,8 +20,8 @@ import org.bukkit.plugin.TimedRegisteredListener
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scheduler.BukkitRunnable
 import org.netherald.quantium.*
-import event.AllServerEvent
-import event.InstanceThrownEvent
+import org.netherald.quantium.event.AllServerEvent
+import org.netherald.quantium.event.InstanceThrownEvent
 import java.lang.reflect.InvocationTargetException
 
 @QuantiumMarker
@@ -153,10 +153,10 @@ open class MiniGameBuilderUtil(private val miniGameInstance : MiniGameInstance) 
 
     /*
       if allPlayer is true
-      listening all player's event
+      listening all player's org.netherald.quantium.event
       if allPlayer is false
-      listening only MiniGame's players event or
-      listening only MiniGame's world's event
+      listening only MiniGame's players org.netherald.quantium.event or
+      listening only MiniGame's world's org.netherald.quantium.event
      */
 
     fun <T : Event> listener(
@@ -291,7 +291,7 @@ open class MiniGameBuilderUtil(private val miniGameInstance : MiniGameInstance) 
     private val Class<out Event>.handlerList : HandlerList
         get() {
             val throwException = fun (): Nothing = throw IllegalPluginAccessException(
-                "Unable to find handler list for event ${name}. Static getHandlerList method required!"
+                "Unable to find handler list for org.netherald.quantium.event ${name}. Static getHandlerList method required!"
             )
 
             val throwableHandlerList = fun Class<out Event>.() : HandlerList {

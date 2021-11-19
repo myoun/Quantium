@@ -4,7 +4,7 @@ import com.google.common.io.ByteStreams
 import io.lettuce.core.api.sync.multi
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
-import event.*
+import org.netherald.quantium.event.*
 import org.netherald.quantium.*
 import org.netherald.quantium.util.PluginMessageServerUtil
 import org.netherald.quantium.util.RedisServerUtil

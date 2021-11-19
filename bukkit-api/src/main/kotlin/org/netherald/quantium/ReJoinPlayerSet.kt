@@ -2,8 +2,8 @@ package org.netherald.quantium
 
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
-import event.InstanceAddReJoinDataEvent
-import event.InstanceRemoveReJoinDataEvent
+import org.netherald.quantium.event.InstanceAddReJoinDataEvent
+import org.netherald.quantium.event.InstanceRemoveReJoinDataEvent
 
 class ReJoinPlayerSet(val instance : MiniGameInstance) : HashSet<Player>() {
     override fun add(element: Player): Boolean {

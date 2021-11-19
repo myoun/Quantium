@@ -1,4 +1,4 @@
-package event
+package org.netherald.quantium.event
 
 import org.bukkit.event.Event
 import org.netherald.quantium.MiniGame

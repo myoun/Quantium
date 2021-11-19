@@ -19,6 +19,6 @@ include(":common")
 include(":example:duel")
 include(":example:test-minigame")
 include(":annotation-processor")
-include(":example:event-loagger")
-findProject(":example:event-loagger")?.name = "event-logger"
+include(":example:org.netherald.quantium.event-loagger")
+findProject(":example:org.netherald.quantium.event-loagger")?.name = "org.netherald.quantium.event-logger"
 include("bungee-api")

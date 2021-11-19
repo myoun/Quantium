@@ -13,8 +13,8 @@ import org.bukkit.event.player.*
 import org.bukkit.scheduler.BukkitTask
 import org.bukkit.scoreboard.DisplaySlot
 import org.netherald.quantium.data.*
-import event.InstanceDeletedEvent
-import event.InstanceStartedEvent
+import org.netherald.quantium.event.InstanceDeletedEvent
+import org.netherald.quantium.event.InstanceStartedEvent
 import org.netherald.quantium.exception.OutOfMaxPlayerSizeException
 import org.netherald.quantium.setting.AutomaticFunctionSetting
 import org.netherald.quantium.setting.IsolationSetting

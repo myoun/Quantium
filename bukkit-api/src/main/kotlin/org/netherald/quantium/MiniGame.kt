@@ -5,10 +5,10 @@ import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 import org.netherald.quantium.data.MiniGameData
-import event.InstanceCreatedEvent
-import event.MiniGameCreateEvent
-import event.MiniGameDeletedEvent
-import event.MiniGameThrownEvent
+import org.netherald.quantium.event.InstanceCreatedEvent
+import org.netherald.quantium.event.MiniGameCreateEvent
+import org.netherald.quantium.event.MiniGameDeletedEvent
+import org.netherald.quantium.event.MiniGameThrownEvent
 import java.lang.IllegalStateException
 import java.util.*
 import kotlin.collections.ArrayList

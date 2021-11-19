@@ -2,10 +2,10 @@ package org.netherald.eventlogger
 
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
-import event.InstanceCreatedEvent
-import event.InstanceDeletedEvent
-import event.MiniGameCreateEvent
-import event.MiniGameDeletedEvent
+import org.netherald.quantium.event.InstanceCreatedEvent
+import org.netherald.quantium.event.InstanceDeletedEvent
+import org.netherald.quantium.event.MiniGameCreateEvent
+import org.netherald.quantium.event.MiniGameDeletedEvent
 
 class EventListener : Listener {
     @EventHandler
