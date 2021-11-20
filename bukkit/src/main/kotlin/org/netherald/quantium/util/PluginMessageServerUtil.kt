@@ -18,7 +18,7 @@ class PluginMessageServerUtil : ServerUtil {
     override val miniGames: Collection<String>
         get() = games
 
-    override val instances: Collection<UUID> = TODO()
+    override val instances: HashSet<UUID> = HashSet()
 
     override fun getInstances(game: String): Collection<UUID>? = instances0[game]
 

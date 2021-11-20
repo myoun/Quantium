@@ -55,6 +55,7 @@ class PluginMessageL : PluginMessageListener {
                 }
                 PluginMessageServerUtil.instance?.let {
                     (it.instances0 as MutableMap<String, Collection<UUID>>)[miniGame] = instances
+                    it.instances.addAll(instances)
                 }
             }
         }
