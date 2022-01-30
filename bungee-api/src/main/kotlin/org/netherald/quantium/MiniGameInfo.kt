@@ -18,7 +18,7 @@ import kotlin.collections.HashSet
 data class MiniGameInfo(
     val name : String,
     val minPlayerSize : Int,
-    val maxPlayerSize : Int,
+    val maxPlayerSize : Int
 ) {
 
     val queue : Queue<ProxiedPlayer> = LinkedList()

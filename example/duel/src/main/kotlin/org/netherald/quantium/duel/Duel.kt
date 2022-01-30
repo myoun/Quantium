@@ -52,6 +52,8 @@ class Duel : JavaPlugin() {
                 winner.sendMessage("you are winner")
                 loser.sendMessage("you was dinner")
             }
+
+
         }
     }
 }
